@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PtixiakiReservations")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+413295436c9d922bf169c919ba1d0cf486aad19d")]
 [assembly: System.Reflection.AssemblyProductAttribute("PtixiakiReservations")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PtixiakiReservations")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -9,20 +9,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
+using PtixiakiReservations.Seeders;
 
 namespace PtixiakiReservations.Controllers
 {
     public class ApplicationUserController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<ApplicationRole> roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public ApplicationUserController(ApplicationDbContext context, UserManager<ApplicationUser> _userManager, RoleManager<ApplicationRole> roleManager)
+        public ApplicationUserController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _context = context;
-            userManager = _userManager;
-            this.roleManager = roleManager;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
         // GET: ApplicationUser
         [Authorize(Roles = "Admin")]
@@ -56,7 +57,7 @@ namespace PtixiakiReservations.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ChangeRole(String id)
         {
-            var user= await userManager.FindByIdAsync(id);
+            var user= await _userManager.FindByIdAsync(id);
 
             return View(user);
         }
@@ -64,15 +65,15 @@ namespace PtixiakiReservations.Controllers
         public async Task<IActionResult> ChangeRoleAction(String id,String Role)
         {
             IdentityResult result;
-            var user = await userManager.FindByIdAsync(id);
-            var flag=await userManager.IsInRoleAsync(user,Role);
+            var user = await _userManager.FindByIdAsync(id);
+            var flag=await _userManager.IsInRoleAsync(user,Role);
             if (!flag)
             {
-                 result = await userManager.AddToRoleAsync(user, Role);
+                 result = await _userManager.AddToRoleAsync(user, Role);
             }
             else
             {
-                result = await userManager.RemoveFromRoleAsync(user, Role);          
+                result = await _userManager.RemoveFromRoleAsync(user, Role);          
             }
             if (!result.Succeeded)
             {
@@ -81,6 +82,22 @@ namespace PtixiakiReservations.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Index", "ApplicationUser");           
         }
- 
+        
+        public async Task<IActionResult> SeedAdminUser()
+        {
+            try
+            {
+                // Call the overloaded method directly using the injected services
+                await ApplicationDbSeed.SeedAsync(_userManager, _roleManager);
+
+                // Return success response
+                return Ok("Admin seeding completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Catch and return any errors during the seeding process
+                return BadRequest($"Seeding failed: {ex.Message}");
+            }
+        }
     }
 }

@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
+using PtixiakiReservations.Seeders;
+using System;
+using System.Collections.Immutable;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,12 +54,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-
-    // Add any custom application initialization logic here if needed
+    
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
-
-    // You can perform initialization logic for UserManager/RoleManager here if necessary.
+    
+    await ApplicationDbSeed.SeedAsync(services);
 }
 
 if (app.Environment.IsDevelopment())
