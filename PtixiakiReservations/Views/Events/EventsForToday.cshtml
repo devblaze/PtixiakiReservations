@@ -1,0 +1,48 @@
+﻿@model IEnumerable<PtixiakiReservations.Models.Event>
+@using Microsoft.AspNetCore.Identity
+
+@{
+    ViewData["Title"] = "Events For Today";
+}
+
+    <h1>Events For Today</h1>
+<div class="row">
+    <div class="card-deck ">
+        @foreach (var item in Model)
+        {
+            var photopath = "~/images/" + (item.Venue.imgUrl ?? "noimage.jpg");
+            <div class="col-sm-9">
+                <div class="card">
+                    <div class="card-body">
+
+                        <h3 class="card-title">
+                            @Html.DisplayFor(modelItem => item.Name)
+                            @Html.DisplayFor(modelItem => item.StartDateTime)--@Html.DisplayFor(modelItem => item.EndTime.TimeOfDay)
+                        </h3>
+
+                        <p class="card-text">
+                            @Html.DisplayFor(modelItem => item.Venue.Name)
+
+                            @Html.DisplayFor(modelItem => item.Venue.Address)
+
+                            @Html.DisplayFor(modelItem => item.Venue.City.Name)
+
+                            @Html.DisplayFor(modelItem => item.Venue.PostalCode)
+
+                            @Html.DisplayFor(modelItem => item.Venue.Phone)
+
+
+
+                        </p>
+                        <img class="card-img-top rounded" height="100" width="160" src=@photopath asp-append-version="true" />
+                        <p class="card-text">
+                            <a asp-action="Details" asp-controller="Venue" asp-route-id="@item.VenueId">Details</a>
+                            |<span></span> <a asp-controller="Reservation" asp-action="Create" asp-route-VenueId="@item.VenueId" asp-route-EventId="@item.Id">Reservation</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

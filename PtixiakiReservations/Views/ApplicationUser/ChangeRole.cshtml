@@ -1,0 +1,62 @@
+﻿@model PtixiakiReservations.Models.ApplicationUser
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Change Role";
+}
+
+<h1>Change Role</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.FirstName) <span></span> @Html.DisplayNameFor(model => model.LastName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.FirstName) <span></span> @Html.DisplayFor(model => model.LastName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.PhoneNumber)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.PhoneNumber)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        @if (await UserManager.IsInRoleAsync(Model, "Venue"))
+        {
+    <dt class="col-sm-2">
+        Role Venue
+    </dt>
+            <dd class="col-sm-10">
+                True
+                <p>If someone is in role and you choose that role it removes that role</p>
+            </dd>
+        }
+        @if (await UserManager.IsInRoleAsync(Model, "Admin"))
+        {
+            <dt class="col-sm-2">
+                Role Admin
+            </dt>
+            <dd class="col-sm-10">
+                True
+                <p>If someone is in role and you choose that role it removes that role</p>
+            </dd>
+
+        }
+    </dl>
+    <p>
+        <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Venue" class="btn btn-primary">Venue</a><br />
+        <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Admin" class="btn btn-primary">Admin</a><br />
+    </p>
+</div>
+<div>   
+    <a asp-action="Index" asp-controller="Home">Back to List</a>
+</div>

@@ -1,0 +1,293 @@
+﻿@model IEnumerable<PtixiakiReservations.Models.EventType>
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<div id="calender"></div>
+
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span id="eventTitle"></span></h4>
+            </div>
+            <div class="modal-body">
+                <p id="pDetails"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="myModalRepeatTime" class="modal fade second-modal-class" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                Custom recurrence
+                <button type="button" class="close second-modal-close" data-previouspopup-toggle=".first-modal-class" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    Repeat Every :<input id="numOfRepeat" type="number" min="1" value="1" style="width: 10%" />
+                                  <select id="selectRepeat">
+                                      <option value="Week">Week</option>
+                                      <option value="Day">Day</option>
+                                      <option value="Month">Month</option>
+                                  </select>
+                </div>
+                <div class="form-group show-week">
+                    Repeat On
+                </div>
+                <div class="form-check show-week">
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-input" id="su">
+                        <label class="form-check-label" >S</label>
+                    </div>
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-input" id="m">
+                        <label class="form-check-label" >M</label>
+                    </div>
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-input" id="tu">
+                        <label class="form-check-label" >T</label>
+                    </div>
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-input" id="w">
+                        <label class="form-check-label">W</label>
+                    </div>
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-input" id="th">
+                        <label class="form-check-label" >T</label>
+                    </div>
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-inputt" id="f">
+                        <label class="form-check-label">F</label>
+                    </div>
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-input" id="sa">
+                        <label class="form-check-label">S</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    Until <input type="date"  id="untilDate" />
+                </div>
+                <div class="form-group">
+                    After: <input type="number" style="width: 10%" min="1" id="afterNumTimes" />occurrences
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <input type="submit" value="Save" id="saveRepeatTime" class="btn btn-primary" />
+            </div>
+        </div>
+
+    </div>
+</div>
+<link href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.min.css" rel="stylesheet" />
+<link href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.print.css" rel="stylesheet" media="print" />
+
+@section Scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var events = [];
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetEvents", "Events")',
+                success: function (data) {
+                    $.each(data, function (i, v) {
+                        events.push({
+                            id: v.id,
+                            title: v.name,
+                            start: moment(v.startDateTime),
+                            end: v.endTime != null ? moment(v.endTime) : null,
+                            EventTypeId: v.eventTypeId,
+                            EventType: v.eventType
+                        });
+                    })
+                    GenerateCalender(events);
+                },
+                error: function (error) {
+                    alert('failed');
+                },
+                accept: 'application/json'
+            })
+
+            function GenerateCalender(events) {
+                $('#calender').fullCalendar('destroy');
+                $('#calender').fullCalendar({
+                    contentHeight: 400,
+                    defaultDate: new Date(),
+                    timeFormat: 'h(:mm)a',
+                    header: {
+                        left: 'prev,next today',
+                        center: 'Name',
+                        right: 'month,basicWeek,basicDay,agenda'
+                    },
+                    eventLimit: true,
+                    eventColor: '#378006',
+                    events: events,
+                    eventClick: function (calEvent, jsEvent, view) {
+                        $('#myModal #eventTitle').text(calEvent.title);
+                        var $description = $('<div/>');
+                        $description.append($('<p/>').html('<b>Start:</b>' + calEvent.start.format("DD-MMM-YYYY HH:mm a")));
+                        $description.append($('<p/>').html('<b>End:</b>' + calEvent.end.format("DD-MMM-YYYY HH:mm a")));
+                        $description.append($('<p/>').html('<b>EventType:</b>' + calEvent.EventType.name));
+                        $description.append($('<p/>').html('<input type="hidden" id="eId" value=' + calEvent.id + ' />' +
+                            '<input type="submit" value="Delete" id="Delete" class="btn btn-danger" />' +
+                            '<span><b>Delete All</b><input type="checkbox" id="dAll">' +
+                            '</div >'));
+
+                        $('#myModal #pDetails').empty().html($description);
+                        $('#myModal').modal();
+                    },
+                    dayClick: function (date, jsEvent, view) {
+                        $('#myModal #eventCreate').text("Create Event");
+                        var $description = $('<div class="row"><div class="col-md-4">' +
+                            ' <div class="form-group">' +
+                            '<b>Name:</b> <input id="Name"/></div >' +
+                            ' <div class="form-group">' +
+                            '<input id="Date" value=' + date.format() + ' type="hidden"/>' +
+                            '<b>Start Time:</b> <input id="StartTime" type="time"/>' +
+                            ' <div class="form-group">' +
+                            '<b>End Time:</b> <input id="EndTime" type="time"/>' +
+                            ' <div class="form-group">' +
+                            '<b>Event Type:</b> <select id="EventTypes" value="Restaurant"> </select>' +
+                            ' <div class="form-group">' +
+                            '<br><input type="submit" value="Repeat Time" id="RepeatTime" class="btn btn-primary" /></div>' +
+                            ' <div class="form-group">' +
+                            '<input type="submit" value="Create" id="Create" class="btn btn-primary" /> </div>' +
+                            '</div ></div >'
+                        );
+
+                        $('#myModal #pDetails').empty().html($description);
+                        $('#myModal').modal();
+                    }
+                })
+            }
+        });
+        var repeat = {};
+        $("#myModalRepeatTime").on('shown.bs.modal', function (calEvent) {
+            $("#selectRepeat").change(function () {
+                var selcetRepeat = $("#selectRepeat").val();
+                switch (selcetRepeat) {
+                    case 'Day':
+                        $(".show-week").hide();
+                        break;
+                    case 'Week':
+                        $(".show-week").show();
+                        break;
+                     case 'Month':
+                        $(".show-week").hide();
+                        break;
+                }
+            });
+            $("#saveRepeatTime").click(function () {
+                repeat.NumOfRepeat = $("#numOfRepeat").val();
+                repeat.SelectRepeat = $("#selectRepeat").val();                
+                repeat.Su = $("#su").is(":checked");
+                repeat.M = $("#m").is(":checked");
+                repeat.Tu = $("#tu").is(":checked");
+                repeat.W = $("#w").is(":checked");
+                repeat.Th = $("#th").is(":checked");
+                repeat.F = $("#f").is(":checked");
+                repeat.Sa = $("#sa").is(":checked");
+                repeat.UntilDate = $("#untilDate").val();
+                repeat.AfterNumTimes = $("#afterNumTimes").val();
+                 console.log($("#afterNumTimes").val());
+                if ($("#untilDate").val() != "" && $("#afterNumTimes").val() != "") {
+                    alert("you cant have both until and after");
+                    $("#untilDate").val() = "";
+                    $("#afterNumTimes").val() = "";
+                    repeat = {};
+                } else if ($("#untilDate").val() == "" && $("#afterNumTimes").val() == "") {
+                    alert("you need to put Until or After x occurances");
+                    $("#untilDate").val() = "";
+                    $("#afterNumTimes").val() = "";
+                    repeat = {};
+                }
+                if (repeat.AfterNumTimes != "" && repeat.UntilDate == "") {
+                    repeat.UntilDate = new Date();
+                }
+               $('#myModalRepeatTime').modal('toggle')
+            });
+        });
+        $("#myModal").on('shown.bs.modal', function (calEvent) {
+            $("#EventTypes").ready(function () {
+                $.ajax({
+                    type: "Get",
+                    url: '@Url.Action("GetEventTypes","Events")',
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (data) {
+                        $("#EventTypes option").remove();
+                        $.each(data, function (index, item) {
+                            $("#EventTypes").append(
+                                $("<option></option>")
+                                    .text(item.name)
+                                    .val(item.id))
+                        })
+                    }
+                });
+            });
+            $("#RepeatTime").click(function () {
+                $("#myModalRepeatTime").modal('show');
+            });
+
+            $('#Create').click(function () {
+                
+                if ($("#EndTime").val() == "" || $("#StartTime").val() == "" || $("#Name").val()=="") {
+                    alert("You must fill all the data");
+                } else {
+                var end = new Date($("#Date").val() + 'T' + $("#EndTime").val());
+                var start = new Date($("#Date").val() + 'T' + $("#StartTime").val());
+                var event = {};
+                event.Name = $("#Name").val();
+                event.StartDateTime = start;
+                    event.EndTime = end;               
+                    event.EventTypeId = $("#EventTypes").val();
+                    if (repeat != null) {
+                        event.Repeat = repeat;
+                }
+                    console.log(JSON.stringify(event));
+                if (start > end) {
+                    alert("End time cant be earlier than Start time");
+                } else {
+                    $.ajax(
+                        {
+                            type: "Post",
+                            url: '@Url.Action("CreateEvent", "Events")',
+                            dataType: 'json',
+                            contentType: 'application/json; charset=utf-8',
+                            data: JSON.stringify(event),
+                            success: function (data) { alert("saved"); },
+                            accept: 'application/json'
+                        })
+                         }
+                    }
+            });
+            $("#Delete").click(function () {
+                var id = $("#eId").val();
+                var dAll = $("#dAll").is(":checked");
+                $.ajax(
+                    {
+                        type: "Get",
+                        url: '@Url.Action("Delete", "Events")',
+                        dataType: 'json',
+                        contentType: 'application/json; charset=utf-8',
+                        data: { "Id": id, "dAll": dAll },
+                            success: function (data) { alert("Deleted"); },
+                            accept: 'application/json'
+                        })
+            });
+        });
+        
+    </script>
+}

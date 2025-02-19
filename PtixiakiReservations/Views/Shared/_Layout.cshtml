@@ -1,0 +1,96 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PtixiakiReservations</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+   
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Reservations</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_LoginPartial" />
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>                     
+                        <li class="nav-item">
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <a class="nav-link text-dark" asp-controller="Reservation" asp-action="index">My Reservations</a>
+                            }
+                        </li>
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Venue"))
+                        {
+                            <li class="nav-item">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        My Venue
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                        <button class="dropdown-item" type="button">
+                                        <a class="nav-link text-dark" asp-controller="Venue" asp-action="Create">Create Venue</a></button>
+                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="Venue" asp-action="Edit">Edit Shop</a></button>
+                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="Events" asp-action="Index">Events</a></button>                                       
+                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="SubAreas" asp-action="Create">Create Sub Areas</a></button>
+                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="SubAreas" asp-action="Index">List of my Sub Areas</a></button>                                                                             
+                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="Reservation" asp-action="Index" asp-route-flag="True">All my Reservations</a></button>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle"
+                                            type="button" id="dropdownMenu2" 
+                                            data-toggle="dropdown" aria-haspopup="true" 
+                                            aria-expanded="false">
+                                       Admin Panel
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="ApplicationUser" asp-action="Index">All Users</a></button>                                       
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3 ">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2019 - Reservations - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/fabricjs/fabric.min.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAimF4uEZ1UJsLXTMbg_AgOJqwvMyftGnI&callback=initMap"
+            type="text/javascript"></script>
+    <script src="jquery.geocomplete.js"></script>
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

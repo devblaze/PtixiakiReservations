@@ -1,0 +1,103 @@
+﻿@model PtixiakiReservations.Models.Event
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Reservation</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        Start Time -End Time:<input class="form-control" type="datetime" id="date" value="@Model.StartDateTime-@Model.EndTime.TimeOfDay" readonly="readonly" />
+        <input class="form-control" type="hidden" id="startTime" value="@Model.StartDateTime.TimeOfDay" readonly="readonly" />
+        <input class="form-control" type="hidden" id="endTime" value="@Model.EndTime.TimeOfDay" readonly="readonly" />
+        <div class="col-md-6">
+            Start Time:<input class="form-control" type="time" id="StartTime" />From Start: <input type="checkbox" id="StartCheck" />
+            <br />End Time:<input class="form-control" type="time" id="EndTime" />Until End: <input type="checkbox" id="EndCheck" />
+        </div>
+    </div>
+</div>
+
+<div>
+    <input type="submit" value="Choose Sub Area" class="btn btn-primary" id="goto" />  
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+
+
+    const qstr = window.location.search;
+    const urlParams = new URLSearchParams(qstr);
+    const venueId = urlParams.get('VenueId');
+    const EventId = urlParams.get('EventId');
+
+
+    function msToTime(s) {
+    var ms = s % 1000;
+    s = (s - ms) / 1000;
+    var secs = s % 60;
+    s = (s - secs) / 60;
+    var mins = s % 60;
+    var hrs = (s - mins) / 60;
+
+    return hrs + ':' + mins;
+}
+    $("#goto").click(function () {
+        var StartTime = 0;
+        var EndTime = 0;
+        var date = 0;
+        EndTime = $("#endTime").val();
+        date =  @Model.StartDateTime.Year + "-" + @Model.StartDateTime.Month +"-" + @Model.StartDateTime.Day;
+        date = new Date(date);
+        date = date.setHours(date.getHours() + @Model.EndTime.Hour );
+        date = new Date(date);
+        date= date.setMinutes(date.getMinutes() + @Model.EndTime.Minute );
+        if (new Date() > new Date(date)) {
+            alert("This event has passed");
+            
+        } else {
+            if ($("#StartTime").val() != 0 && $("#StartCheck").is(':checked')) {
+                alert("Check the Box Or Fill the Time");
+            } else
+                if ($("#StartTime").val() != 0) {
+                    StartTime = $("#StartTime").val();
+                    date =  @Model.StartDateTime.Year + "-" + @Model.StartDateTime.Month +"-" + @Model.StartDateTime.Day +"T" + StartTime;
+                } else if ($("#StartCheck").is(':checked')) {
+                    StartTime = $("#startTime").val();
+
+                    console.log(StartTime);
+                    date =  @Model.StartDateTime.Year + "-" + @Model.StartDateTime.Month +"-" + @Model.StartDateTime.Day +"T" + StartTime;
+                    console.log(date);
+                }
+            if ($("#EndTime").val() != 0 && $("#EndCheck").is(':checked')) {
+                alert("Check the Box Or Fill the Time");
+            } else
+                if ($("#EndTime").val() != 0) {
+                    EndTime = $("#EndTime").val();
+                } else if ($("#EndCheck").is(':checked')) {
+                    EndTime = @Model.EndTime.Hour +':' +@Model.EndTime.Minute;
+                }
+            if (StartTime == 0 || EndTime == 0) {
+                alert("Fill start time and end time or check the boxes");
+            }
+            else {
+                var timeStart = new Date("01/01/2007 " + StartTime);
+                var timeEnd = new Date("01/01/2007 " + EndTime);
+                var difference = timeEnd - timeStart;
+                var Duration = msToTime(difference);
+                if (difference < 0) {
+                    alert("your end time must higer than your start");
+                } else {
+                    var url = "/SubAreas/ChooseSubArea?VenueId=" + venueId + "&EventId=" + @Model.Id + "&Duration=" + Duration + "&ResDate=" + date;
+                       window.location.href = url;
+                }
+            }
+        }
+        });
+
+</script>
+
+}

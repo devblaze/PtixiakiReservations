@@ -1,0 +1,125 @@
+﻿@model IEnumerable<PtixiakiReservations.Models.Reservation>
+
+@{
+    ViewData["Title"] = "Seats";
+}
+
+<h1>Seats</h1>
+
+<canvas id="c" width="600" height="600" style="border:1px solid #000000;"></canvas>
+
+<input type="submit" value="Reservation" class="btn btn-primary" id="reservetion" />
+
+@section Scripts{
+    <script>
+        var canvas = new fabric.Canvas('c');
+        const qstr = window.location.search;
+
+        const urlParams = new URLSearchParams(qstr);
+        const SubAreaId = urlParams.get('SubAreaId');
+        const EventId = urlParams.get('EventId');
+        const Duration = urlParams.get('Duration');
+        const date = urlParams.get('ResDate');
+
+        var selectedSeats = [];
+
+        var moveHandler = function (evt) {
+            var selected = evt.target;
+
+           
+            if (selected.get("fill") == "red") {
+                alert("Already Taken");
+            } else if (selected.get("fill") == "green") {
+                selected.set('fill', 'grey');
+                const index = selectedSeats.indexOf(selected.get('id'));
+                if (index > -1) {
+                    selectedSeats.splice(index, 1);
+                }
+            }
+            else {
+                selected.set('fill', 'green');               
+                selectedSeats.push(selected.get('id'));
+            }
+        };
+        canvas.on('mouse:down', moveHandler);
+
+        $("document").ready(function () {         
+            $.ajax(
+                {
+                    type: "get",
+                    url: '@Url.Action("get_data", "Seat")',
+                    dataType: 'json',
+                    data: { "SubAreaId": SubAreaId},
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (data) {
+                        var seats = jQuery.parseJSON(JSON.stringify(data));
+                        for (var i = 0; i < seats.length; i++) {
+                                                 
+                              var rect = new fabric.Rect({
+                                    width: 50,
+                                    height: 50,
+                                    fill: 'grey',
+                                    left: seats[i].x,
+                                    top: seats[i].y,
+                                    id:seats[i].id,
+                                    scaleY: 0.5,
+                                    selectable: false,
+                                    originX: 'center',
+                                    originY: 'center'
+
+                                });                       
+                            canvas.add(rect);
+                        }
+
+                    },
+                    error: function (data) { alert("fail to save"); },
+                    accept: 'application/json'
+                });      
+        });
+
+        $( window ).on( "load",function () {
+            $.ajax(
+                {
+                    type: "get",
+                    url: '@Url.Action("isFree", "Reservation")',
+                    dataType: 'json',
+                    data: { "EventId": EventId,"SubAreaId":SubAreaId, "ResDate": date,"Duration":Duration },
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (data) {
+                        var res = jQuery.parseJSON(JSON.stringify(data));
+                        console.log(res);
+                        var canvasObjects = canvas.getObjects();
+                        for (obj in canvasObjects) {
+                            if (canvasObjects[obj].get('type') == 'rect') {               
+                                for (var i = 0; i < res.length; i++) {
+                                    if (canvasObjects[obj].get('id') == res[i]) { 
+                                        canvasObjects[obj].set('fill', 'red');
+                                    }                         
+                                }
+                            }
+                        }
+                        canvas.renderAll();
+                    },
+                    error: function (data) { alert("fail to save"); },
+                    accept: 'application/json'
+                });
+        }); 
+
+        $("#reservetion").click(function () {
+            $.ajax(
+                {
+                    type: "Post",
+                    url: '/Reservation/MakeRes/?EventId=' + EventId + '&Duration=' + Duration+ "&ResDate="+date,
+                    dataType: 'json',  
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(selectedSeats),
+                    success: function (data) { alert("saved"); },
+                    error: function (data) { alert("fail to save"); },
+                    accept: 'application/json'
+                })
+
+        });
+
+    </script>
+
+}

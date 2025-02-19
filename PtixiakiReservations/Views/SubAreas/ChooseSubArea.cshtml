@@ -1,0 +1,82 @@
+﻿
+@{
+    ViewData["Title"] = "ChooseSubArea";
+}
+
+<h1>ChooseSubArea</h1>
+
+<canvas id="c" width="600" height="600" style="border:1px solid #000000;"></canvas>
+@section Scripts{
+    <script>
+        var canvas = new fabric.Canvas('c');
+
+        const qstr = window.location.search;
+        const urlParams = new URLSearchParams(qstr);
+        const venueId = urlParams.get('VenueId');
+        const EventId = urlParams.get('EventId');
+        const Duration = urlParams.get('Duration');
+        const date = urlParams.get('ResDate');
+
+        var subAreaId = 0;
+
+        var moveHandler = function (evt) {
+            var selected = evt.target;
+            subAreaId = selected.get('id');
+            window.location.href = '/Seat/Index/?SubAreaId=' + subAreaId + '&EventId='+EventId + "&Duration="+Duration +"&ResDate="+date;
+        };
+
+        canvas.on('mouse:down', moveHandler);
+        $("document").ready(function () {
+            $.ajax(
+                {
+                    type: "get",
+                    url: '@Url.Action("GetSubAreas", "SubAreas")',
+                    dataType: 'json',
+                    data: { "venueId": venueId },
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (data) {
+                        var subAreas = jQuery.parseJSON(JSON.stringify(data));
+                        for (var i = 0; i < subAreas.length; i++) {
+
+                            var rect = new fabric.Rect({
+                                width: subAreas[i].width,
+                                height: subAreas[i].height,                                
+                                fill: '#eef',
+                                scaleY: 1,
+                                scaleX: 1,
+                                originX: 'center',
+                                originY: 'center'
+
+                            });
+
+                            var str = subAreas[i].areaName + "";
+
+                            var text = new fabric.Text(str, {
+                                fontSize: 15,
+                                originX: 'center',
+                                originY: 'center',
+                                selectable: false
+                            });
+
+                            var group = new fabric.Group([rect, text], {     
+                                fill: '#eef',
+                                left: subAreas[i].left,
+                                top: subAreas[i].top,
+                                subTargetCheck: true,
+                                hasControls: false,
+                                selectable: false,
+                                lockMovementX: true, lockMovementY: true,
+                                id: subAreas[i].id,
+                                angle: subAreas[i].rotate
+                            });
+                            canvas.add(group);
+                        }
+
+                    },
+                    error: function (data) { alert("fail to save"); },
+                    accept: 'application/json'
+                });
+
+                });
+    </script>
+}

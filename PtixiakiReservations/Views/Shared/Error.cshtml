@@ -1,0 +1,10 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<h1 class="text-danger">Error.</h1>
+@if (ViewBag.Error != null)
+{
+<h2 class="text-danger">@ViewBag.Error</h2>
+}

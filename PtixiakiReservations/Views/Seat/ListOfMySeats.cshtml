@@ -1,0 +1,60 @@
+﻿@model IEnumerable<PtixiakiReservations.Models.Seat>
+
+@{
+    ViewData["Title"] = "ListOfMySeats";
+
+}
+    <h1>List Of My Seats</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SubArea)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Available)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SubArea.AreaName)
+                </td>
+                <td>
+                    @if (item.Available == true)
+                    {
+                        <button class="btn btn-success"> <a asp-action="ChangeAvailable" asp-route-Flag="False" asp-route-ID="@item.Id"> Free </a></button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-danger"> <a asp-action="ChangeAvailable" asp-route-Flag="True" asp-route-ID="@item.Id"> Not Free </a></button>
+                    }
+
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{ 
+    <script>
+        $(function () {
+            $('#t').bootstrapToggle();
+        })
+    </script>
+
+}

@@ -1,0 +1,105 @@
+﻿@model PtixiakiReservations.Models.SubArea
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>SubAreas</h4>
+<div class="row">
+    <div class="col-md-4">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="AreaName" class="control-label"></label>
+            <input asp-for="AreaName" class="form-control" id="name" />
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" id="create" />
+            <input type="submit" value="Save" class="btn btn-primary" id="save" />
+
+        </div>
+    </div>
+</div>
+<canvas id="c" width="600" height="600" style="border:1px solid #000000;"></canvas>
+@section Scripts{
+    <script>
+        var canvas = new fabric.Canvas('c');
+                $("#create").click(function () {
+                    var rect = new fabric.Rect({
+                        width: 100,
+                        height: 100,
+                        fill: '#eef',
+                        scaleY: 0.5,
+                        originX: 'center',
+                        originY: 'center'
+
+                    });
+                    var name = $("#name").val();
+
+               
+
+                    var text = new fabric.Text(name, {
+                     fontSize: 15,
+                     originX: 'center',
+                     originY: 'center',
+                     selectable:false
+                    });
+
+                    var group = new fabric.Group([rect, text], {
+                        left: 150,
+                        top: 100, 
+                        subTargetCheck: true,
+                        hasControls: true,
+                        id:name,
+                        angle: 0
+                    });
+                         group.on('mouse:down', function () {
+                        console.log("rect:");
+                        console.log(rect.getWidth());
+                        console.log(rect.get('height'));
+                         });
+
+                    canvas.add(group);  
+                    canvas.add(text);
+                });
+
+        $("#save").click(function () {
+                    var tmp = {};
+                     var SubAreas = [];                   
+                     
+            var canvasObjects = canvas.getObjects();
+                    for (obj in canvasObjects) {                     
+                      if (canvasObjects[obj].get('type') == 'group') {
+                          tmp.Top = canvasObjects[obj].get('top');  
+                          tmp.Left = canvasObjects[obj].get('left'); 
+                          tmp.AreaName = canvasObjects[obj].get('id');
+                          tmp.Rotate = canvasObjects[obj].get('angle');
+                          tmp.Width = canvasObjects[obj].getScaledWidth();
+                          tmp.Height = canvasObjects[obj].getScaledHeight();;
+                        }
+                        if (canvasObjects[obj].get('type') == 'text') {                        
+                            tmp.AreaName = canvasObjects[obj].get('text');                         
+                            SubAreas.push(tmp);                           
+                            tmp = {};
+                        }           
+            }
+                  $.ajax(
+                 {
+                          type: "Post",
+                          url: '@Url.Action("Create", "SubAreas")',
+                          dataType: 'json',
+                          contentType: 'application/json; charset=utf-8',
+                          data: JSON.stringify(SubAreas),                   
+                          success: function (data) { alert("saved"); },
+                          error: function (data) { alert("fail to save");},
+                          accept: 'application/json'
+                    })
+                });      
+
+    </script>
+}
+
+
+

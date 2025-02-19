@@ -1,0 +1,88 @@
+﻿@model PtixiakiReservations.Models.Seat
+
+@{
+    ViewData["Title"] = "Create Seat Map";
+}
+
+    <h1>Create Seat Map</h1>
+
+<div class="row">
+    <div class="col-md-4">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">         
+            Create  Rows  <input type="number" value="0"  class="form-control" id="Row" />
+            Create  Cols  <input type="number" value="0" class="form-control" id="Col" />
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" id="create" />
+            <input type="submit" value="Save" class="btn btn-primary" id="save" />
+        </div>
+        </div>
+    </div>
+        <canvas id="c" width="600" height="600" style="border:1px solid #000000;"></canvas>
+ @section Scripts{
+            <script>
+                var canvas = new fabric.Canvas('c');             
+                $("#create").click(function () {
+                    if ($("#Row").val() != 0 && $("#Col").val() != 0) {
+                        var nextRow = 0;
+                         var nextCol = 0; 
+                        for (var r = 0; r < $("#Row").val(); r++) { 
+                            nextRow = 0;
+                            console.log("row:"+r);
+                            for (var c = 0; c < $("#Col").val(); c++) {
+                                 console.log("col:"+c);
+                                var name = "Row:" + r + "-Col:" + c;
+
+                                var rect = new fabric.Rect({
+                                    width: 50,
+                                    height: 50,
+                                    left: 100 + nextRow,
+                                    top: 100 +nextCol,
+                                    fill: 'grey',
+                                    scaleY: 0.5,
+                                    id:name,
+                                    originX: 'center',
+                                    originY: 'center'
+
+                                });
+                                nextRow = nextRow + 60;   
+                                canvas.add(rect);
+                            }                           
+                            nextCol = nextCol+35;
+                        }
+                     } 
+                });
+
+                $("#save").click(function () {
+                    var tmp = {};
+                     var seats = [];                   
+                    
+                     var canvasObjects = canvas.getObjects();
+                    for (obj in canvasObjects) {                     
+                      if (canvasObjects[obj].get('type') == 'rect') {
+                          tmp.top = canvasObjects[obj].get('top');  
+                          tmp.left = canvasObjects[obj].get('left'); 
+                          tmp.Name = canvasObjects[obj].get('id');   
+                          seats.push(tmp);
+                          
+                            tmp = {};
+                        }         
+                    }
+                    console.log(JSON.stringify(seats));
+                  $.ajax(
+                 {
+                    type: "post",
+                    url: '@Url.Action("CreateTableMap", "Seat",new { subAreaId = ViewBag.subAreaId })',
+                   dataType: 'json',
+                          contentType: 'application/json; charset=utf-8',
+                          data: JSON.stringify(seats),                   
+                          success: function (data) { alert("saved"); },
+                          error: function (data) { alert("fail to save");},
+                    accept: 'application/json'
+                    })
+                });         
+            </script>
+ }
+

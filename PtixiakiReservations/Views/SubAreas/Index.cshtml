@@ -1,0 +1,42 @@
+﻿@model IEnumerable<PtixiakiReservations.Models.SubArea>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.AreaName)
+            </th>          
+            <th>
+                @Html.DisplayNameFor(model => model.Desc)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.AreaName)
+            </td>          
+            <td>
+                @Html.DisplayFor(modelItem => item.Desc)
+            </td>          
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-controller="Seat" asp-action="Create" asp-route-subAreaId="@item.Id">Create a Seat Map</a>|
+                <a  asp-controller="Seat" asp-action="ListOfMySeats" asp-route-subAreaId="@item.Id">List Of My Seats</a>|
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

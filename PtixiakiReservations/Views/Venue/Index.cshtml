@@ -1,0 +1,42 @@
+﻿@model IEnumerable<PtixiakiReservations.Models.Venue>
+@using Microsoft.AspNetCore.Identity
+
+@{
+    ViewData["Title"] = "All Venues";
+}
+
+    <h1>All Venues</h1>
+<div class="row">
+        <div class="card-deck ">
+            @foreach (var item in Model)
+            {
+                var photopath = "~/images/" + (item.imgUrl ?? "noimage.jpg");
+            <div class="col-sm-9">
+                <div class="card">
+                    <div class="card-body">
+
+                        <h3 class="card-title">
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </h3>
+
+                        <p class="card-text">
+                            @Html.DisplayFor(modelItem => item.City.Name)
+
+                            @Html.DisplayFor(modelItem => item.Address)
+
+                            @Html.DisplayFor(modelItem => item.PostalCode)
+
+                            @Html.DisplayFor(modelItem => item.Phone)
+                        </p>
+                        <img class="card-img-top rounded" height="100" width="160" src=@photopath asp-append-version="true" />
+                        <p class="card-text">                        
+                            <a asp-action="Details" asp-route-id="@item.Id">Details</a>                           
+                           |<span></span> <a asp-controller="Reservation" asp-action="Create" asp-route-shopid="@item.Id">Reservation</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+

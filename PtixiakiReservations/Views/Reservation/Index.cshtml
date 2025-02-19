@@ -1,0 +1,55 @@
+﻿@model IEnumerable<PtixiakiReservations.Models.Reservation>
+
+@{
+    ViewData["Title"] = "Index";
+
+}
+
+<h1>My Reservations</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index"  asp-route-sortOrder="@ViewData["NameSortParm"]"  asp-route-flag="true" >  @Html.DisplayNameFor(model => model.ApplicationUser.LastName)</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-flag="true">    @Html.DisplayNameFor(model => model.Date)</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["EventSortParm"]" asp-route-flag="true">   @Html.DisplayNameFor(model => model.Event)</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["VenueSortParm"]" asp-route-flag="true" > @Html.DisplayNameFor(model => model.Seat.SubArea.Venue)</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["AreaNameSortParm"]" asp-route-flag="true"> @Html.DisplayNameFor(model => model.Seat.SubArea)</a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <a asp-controller="ApplicationUser" asp-action="Details" asp-route-id="@item.UserId">@Html.DisplayFor(modelItem => item.ApplicationUser.LastName)</a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Event.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Seat.SubArea.Venue.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Seat.SubArea.AreaName)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ID">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
