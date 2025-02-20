@@ -16,19 +16,18 @@ namespace PtixiakiReservations.Controllers
     public class EventsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<ApplicationRole> roleManager;
-        public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> _userManager, RoleManager<ApplicationRole> roleManager)
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
+        public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _context = context;
-            userManager = _userManager;
-            this.roleManager = roleManager;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         // GET: Events
         public IActionResult Index()
         {
-
             return View();
         }
 
@@ -71,7 +70,7 @@ namespace PtixiakiReservations.Controllers
         public JsonResult GetEvents()
         {
             var events = _context.Event.Include(e => e.EventType)
-            .Where(e => e.Venue.ApplicationUser.Id == userManager.GetUserId(HttpContext.User)).ToList();
+            .Where(e => e.Venue.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User)).ToList();
             return new JsonResult(events);
         }
         public JsonResult GetEvents2(int? venueId)
@@ -105,7 +104,7 @@ namespace PtixiakiReservations.Controllers
             }
             else
             {
-                var Venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == userManager.GetUserId(HttpContext.User));
+                var Venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User));
                 var FamilyEvent = _context.FamilyEvent.SingleOrDefault(f => f.Name == ev.Name);
                 int days = 0;
                 if (Venue == null)
