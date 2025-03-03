@@ -6,13 +6,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PtixiakiReservations.Configurations;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
 using PtixiakiReservations.Seeders;
+using PtixiakiReservations.Services;
 using System;
 using System.Collections.Immutable;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Elasticsearch client to services
+// var elasticSettings = new ConnectionSettings(new Uri("http://localhost:9200"))
+//     .DefaultIndex("events"); // Set the default index for documents
+// var elasticClient = new ElasticClient(elasticSettings);
+// builder.Services.AddSingleton<IElasticClient>(elasticClient);
 
 // Configure services (formerly in Startup.ConfigureServices)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,6 +47,9 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 builder.Services.AddControllersWithViews().AddXmlSerializerFormatters();
 builder.Services.AddRazorPages();
 
+builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection("ElasticSettings"));
+builder.Services.AddSingleton<IElasticSearch, ElasticSearchService>();
+
 builder.Services.AddMvc(options =>
 {
     var policy = new AuthorizationPolicyBuilder()
@@ -57,6 +68,8 @@ using (var scope = app.Services.CreateScope())
     
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var elasticSearchService = services.GetRequiredService<IElasticSearch>();
     
     await ApplicationDbSeed.SeedAsync(services);
 }

@@ -4,68 +4,97 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<div class="container mx-auto p-6">
+    <div class="bg-white p-6 shadow-lg rounded-md">
+        <h4 class="text-xl font-semibold text-gray-700 mb-4">Venue Details</h4>
+        <form asp-action="Edit" enctype="multipart/form-data" class="space-y-6">
+            <div asp-validation-summary="ModelOnly" class="text-red-500"></div>
 
-<h4>Venue</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <!-- Name Field -->
+            <div>
+                <label asp-for="Name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input asp-for="Name"
+                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
+                <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Address" class="control-label"></label>
-                <input asp-for="Address" class="form-control" />
-                <span asp-validation-for="Address" class="text-danger"></span>
+
+            <!-- Address Field -->
+            <div>
+                <label asp-for="Address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <input asp-for="Address"
+                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
+                <span asp-validation-for="Address" class="text-red-500 text-sm"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="City" class="control-label"></label>
-                <select asp-for="CityId" class="form-control"  asp-items="@(new SelectList(@ViewBag.ListOfCity,"Id","Name",ViewBag.SelectedCity))"></select>
-                <span asp-validation-for="City" class="text-danger"></span>
+
+            <!-- City Field -->
+            <div>
+                <label asp-for="City" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <select asp-for="CityId"
+                        asp-items="@(new SelectList(@ViewBag.ListOfCity, "Id", "Name", ViewBag.SelectedCity))"
+                        class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50">
+                </select>
+                <span asp-validation-for="City" class="text-red-500 text-sm"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="PostalCode" class="control-label"></label>
-                <input asp-for="PostalCode" class="form-control" />
-                <span asp-validation-for="PostalCode" class="text-danger"></span>
+
+            <!-- Postal Code Field -->
+            <div>
+                <label asp-for="PostalCode" class="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                <input asp-for="PostalCode"
+                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
+                <span asp-validation-for="PostalCode" class="text-red-500 text-sm"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Phone" class="control-label"></label>
-                <input asp-for="Phone" class="form-control" />
-                <span asp-validation-for="Phone" class="text-danger"></span>
+
+            <!-- Phone Field -->
+            <div>
+                <label asp-for="Phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input asp-for="Phone"
+                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
+                <span asp-validation-for="Phone" class="text-red-500 text-sm"></span>
             </div>
-            <div class="form-group">
-                <div class="custom-file">
-                    <input asp-for="Photo" class="form-control custom-file-input" />
-                    <label asp-for="Photo" class="custom-file-label">Choose File...</label>
+
+            <!-- Photo Upload -->
+            <div>
+                <label for="Photo" class="block text-sm font-medium text-gray-700 mb-1">Photo Upload</label>
+                <div class="mt-1 flex items-center">
+                    <input asp-for="Photo"
+                           class="block w-full text-sm text-gray-900 border border-gray-300 rounded-sm cursor-pointer bg-gray-50 focus:outline-none focus:border-blue-500"
+                           id="file_input" type="file">
+                    <span asp-validation-for="Photo" class="text-red-500 text-sm"></span>
                 </div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+
+            <!-- Submit Button -->
+            <div>
+                <input type="submit" value="Save"
+                       class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-sm shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"/>
             </div>
         </form>
     </div>
 </div>
-@if (ViewBag.SelectedValue != null)
-{
-    <text>Selected City: </text> @ViewBag.SelectedValue;
-}
-<div>
-    <a asp-action="Index">Back to List</a>
+<!-- Back to List -->
+<div class="mt-6">
+    <a asp-action="Index"
+       class="text-blue-600 hover:underline text-sm font-medium">
+        Back to List
+    </a>
 </div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
-        $(document).ready(function () {
-            $('.custom-file-input').on("change", function () {
-                var fileName = $(this).val().split("\\").pop();
-                $(this).next('.custom-file-label').html(fileName);
-            })
+@if (ViewBag.SelectedValue != null)
+{
+    <div class="mt-4 text-sm text-gray-600">
+        Selected City: <span class="font-semibold">@ViewBag.SelectedValue</span>
+    </div>
+}
 
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const fileInput = document.querySelector('#file_input');
+            fileInput.addEventListener("change", function () {
+                const fileName = this.value.split("\\").pop();
+                this.nextElementSibling.innerText = fileName;
+            });
         });
     </script>
 }

@@ -5,44 +5,44 @@
     ViewData["Title"] = "Events For Today";
 }
 
-    <h1>Events For Today</h1>
-<div class="row">
-    <div class="card-deck ">
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Events For Today</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach (var item in Model)
         {
             var photopath = "~/images/" + (item.Venue.imgUrl ?? "noimage.jpg");
-            <div class="col-sm-9">
-                <div class="card">
-                    <div class="card-body">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <img class="w-full h-48 object-cover" src=@photopath asp-append-version="true" alt="Event Venue Image">
 
-                        <h3 class="card-title">
-                            @Html.DisplayFor(modelItem => item.Name)
-                            @Html.DisplayFor(modelItem => item.StartDateTime)--@Html.DisplayFor(modelItem => item.EndTime.TimeOfDay)
-                        </h3>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-gray-800">
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                        @Html.DisplayFor(modelItem => item.StartDateTime) – @Html.DisplayFor(modelItem => item.EndTime.TimeOfDay)
+                    </p>
 
-                        <p class="card-text">
-                            @Html.DisplayFor(modelItem => item.Venue.Name)
+                    <div class="mt-3 text-sm text-gray-700 space-y-1">
+                        <p><span class="font-medium">Venue:</span> @Html.DisplayFor(modelItem => item.Venue.Name)</p>
+                        <p><span class="font-medium">Address:</span> @Html.DisplayFor(modelItem => item.Venue.Address)</p>
+                        <p><span class="font-medium">City:</span> @Html.DisplayFor(modelItem => item.Venue.City.Name)</p>
+                        <p><span class="font-medium">Postal Code:</span> @Html.DisplayFor(modelItem => item.Venue.PostalCode)</p>
+                        <p><span class="font-medium">Phone:</span> @Html.DisplayFor(modelItem => item.Venue.Phone)</p>
+                    </div>
 
-                            @Html.DisplayFor(modelItem => item.Venue.Address)
-
-                            @Html.DisplayFor(modelItem => item.Venue.City.Name)
-
-                            @Html.DisplayFor(modelItem => item.Venue.PostalCode)
-
-                            @Html.DisplayFor(modelItem => item.Venue.Phone)
-
-
-
-                        </p>
-                        <img class="card-img-top rounded" height="100" width="160" src=@photopath asp-append-version="true" />
-                        <p class="card-text">
-                            <a asp-action="Details" asp-controller="Venue" asp-route-id="@item.VenueId">Details</a>
-                            |<span></span> <a asp-controller="Reservation" asp-action="Create" asp-route-VenueId="@item.VenueId" asp-route-EventId="@item.Id">Reservation</a>
-                        </p>
+                    <div class="mt-4 flex justify-between items-center">
+                        <a asp-action="Details" asp-controller="Venue" asp-route-id="@item.VenueId"
+                           class="text-sm text-blue-500 hover:underline">
+                            Details
+                        </a>
+                        <a asp-controller="Reservation" asp-action="Create" asp-route-VenueId="@item.VenueId" asp-route-EventId="@item.Id"
+                           class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600">
+                            Reservation
+                        </a>
                     </div>
                 </div>
             </div>
         }
     </div>
 </div>
-

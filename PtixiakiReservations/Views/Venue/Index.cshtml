@@ -5,38 +5,35 @@
     ViewData["Title"] = "All Venues";
 }
 
-    <h1>All Venues</h1>
-<div class="row">
-        <div class="card-deck ">
-            @foreach (var item in Model)
-            {
-                var photopath = "~/images/" + (item.imgUrl ?? "noimage.jpg");
-            <div class="col-sm-9">
-                <div class="card">
-                    <div class="card-body">
+<h1 class="text-3xl font-bold text-center mb-8 text-gray-800">All Venues</h1>
 
-                        <h3 class="card-title">
-                            @Html.DisplayFor(modelItem => item.Name)
-                        </h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    @foreach (var item in Model)
+    {
+        var photopath = "~/images/" + (item.imgUrl ?? "noimage.jpg");
+        <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+            <img class="w-full h-40 object-cover" src=@photopath asp-append-version="true" alt="Venue Image" />
 
-                        <p class="card-text">
-                            @Html.DisplayFor(modelItem => item.City.Name)
+            <div class="p-4">
+                <!-- Venue Name -->
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                    @Html.DisplayFor(modelItem => item.Name)
+                </h3>
 
-                            @Html.DisplayFor(modelItem => item.Address)
+                <!-- Venue Details -->
+                <p class="text-sm text-gray-600 mb-4">
+                    <span class="block">@Html.DisplayFor(modelItem => item.City.Name)</span>
+                    <span class="block">@Html.DisplayFor(modelItem => item.Address)</span>
+                    <span class="block">@Html.DisplayFor(modelItem => item.PostalCode)</span>
+                    <span class="block">@Html.DisplayFor(modelItem => item.Phone)</span>
+                </p>
 
-                            @Html.DisplayFor(modelItem => item.PostalCode)
-
-                            @Html.DisplayFor(modelItem => item.Phone)
-                        </p>
-                        <img class="card-img-top rounded" height="100" width="160" src=@photopath asp-append-version="true" />
-                        <p class="card-text">                        
-                            <a asp-action="Details" asp-route-id="@item.Id">Details</a>                           
-                           |<span></span> <a asp-controller="Reservation" asp-action="Create" asp-route-shopid="@item.Id">Reservation</a>
-                        </p>
-                    </div>
+                <!-- Actions -->
+                <div class="flex justify-between items-center mt-4">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="text-blue-500 hover:underline font-medium">Details</a>
+                    <a asp-controller="Reservation" asp-action="Create" asp-route-shopid="@item.Id" class="text-blue-500 hover:underline font-medium">Reservation</a>
                 </div>
             </div>
-            }
         </div>
-    </div>
-
+    }
+</div>

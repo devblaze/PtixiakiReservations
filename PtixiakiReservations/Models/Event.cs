@@ -18,7 +18,7 @@ namespace PtixiakiReservations.Models
         public int VenueId { get; set; }
         [ForeignKey("VenueId")]
         public Venue Venue { get; set; }
-        public int FamilyEventId { get; set; }
+        public int? FamilyEventId { get; set; }
         [ForeignKey("FamilyEventId")]
         public FamilyEvent FamilyEvent { get; set; }
     }

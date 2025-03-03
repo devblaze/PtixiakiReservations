@@ -6,90 +6,131 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PtixiakiReservations</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - Reservations</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Added jQuery -->
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Reservations</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <partial name="_LoginPartial" />
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>                     
-                        <li class="nav-item">
-                            @if (SignInManager.IsSignedIn(User))
-                            {
-                                <a class="nav-link text-dark" asp-controller="Reservation" asp-action="index">My Reservations</a>
-                            }
-                        </li>
-                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Venue"))
-                        {
-                            <li class="nav-item">
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        My Venue
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                        <button class="dropdown-item" type="button">
-                                        <a class="nav-link text-dark" asp-controller="Venue" asp-action="Create">Create Venue</a></button>
-                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="Venue" asp-action="Edit">Edit Shop</a></button>
-                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="Events" asp-action="Index">Events</a></button>                                       
-                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="SubAreas" asp-action="Create">Create Sub Areas</a></button>
-                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="SubAreas" asp-action="Index">List of my Sub Areas</a></button>                                                                             
-                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="Reservation" asp-action="Index" asp-route-flag="True">All my Reservations</a></button>
-                                    </div>
-                                </div>
-                            </li>
-                        }
-                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle"
-                                            type="button" id="dropdownMenu2" 
-                                            data-toggle="dropdown" aria-haspopup="true" 
-                                            aria-expanded="false">
-                                       Admin Panel
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                        <button class="dropdown-item" type="button"><a class="nav-link text-dark" asp-controller="ApplicationUser" asp-action="Index">All Users</a></button>                                       
-                                    </div>
-                                </div>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3 ">
-            @RenderBody()
-        </main>
-    </div>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col dark:bg-gray-900 dark:text-gray-100" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<header class="bg-white border-b shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <nav class="container mx-auto flex items-center justify-between px-4 py-3">
+        <!-- Dark/Light Mode Toggle Button -->
+        @* <button onclick="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" class="p-2 rounded-full focus:outline-none focus:ring focus:ring-blue-200 transition"> *@
+        @*     <svg x-show="!darkMode" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 fill-current text-gray-800 dark:text-gray-100" viewBox="0 0 20 20" fill="currentColor"> *@
+        @*         <path d="M10 15a5 5 0 100-10 5 5 0 000 10z" /> *@
+        @*         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-12a4 4 0 100 8 4 4 0 000-8z" clip-rule="evenodd" /> *@
+        @*     </svg> *@
+        @*     <svg x-show="darkMode" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 fill-current text-gray-800 dark:text-gray-100" viewBox="0 0 20 20" fill="currentColor"> *@
+        @*         <path fill-rule="evenodd" d="M10 2a8 8 0 000 16A8 8 0 0010 2zm4 8a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /> *@
+        @*     </svg> *@
+        @* </button> *@
+        
+        <a class="text-xl font-bold text-gray-800 dark:text-gray-100" asp-area="" asp-controller="Home" asp-action="Index">Reservations</a>
+        <button class="block lg:hidden text-gray-500 hover:text-gray-800 focus:outline-none" id="mobile-menu-toggle">
+            <svg class="w-6 h-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2019 - Reservations - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <div class="hidden lg:flex space-x-6" id="nav-links">
+            <ul class="flex items-center space-x-4">
+                <li>
+                    <a class="text-gray-800 hover:text-blue-600" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                </li>
+                <li>
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <a class="text-gray-800 hover:text-blue-600" asp-controller="Reservation" asp-action="Index">My Reservations</a>
+                    }
+                </li>
+                @if ((SignInManager.IsSignedIn(User) && User.IsInRole("Venue")) || User.IsInRole("Admin"))
+                {
+                    <li>
+                        <div class="relative group">
+                            <button id="venue-dropdown-button" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg flex items-center focus:outline-none">
+                                My Venue
+                                <svg class="w-4 h-4 ml-2 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path d="M5.293 9.293L8.293 12.293 11.293 9.293 13 10 8.996 14 4.996 10z"></path>
+                                </svg>
+                            </button>
+                            <div id="venue-dropdown-menu" class="absolute hidden group-hover:block bg-white border rounded-lg shadow-lg mt-2 w-56">
+                                <a class="block px-4 py-2 text-gray-800 hover:bg-gray-200" asp-controller="Venue" asp-action="Create">Create Venue</a>
+                                <a class="block px-4 py-2 text-gray-800 hover:bg-gray-200" asp-controller="Venue" asp-action="Edit">Edit Shop</a>
+                                <a class="block px-4 py-2 text-gray-800 hover:bg-gray-200" asp-controller="Events" asp-action="Index">Events</a>
+                                <a class="block px-4 py-2 text-gray-800 hover:bg-gray-200" asp-controller="SubAreas" asp-action="Create">Create Sub Areas</a>
+                                <a class="block px-4 py-2 text-gray-800 hover:bg-gray-200" asp-controller="SubAreas" asp-action="Index">List of my Sub Areas</a>
+                                <a class="block px-4 py-2 text-gray-800 hover:bg-gray-200" asp-controller="Reservation" asp-action="Index" asp-route-flag="True">All my Reservations</a>
+                            </div>
+                        </div>
+                    </li>
+                }
+                @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                {
+                    <li class="relative">
+                        <!-- Admin Dropdown Button -->
+                        <button id="admin-dropdown-button" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg flex items-center focus:outline-none focus:ring focus:ring-blue-300">
+                            Admin Panel
+                            <svg class="w-4 h-4 ml-2 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M5.293 9.293L8.293 12.293 11.293 9.293 13 10 8.996 14 4.996 10z"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="admin-dropdown-menu" class="absolute hidden bg-white border rounded-lg shadow-lg mt-2 w-56 z-10">
+                            <a asp-controller="ApplicationUser" asp-action="Index" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Dashboard</a>
+                            <a asp-controller="ApplicationUser" asp-action="Index" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Manage Users</a>
+                            <a asp-controller="ApplicationUser" asp-action="Index" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Settings</a>
+                            <a asp-controller="ApplicationUser" asp-action="Index" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Activity Logs</a>
+                            <a asp-controller="ApplicationUser" asp-action="Index" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Reports</a>
+                        </div>
+                    </li>
+                }
+            </ul>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/lib/fabricjs/fabric.min.js"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAimF4uEZ1UJsLXTMbg_AgOJqwvMyftGnI&callback=initMap"
-            type="text/javascript"></script>
-    <script src="jquery.geocomplete.js"></script>
-    @RenderSection("Scripts", required: false)
 
+        <div>
+            <partial name="_LoginPartial" />
+        </div>
+    </nav>
+</header>
+
+<main class="flex-grow container mx-auto px-4">
+    @RenderBody()
+    @await RenderSectionAsync("Scripts", required: false)
+</main>
+
+<footer class="bg-gray-800 text-white py-4">
+    <div class="container mx-auto text-center">
+        <p>&copy; 2025 Your Website Name. All rights reserved.</p>
+    </div>
+</footer>
 </body>
+<script>
+    document.getElementById('admin-dropdown-button').addEventListener('click', function () {
+        const menu = document.getElementById('admin-dropdown-menu');
+        menu.classList.toggle('hidden');
+    });
+    
+    document.getElementById('venue-dropdown-button').addEventListener('click', function () {
+        const menu = document.getElementById('venue-dropdown-menu');
+        menu.classList.toggle('hidden');
+    });
+
+    // Optional: Close dropdown menu when clicking outside it
+    document.addEventListener('click', function (event) {
+        const button = document.getElementById('admin-dropdown-button');
+        const menu = document.getElementById('admin-dropdown-menu');
+        const venueButton = document.getElementById('admin-dropdown-button');
+        const venueMenu = document.getElementById('admin-dropdown-menu');
+
+        if (!button.contains(event.target) && !menu.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+        if (!venueButton.contains(event.target) && !venueMenu.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+</script>
 </html>

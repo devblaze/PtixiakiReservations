@@ -1,0 +1,44 @@
+﻿services:
+  ptixiakireservations:
+    image: ptixiakireservations
+    build:
+      context: .
+      dockerfile: PtixiakiReservations/Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - reservations
+      
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - reservations
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    networks:
+      - reservations
+        
+networks:
+  reservations:
+    driver: bridge
+    
+volumes:
+  elasticsearch-data:

@@ -3,67 +3,80 @@
 @{
     ViewData["Title"] = "Create";
 }
+<br/>
+<h4 class="text-lg font-semibold mb-4 text-gray-600">Create Venue</h4>
+<hr class="mb-6 border-t-2 border-gray-200" />
 
-<h1>Create</h1>
+<div class="flex justify-center">
+    <div class="w-full max-w-lg">
+        <form asp-action="Create" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm mb-4"></div>
 
-<h4>Venue</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <!-- Name Field -->
+            <div class="mb-4">
+                <label asp-for="Name" class="block text-gray-700 text-sm font-bold mb-2"></label>
+                <input asp-for="Name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
+                <span asp-validation-for="Name" class="text-red-500 text-xs italic"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Address" class="control-label"></label>
-                <input asp-for="Address" class="form-control" />
-                <span asp-validation-for="Address" class="text-danger"></span>
+
+            <!-- Address Field -->
+            <div class="mb-4">
+                <label asp-for="Address" class="block text-gray-700 text-sm font-bold mb-2"></label>
+                <input asp-for="Address" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
+                <span asp-validation-for="Address" class="text-red-500 text-xs italic"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="City" class="control-label"></label>
-                <select asp-for="CityId" class="form-control" asp-items="@(new SelectList(@ViewBag.ListOfCity,"Id","Name"))"></select>
-                <span asp-validation-for="City" class="text-danger"></span>
+
+            <!-- City Field -->
+            <div class="mb-4">
+                <label asp-for="City" class="block text-gray-700 text-sm font-bold mb-2"></label>
+                <select asp-for="CityId" class="block appearance-none w-full bg-white border border-gray-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" asp-items="@(new SelectList(@ViewBag.ListOfCity, "Id", "Name"))"></select>
+                <span asp-validation-for="City" class="text-red-500 text-xs italic"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="PostalCode" class="control-label"></label>
-                <input asp-for="PostalCode" class="form-control" />
-                <span asp-validation-for="PostalCode" class="text-danger"></span>
+
+            <!-- Postal Code Field -->
+            <div class="mb-4">
+                <label asp-for="PostalCode" class="block text-gray-700 text-sm font-bold mb-2"></label>
+                <input asp-for="PostalCode" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
+                <span asp-validation-for="PostalCode" class="text-red-500 text-xs italic"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Phone" class="control-label"></label>
-                <input asp-for="Phone" class="form-control" />
-                <span asp-validation-for="Phone" class="text-danger"></span>
-            </div>          
-            <div class="form-group">
-                <label class="control-label">Photo</label>
-                <div class="custom-file">
-                    <input asp-for="Photo" class="form-control custom-file-input" />
-                    <label asp-for="Photo" class="custom-file-label">Choose File...</label>
+
+            <!-- Phone Field -->
+            <div class="mb-4">
+                <label asp-for="Phone" class="block text-gray-700 text-sm font-bold mb-2"></label>
+                <input asp-for="Phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
+                <span asp-validation-for="Phone" class="text-red-500 text-xs italic"></span>
+            </div>
+
+            <!-- Photo Upload -->
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Photo</label>
+                <div class="relative">
+                    <input asp-for="Photo" type="file" class="block w-full text-gray-900 border border-gray-300 rounded cursor-pointer focus:outline-none focus:ring focus:border-blue-500" />
                 </div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <!-- Submit Button -->
+            <div class="flex items-center justify-between">
+                <input type="submit" value="Create" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring focus:border-blue-300" />
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="mt-4">
+    <a asp-action="Index" class="text-blue-500 hover:underline">Back to List</a>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-    <script>
-        $(document).ready(function () {
-            $('.custom-file-input').on("change", function () {
-                var fileName = $(this).val().split("\\").pop();
-                $(this).next('.custom-file-label').html(fileName);
-            })
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.custom-file-input')?.addEventListener('change', (event) => {
+                const fileName = event.target.value.split("\\").pop();
+                const label = event.target.nextElementSibling;
+                if (label) label.innerHTML = fileName;
+            });
         });
     </script>
 }

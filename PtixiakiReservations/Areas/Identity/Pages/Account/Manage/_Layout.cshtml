@@ -2,17 +2,19 @@
     Layout = "_Layout.cshtml";
 }
 
-<h1>Manage your account</h1>
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold mb-6">Manage your account</h1>
 
-<div>
-    <h4>Change your account settings</h4>
-    <hr />
-    <div class="row">
-        <div class="col-md-3">
-            <partial name="_ManageNav" />
-        </div>
-        <div class="col-md-9">
-            @RenderBody()
+    <div>
+        <h4 class="text-xl font-semibold mb-4">Change your account settings</h4>
+        <hr class="border-t border-gray-200 mb-6" />
+        <div class="flex flex-col md:flex-row">
+            <div class="md:w-1/4">
+                <partial name="_ManageNav" />
+            </div>
+            <div class="md:w-3/4 mt-6 md:mt-0 bg-white p-6 rounded-lg shadow-md">
+                @RenderBody()
+            </div>
         </div>
     </div>
 </div>

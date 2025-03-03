@@ -4,102 +4,110 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<h1 class="text-3xl font-bold text-gray-800 mb-6">Create SubArea</h1>
 
-<h4>SubAreas</h4>
-<div class="row">
-    <div class="col-md-4">
+<div class="max-w-4xl mx-auto bg-white p-8 shadow-lg rounded-lg">
+    <h4 class="text-xl font-semibold text-gray-700 mb-4">SubArea Details</h4>
 
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="form-group">
-            <label asp-for="AreaName" class="control-label"></label>
-            <input asp-for="AreaName" class="form-control" id="name" />
-        </div>
-        <div class="form-group">
-            <input type="submit" value="Create" class="btn btn-primary" id="create" />
-            <input type="submit" value="Save" class="btn btn-primary" id="save" />
+    <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
 
-        </div>
+    <!-- Area Name Input -->
+    <div class="mb-4">
+        <label asp-for="AreaName" class="block text-sm font-medium text-gray-700 mb-1">Area Name</label>
+        <input asp-for="AreaName" id="name"
+               class="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex gap-4">
+        <button id="create"
+                type="button"
+                class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Create
+        </button>
+        <button id="save"
+                type="button"
+                class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow hover:bg-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+    </div>
+
+    <!-- Canvas -->
+    <div class="mt-6">
+        <h4 class="text-lg font-medium text-gray-700 mb-2">Canvas</h4>
+        <canvas id="c" width="600" height="600" class="border border-gray-400"></canvas>
     </div>
 </div>
-<canvas id="c" width="600" height="600" style="border:1px solid #000000;"></canvas>
+
 @section Scripts{
     <script>
         var canvas = new fabric.Canvas('c');
-                $("#create").click(function () {
-                    var rect = new fabric.Rect({
-                        width: 100,
-                        height: 100,
-                        fill: '#eef',
-                        scaleY: 0.5,
-                        originX: 'center',
-                        originY: 'center'
+        $("#create").click(function () {
+            var rect = new fabric.Rect({
+                width: 100,
+                height: 100,
+                fill: '#eef',
+                scaleY: 0.5,
+                originX: 'center',
+                originY: 'center'
+            });
+            var name = $("#name").val();
 
-                    });
-                    var name = $("#name").val();
+            var text = new fabric.Text(name, {
+                fontSize: 15,
+                originX: 'center',
+                originY: 'center',
+                selectable: false
+            });
 
-               
+            var group = new fabric.Group([rect, text], {
+                left: 150,
+                top: 100,
+                subTargetCheck: true,
+                hasControls: true,
+                id: name,
+                angle: 0
+            });
+            group.on('mouse:down', function () {
+                console.log("rect:");
+                console.log(rect.getWidth());
+                console.log(rect.get('height'));
+            });
 
-                    var text = new fabric.Text(name, {
-                     fontSize: 15,
-                     originX: 'center',
-                     originY: 'center',
-                     selectable:false
-                    });
-
-                    var group = new fabric.Group([rect, text], {
-                        left: 150,
-                        top: 100, 
-                        subTargetCheck: true,
-                        hasControls: true,
-                        id:name,
-                        angle: 0
-                    });
-                         group.on('mouse:down', function () {
-                        console.log("rect:");
-                        console.log(rect.getWidth());
-                        console.log(rect.get('height'));
-                         });
-
-                    canvas.add(group);  
-                    canvas.add(text);
-                });
+            canvas.add(group);
+            canvas.add(text);
+        });
 
         $("#save").click(function () {
-                    var tmp = {};
-                     var SubAreas = [];                   
-                     
-            var canvasObjects = canvas.getObjects();
-                    for (obj in canvasObjects) {                     
-                      if (canvasObjects[obj].get('type') == 'group') {
-                          tmp.Top = canvasObjects[obj].get('top');  
-                          tmp.Left = canvasObjects[obj].get('left'); 
-                          tmp.AreaName = canvasObjects[obj].get('id');
-                          tmp.Rotate = canvasObjects[obj].get('angle');
-                          tmp.Width = canvasObjects[obj].getScaledWidth();
-                          tmp.Height = canvasObjects[obj].getScaledHeight();;
-                        }
-                        if (canvasObjects[obj].get('type') == 'text') {                        
-                            tmp.AreaName = canvasObjects[obj].get('text');                         
-                            SubAreas.push(tmp);                           
-                            tmp = {};
-                        }           
-            }
-                  $.ajax(
-                 {
-                          type: "Post",
-                          url: '@Url.Action("Create", "SubAreas")',
-                          dataType: 'json',
-                          contentType: 'application/json; charset=utf-8',
-                          data: JSON.stringify(SubAreas),                   
-                          success: function (data) { alert("saved"); },
-                          error: function (data) { alert("fail to save");},
-                          accept: 'application/json'
-                    })
-                });      
+            var tmp = {};
+            var SubAreas = [];
 
+            var canvasObjects = canvas.getObjects();
+            for (obj in canvasObjects) {
+                if (canvasObjects[obj].get('type') === 'group') {
+                    tmp.Top = canvasObjects[obj].get('top');
+                    tmp.Left = canvasObjects[obj].get('left');
+                    tmp.AreaName = canvasObjects[obj].get('id');
+                    tmp.Rotate = canvasObjects[obj].get('angle');
+                    tmp.Width = canvasObjects[obj].getScaledWidth();
+                    tmp.Height = canvasObjects[obj].getScaledHeight();
+                }
+                if (canvasObjects[obj].get('type') === 'text') {
+                    tmp.AreaName = canvasObjects[obj].get('text');
+                    SubAreas.push(tmp);
+                    tmp = {};
+                }
+            }
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("Create", "SubAreas")',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(SubAreas),
+                success: function (data) { alert("saved"); },
+                error: function (data) { alert("fail to save"); },
+                accept: 'application/json'
+            });
+        });
     </script>
 }
-
-
-

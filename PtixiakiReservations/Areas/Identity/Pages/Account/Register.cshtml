@@ -4,76 +4,64 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container mx-auto mt-10 px-4">
+    @* <h1 class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">@ViewData["Title"]</h1> *@
 
-<div class="row">
-    <div class="col-md-4">
-        <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h4>Create a new account.</h4>
-            <hr />
-            <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="max-w-lg mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+        <form asp-route-returnUrl="@Model.ReturnUrl" method="post" class="space-y-4">
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Create a new account</h4>
+
+            <hr class="border-gray-200 dark:border-gray-700" />
+
+            <div asp-validation-summary="All" class="text-sm text-red-500 mb-4"></div>
+
+            <!-- Email Field -->
             <div class="form-group">
-                <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" class="form-control" />
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                <label asp-for="Input.Email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input asp-for="Input.Email" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+                <span asp-validation-for="Input.Email" class="text-xs text-red-500"></span>
             </div>
+
+            <!-- First Name -->
             <div class="form-group">
-                <label asp-for="Input.FirstName"></label>
-                <input asp-for="Input.FirstName" class="form-control" />
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                <label asp-for="Input.FirstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
+                <input asp-for="Input.FirstName" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+                <span asp-validation-for="Input.FirstName" class="text-xs text-red-500"></span>
             </div>
+
+            <!-- Last Name -->
             <div class="form-group">
-                <label asp-for="Input.LastName"></label>
-                <input asp-for="Input.LastName" class="form-control" />
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                <label asp-for="Input.LastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
+                <input asp-for="Input.LastName" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+                <span asp-validation-for="Input.LastName" class="text-xs text-red-500"></span>
             </div>
+
+            <!-- Phone -->
             <div class="form-group">
-                <label asp-for="Input.PhoneNumber"></label>
-                <input asp-for="Input.PhoneNumber" class="form-control" />
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <label asp-for="Input.PhoneNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                <input asp-for="Input.PhoneNumber" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+                <span asp-validation-for="Input.PhoneNumber" class="text-xs text-red-500"></span>
             </div>
+
+            <!-- Password -->
             <div class="form-group">
-                <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" class="form-control" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <label asp-for="Input.Password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <input asp-for="Input.Password" type="password" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+                <span asp-validation-for="Input.Password" class="text-xs text-red-500"></span>
             </div>
+
+            <!-- Confirm Password -->
             <div class="form-group">
-                <label asp-for="Input.ConfirmPassword"></label>
-                <input asp-for="Input.ConfirmPassword" class="form-control" />
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                <label asp-for="Input.ConfirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+                <input asp-for="Input.ConfirmPassword" type="password" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-xs text-red-500"></span>
             </div>
-            <button type="submit" class="btn btn-primary">Register</button>
+
+            <!-- Submit Button -->
+            <button type="submit" class="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200 focus:ring focus:ring-blue-200">
+                Register
+            </button>
         </form>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h4>Use another service to register.</h4>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See <a href="https://go.microsoft.com/fwlink/?LinkID=532715">this article</a>
-                            for details on setting up this ASP.NET application to support logging in via external services.
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
-            }
-        </section>
     </div>
 </div>
 

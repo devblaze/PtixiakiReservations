@@ -17,11 +17,11 @@ namespace PtixiakiReservations.Controllers
     public class SubAreasController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> userManager;
-        public SubAreasController(ApplicationDbContext context, UserManager<ApplicationUser> UserManager)
+        private readonly UserManager<ApplicationUser> _usermanager;
+        public SubAreasController(ApplicationDbContext context, UserManager<ApplicationUser> usermanager)
         {
             _context = context;
-            userManager = UserManager;
+            _usermanager = usermanager;
         }
 
         [Authorize(Roles = "Venue")]
@@ -67,8 +67,9 @@ namespace PtixiakiReservations.Controllers
         [Authorize(Roles = "Venue")]
         public IActionResult Create()
         {
-            var venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == userManager.GetUserId(HttpContext.User));
-            if (venue == null)
+            // var venue = _context.Venue.SingleOrDefault(v => v.UserId == _usermanager.GetUserId(HttpContext.User));
+            var venue = _context.Venue.Find(2);
+            if (venue is null)
             {
                 ViewBag.Error = "You need to Create Venue First";
                 return View("Error");
@@ -86,7 +87,7 @@ namespace PtixiakiReservations.Controllers
                 ViewBag.Error = "Something went wrong";
                 return View("Error");
             }
-            var venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == userManager.GetUserId(HttpContext.User));
+            var venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == _usermanager.GetUserId(HttpContext.User));
             foreach (var sA in subAreas)
             {
                 SubArea newSubArea = new SubArea
@@ -192,7 +193,7 @@ namespace PtixiakiReservations.Controllers
             {
                 foreach (var s in seats)
                 {
-                    var result = new SeatController(_context, userManager).DeleteConfirmed(s.Id);
+                    var result = new SeatController(_context, _usermanager).DeleteConfirmed(s.Id);
                 }
             }
             var subArea = await _context.SubArea.FindAsync(id);

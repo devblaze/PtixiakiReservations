@@ -2,54 +2,71 @@
 
 @{
     ViewData["Title"] = "Index";
-
 }
 
-<h1>My Reservations</h1>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                <a asp-action="Index"  asp-route-sortOrder="@ViewData["NameSortParm"]"  asp-route-flag="true" >  @Html.DisplayNameFor(model => model.ApplicationUser.LastName)</a>
+<h1 class="text-3xl font-bold mb-6 text-gray-800">My Reservations</h1>
+
+<div class="overflow-x-auto">
+    <!-- Table Wrapper for Responsiveness -->
+    <table class="min-w-full border-collapse border border-gray-200 text-sm bg-white shadow-lg rounded-lg">
+        <thead>
+        <tr class="bg-gray-100 text-gray-700">
+            <th class="px-4 py-2 border-b text-left">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" asp-route-flag="true" class="hover:underline">
+                    @Html.DisplayNameFor(model => model.ApplicationUser.LastName)
+                </a>
             </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-flag="true">    @Html.DisplayNameFor(model => model.Date)</a>
+            <th class="px-4 py-2 border-b text-left">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-flag="true" class="hover:underline">
+                    @Html.DisplayNameFor(model => model.Date)
+                </a>
             </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["EventSortParm"]" asp-route-flag="true">   @Html.DisplayNameFor(model => model.Event)</a>
+            <th class="px-4 py-2 border-b text-left">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["EventSortParm"]" asp-route-flag="true" class="hover:underline">
+                    @Html.DisplayNameFor(model => model.Event)
+                </a>
             </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["VenueSortParm"]" asp-route-flag="true" > @Html.DisplayNameFor(model => model.Seat.SubArea.Venue)</a>
+            <th class="px-4 py-2 border-b text-left">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["VenueSortParm"]" asp-route-flag="true" class="hover:underline">
+                    @Html.DisplayNameFor(model => model.Seat.SubArea.Venue)
+                </a>
             </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["AreaNameSortParm"]" asp-route-flag="true"> @Html.DisplayNameFor(model => model.Seat.SubArea)</a>
+            <th class="px-4 py-2 border-b text-left">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["AreaNameSortParm"]" asp-route-flag="true" class="hover:underline">
+                    @Html.DisplayNameFor(model => model.Seat.SubArea)
+                </a>
             </th>
+            <th class="px-4 py-2 border-b text-left">Actions</th>
         </tr>
-    </thead>
-    <tbody>
+        </thead>
+        <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
-                    <a asp-controller="ApplicationUser" asp-action="Details" asp-route-id="@item.UserId">@Html.DisplayFor(modelItem => item.ApplicationUser.LastName)</a>
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 border-b">
+                    <a asp-controller="ApplicationUser" asp-action="Details" asp-route-id="@item.UserId" class="text-blue-600 hover:underline">
+                        @Html.DisplayFor(modelItem => item.ApplicationUser.LastName)
+                    </a>
                 </td>
-                <td>
+                <td class="px-4 py-2 border-b">
                     @Html.DisplayFor(modelItem => item.Date)
                 </td>
-                <td>
+                <td class="px-4 py-2 border-b">
                     @Html.DisplayFor(modelItem => item.Event.Name)
                 </td>
-                <td>
+                <td class="px-4 py-2 border-b">
                     @Html.DisplayFor(modelItem => item.Seat.SubArea.Venue.Name)
                 </td>
-                <td>
+                <td class="px-4 py-2 border-b">
                     @Html.DisplayFor(modelItem => item.Seat.SubArea.AreaName)
                 </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.ID">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
+                <td class="px-4 py-2 border-b flex space-x-2">
+                    <a asp-action="Details" asp-route-id="@item.ID" class="text-blue-600 hover:underline">Details</a>
+                    <span>|</span>
+                    <a asp-action="Delete" asp-route-id="@item.ID" class="text-red-600 hover:underline">Delete</a>
                 </td>
             </tr>
         }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>

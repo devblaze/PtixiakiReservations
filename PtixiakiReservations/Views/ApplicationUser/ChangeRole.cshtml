@@ -7,56 +7,75 @@
     ViewData["Title"] = "Change Role";
 }
 
-<h1>Change Role</h1>
+<div class="container mx-auto mt-10 px-4">
+    <div class="p-6 bg-white shadow-md rounded-lg mx-auto max-w-3xl">
+        <hr class="my-4 border-gray-400" />
+        <dl class="space-y-4">
+            <div class="flex flex-col md:flex-row">
+                <dt class="text-sm font-medium text-gray-500 md:w-1/4">
+                    @Html.DisplayNameFor(model => model.FirstName) @Html.DisplayNameFor(model => model.LastName)
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 md:mt-0 md:w-3/4">
+                    @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)
+                </dd>
+            </div>
+            <div class="flex flex-col md:flex-row">
+                <dt class="text-sm font-medium text-gray-500 md:w-1/4">
+                    @Html.DisplayNameFor(model => model.PhoneNumber)
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 md:mt-0 md:w-3/4">
+                    @Html.DisplayFor(model => model.PhoneNumber)
+                </dd>
+            </div>
+            <div class="flex flex-col md:flex-row">
+                <dt class="text-sm font-medium text-gray-500 md:w-1/4">
+                    @Html.DisplayNameFor(model => model.Email)
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 md:mt-0 md:w-3/4">
+                    @Html.DisplayFor(model => model.Email)
+                </dd>
+            </div>
+            @if (await UserManager.IsInRoleAsync(Model, "Venue"))
+            {
+                <div class="flex flex-col md:flex-row">
+                    <dt class="text-sm font-medium text-gray-500 md:w-1/4">
+                        Role: Venue
+                    </dt>
+                    <dd class="mt-1 text-sm text-gray-900 md:mt-0 md:w-3/4">
+                        True
+                        <p class="text-xs text-gray-600">If someone is in this role and you choose that role, it removes the role.</p>
+                    </dd>
+                </div>
+            }
+            @if (await UserManager.IsInRoleAsync(Model, "Admin"))
+            {
+                <div class="flex flex-col md:flex-row">
+                    <dt class="text-sm font-medium text-gray-500 md:w-1/4">
+                        Role: Admin
+                    </dt>
+                    <dd class="mt-1 text-sm text-gray-900 md:mt-0 md:w-3/4">
+                        True
+                        <p class="text-xs text-gray-600">If someone is in this role and you choose that role, it removes the role.</p>
+                    </dd>
+                </div>
+            }
+        </dl>
+        <div class="mt-6 flex flex-col sm:flex-row gap-4">
+            <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Venue"
+               class="px-4 py-2 bg-blue-500 text-white rounded-md text-center hover:bg-blue-600">
+                Change to Venue Role
+            </a>
+            <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Admin"
+               class="px-4 py-2 bg-blue-500 text-white rounded-md text-center hover:bg-blue-600">
+                Change to Admin Role
+            </a>
+        </div>
+    </div>
 
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.FirstName) <span></span> @Html.DisplayNameFor(model => model.LastName)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.FirstName) <span></span> @Html.DisplayFor(model => model.LastName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.PhoneNumber)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.PhoneNumber)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        @if (await UserManager.IsInRoleAsync(Model, "Venue"))
-        {
-    <dt class="col-sm-2">
-        Role Venue
-    </dt>
-            <dd class="col-sm-10">
-                True
-                <p>If someone is in role and you choose that role it removes that role</p>
-            </dd>
-        }
-        @if (await UserManager.IsInRoleAsync(Model, "Admin"))
-        {
-            <dt class="col-sm-2">
-                Role Admin
-            </dt>
-            <dd class="col-sm-10">
-                True
-                <p>If someone is in role and you choose that role it removes that role</p>
-            </dd>
-
-        }
-    </dl>
-    <p>
-        <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Venue" class="btn btn-primary">Venue</a><br />
-        <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Admin" class="btn btn-primary">Admin</a><br />
-    </p>
-</div>
-<div>   
-    <a asp-action="Index" asp-controller="Home">Back to List</a>
+    <div class="mt-4 text-center">
+        <a asp-action="Index" asp-controller="Home"
+           class="text-sm text-blue-600 hover:underline">
+            Back to List
+        </a>
+    </div>
 </div>

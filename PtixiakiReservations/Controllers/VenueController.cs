@@ -37,6 +37,7 @@ namespace PtixiakiReservations.Controllers
         }
 
         // GET: Shops
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index(string city)
         {
             var venues =  _context.Venue.Include(v => v.City).ToList();
@@ -51,6 +52,7 @@ namespace PtixiakiReservations.Controllers
         }
 
         // GET: Shops/Details/5
+        [Authorize(Roles = "Admin")]
         [Authorize(Roles = "Venue")]
         public IActionResult Edit()
         {
@@ -88,8 +90,10 @@ namespace PtixiakiReservations.Controllers
             
             return View(viewModel);
         }
+        
         [HttpPost]
         [Obsolete]
+        [Authorize(Roles = "Admin")]
         [Authorize(Roles = "Venue")]
         public async Task<IActionResult> Edit(VenueViewModel model)
         {
@@ -149,6 +153,7 @@ namespace PtixiakiReservations.Controllers
 
         // GET: Shops/Create
         [Authorize(Roles = "Venue")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             string id = userManager.GetUserId(HttpContext.User);
@@ -249,6 +254,7 @@ namespace PtixiakiReservations.Controllers
         }
 
         // POST: Shops/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

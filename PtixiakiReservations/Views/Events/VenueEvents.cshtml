@@ -3,13 +3,16 @@
     ViewBag.Title = Model.Name;
 }
 
-    <h2>@ViewBag.Title</h2>
-<div id="calender"></div>
+<div class="max-w-7xl mx-auto p-6">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">@ViewBag.Title</h2>
+
+    <div id="calender" class="bg-white shadow-lg rounded-lg p-6"></div>
+</div>
 
 <link href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.min.css" rel="stylesheet" />
 <link href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.print.css" rel="stylesheet" media="print" />
 
-@section Scripts{
+@section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.min.js"></script>
 
@@ -18,7 +21,7 @@
             var events = [];
             $.ajax({
                 type: "GET",
-                url: '@Url.Action("GetEvents2", "Events",new { venueId = Model.Id })',               
+                url: '@Url.Action("GetEvents2", "Events", new { venueId = Model.Id })',
                 success: function (data) {
                     $.each(data, function (i, v) {
                         events.push({
@@ -32,7 +35,7 @@
                     GenerateCalender(events);
                 },
                 error: function (error) {
-                    alert('failed');
+                    alert('Failed to load events.');
                 },
                 accept: 'application/json'
             })
@@ -45,19 +48,18 @@
                     timeFormat: 'h(:mm)a',
                     header: {
                         left: 'prev,next today',
-                        center: 'Name',
+                        center: 'title', // Adjusted to display "Name" properly
                         right: 'month,basicWeek,basicDay,agenda'
                     },
                     eventLimit: true,
-                    eventColor: '#378006',
+                    eventColor: '#1a73e8', // Updated to a Tailwind-compatible blue color
                     events: events,
                     eventClick: function (calEvent, jsEvent, view) {
-                        var url = "/Reservation/Create?VenueId="+ @Model.Id +"&EventId=" + calEvent.id;
+                        var url = "/Reservation/Create?VenueId=" + @Model.Id + "&EventId=" + calEvent.id;
                         window.location.href = url;
                     }
                 })
             }
         });
-
     </script>
 }

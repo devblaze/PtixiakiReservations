@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
 using PtixiakiReservations.Models.ViewModels;
+using PtixiakiReservations.Services;
 
 namespace PtixiakiReservations.Controllers
 {
@@ -18,11 +19,17 @@ namespace PtixiakiReservations.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
-        public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        private readonly IElasticSearch _elasticSearchService;
+        
+        public EventsController(ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<ApplicationRole> roleManager,
+            IElasticSearch elasticSearchService)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _elasticSearchService = elasticSearchService;
         }
 
         // GET: Events
@@ -326,7 +333,6 @@ namespace PtixiakiReservations.Controllers
             }
             if (dAll == true)
             {
-                
                 var familyEvents = _context.Event.Include(r => r.FamilyEvent).Include(r => r.EventType)
                     .Where(e => e.FamilyEventId == ev.FamilyEventId).ToList();
                 foreach(var @event in familyEvents)
@@ -334,16 +340,13 @@ namespace PtixiakiReservations.Controllers
                     var hasReservations = _context.Reservation.Where(r => r.EventId == @event.Id).ToList();
                     _context.Reservation.RemoveRange(hasReservations);
                 }
-                     _context.Event.RemoveRange(familyEvents);                
+                _context.Event.RemoveRange(familyEvents);                
             }                         
-                else
-                {
-                    var hasReservations = _context.Reservation.Where(r => r.EventId == ev.Id).ToList();
-                    if (hasReservations != null)
-                {
-                    _context.Reservation.RemoveRange(hasReservations);
-                }
-                    _context.Event.Remove(ev);
+            else
+            {
+                var hasReservations = _context.Reservation.Where(r => r.EventId == ev.Id).ToList();
+                _context.Reservation.RemoveRange(hasReservations);
+                _context.Event.Remove(ev);
                 
             }
 
@@ -355,6 +358,37 @@ namespace PtixiakiReservations.Controllers
         private bool EventExists(int id)
         {
             return _context.Event.Any(e => e.Id == id);
+        }
+
+        // Index events into Elasticsearch
+        [HttpPost]
+        public async Task<IActionResult> IndexEventsToElastic()
+        {
+            var events = new List<Event>
+            {
+                new Event
+                {
+                    Id = 1, Name = "Concert", StartDateTime = DateTime.Now, EndTime = DateTime.Now.AddHours(2)
+                },
+                new Event
+                {
+                    Id = 2, Name = "Conference", StartDateTime = DateTime.Now.AddDays(1),
+                    EndTime = DateTime.Now.AddDays(1).AddHours(3)
+                }
+            };
+
+            await _elasticSearchService.CreateIndexIfNotExistsAsync("events");
+            var result = await _elasticSearchService.AddOrUpdateBulkAsync(events, "events");
+
+            return result ? Ok("Events indexed successfully!") : BadRequest("Failed to index events.");
+        }
+
+        // Search events
+        [HttpGet]
+        public async Task<IActionResult> SearchEvents(string query)
+        {
+            var results = await _elasticSearchService.SearchAsync<Event>(query, "events");
+            return View(results);
         }
     }
 }
