@@ -38,18 +38,18 @@ namespace PtixiakiReservations.Controllers
             return View();
         }
 
-        public async Task<IActionResult> EventsForToday(String City)
+        public async Task<IActionResult> EventsForToday(String city)
         {
             var applicationDbContext = _context.Event
                 .Include(r => r.FamilyEvent)
                 .Include(r => r.Venue)
                 .Where(e => e.StartDateTime.Date == DateTime.Now.Date && e.EndTime.TimeOfDay > DateTime.Now.TimeOfDay);
-            if (City == null)
+            if (city == null)
             {
                 return View(await applicationDbContext.ToListAsync());
             }
 
-            applicationDbContext = applicationDbContext.Where(r => r.Venue.City.Name == City);
+            applicationDbContext = applicationDbContext.Where(r => r.Venue.City.Name == city);
 
             return View(await applicationDbContext.ToListAsync());
         }

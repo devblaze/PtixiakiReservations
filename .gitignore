@@ -86,3 +86,7 @@ fabric.properties
 PtixiakiReservations/obj/Debug/net8.0/
 
 PtixiakiReservations/bin/Release/net8.0/
+
+*.dll
+
+PtixiakiReservations.Tests/bin/Debug/net8.0/

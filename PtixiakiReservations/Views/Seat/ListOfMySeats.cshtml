@@ -2,59 +2,70 @@
 
 @{
     ViewData["Title"] = "ListOfMySeats";
-
 }
-    <h1>List Of My Seats</h1>
-<table class="table">
-    <thead>
+
+<h1 class="text-2xl font-bold text-gray-800 mb-6">List Of My Seats</h1>
+
+<div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-300 bg-white shadow-md rounded-lg overflow-hidden">
+        <thead class="bg-gray-100">
         <tr>
-            <th>
+            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
                 @Html.DisplayNameFor(model => model.Name)
             </th>
-            <th>
+            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
                 @Html.DisplayNameFor(model => model.SubArea)
             </th>
-            <th>
+            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
                 @Html.DisplayNameFor(model => model.Available)
             </th>
+            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                Actions
+            </th>
         </tr>
-    </thead>
-    <tbody>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
         @foreach (var item in Model)
         {
-            
             <tr>
-                <td>
+                <td class="px-6 py-4 text-sm text-gray-800">
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
-                <td>
+                <td class="px-6 py-4 text-sm text-gray-800">
                     @Html.DisplayFor(modelItem => item.SubArea.AreaName)
                 </td>
-                <td>
+                <td class="px-6 py-4 text-sm">
                     @if (item.Available == true)
                     {
-                        <button class="btn btn-success"> <a asp-action="ChangeAvailable" asp-route-Flag="False" asp-route-ID="@item.Id"> Free </a></button>
+                        <a asp-action="ChangeAvailable" asp-route-Flag="False" asp-route-ID="@item.Id"
+                           class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm hover:bg-green-200">
+                            Free
+                        </a>
                     }
                     else
                     {
-                        <button class="btn btn-danger"> <a asp-action="ChangeAvailable" asp-route-Flag="True" asp-route-ID="@item.Id"> Not Free </a></button>
+                        <a asp-action="ChangeAvailable" asp-route-Flag="True" asp-route-ID="@item.Id"
+                           class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm hover:bg-red-200">
+                            Not Free
+                        </a>
                     }
-
                 </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
+                <td class="px-6 py-4 flex space-x-4 text-sm">
+                    <a asp-action="Edit" asp-route-id="@item.Id"
+                       class="text-blue-600 hover:text-blue-800">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id"
+                       class="text-red-600 hover:text-red-800">Delete</a>
                 </td>
             </tr>
         }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
-@section Scripts{ 
+@section Scripts{
     <script>
         $(function () {
             $('#t').bootstrapToggle();
         })
     </script>
-
 }

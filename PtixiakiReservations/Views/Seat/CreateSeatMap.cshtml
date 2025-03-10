@@ -4,85 +4,90 @@
     ViewData["Title"] = "Create Seat Map";
 }
 
-    <h1>Create Seat Map</h1>
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Create Seat Map</h1>
 
-<div class="row">
-    <div class="col-md-4">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <!-- Form Section -->
+    <div class="sm:col-span-1 bg-white shadow-md rounded-md p-6 space-y-4">
+        <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="form-group">         
-            Create  Rows  <input type="number" value="0"  class="form-control" id="Row" />
-            Create  Cols  <input type="number" value="0" class="form-control" id="Col" />
+        <div class="form-group mb-4">
+            <label for="Row" class="block text-sm font-medium text-gray-700 mb-2">Create Rows</label>
+            <input type="number" value="0" class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500" id="Row" />
         </div>
-        <div class="form-group">
-            <input type="submit" value="Create" class="btn btn-primary" id="create" />
-            <input type="submit" value="Save" class="btn btn-primary" id="save" />
+
+        <div class="form-group mb-4">
+            <label for="Col" class="block text-sm font-medium text-gray-700 mb-2">Create Columns</label>
+            <input type="number" value="0" class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500" id="Col" />
         </div>
+
+        <!-- Buttons -->
+        <div class="flex space-x-3">
+            <button type="button" id="create" class="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Create</button>
+            <button type="button" id="save" class="btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Save</button>
         </div>
     </div>
-        <canvas id="c" width="600" height="600" style="border:1px solid #000000;"></canvas>
- @section Scripts{
-            <script>
-                var canvas = new fabric.Canvas('c');             
-                $("#create").click(function () {
-                    if ($("#Row").val() != 0 && $("#Col").val() != 0) {
-                        var nextRow = 0;
-                         var nextCol = 0; 
-                        for (var r = 0; r < $("#Row").val(); r++) { 
-                            nextRow = 0;
-                            console.log("row:"+r);
-                            for (var c = 0; c < $("#Col").val(); c++) {
-                                 console.log("col:"+c);
-                                var name = "Row:" + r + "-Col:" + c;
 
-                                var rect = new fabric.Rect({
-                                    width: 50,
-                                    height: 50,
-                                    left: 100 + nextRow,
-                                    top: 100 +nextCol,
-                                    fill: 'grey',
-                                    scaleY: 0.5,
-                                    id:name,
-                                    originX: 'center',
-                                    originY: 'center'
+    <!-- Canvas Section -->
+    <div class="sm:col-span-2 flex items-center justify-center">
+        <canvas id="c" width="600" height="600" class="border border-gray-300 rounded-md shadow-md"></canvas>
+    </div>
+</div>
 
-                                });
-                                nextRow = nextRow + 60;   
-                                canvas.add(rect);
-                            }                           
-                            nextCol = nextCol+35;
-                        }
-                     } 
-                });
+@section Scripts {
+    <script>
+        var canvas = new fabric.Canvas('c');
+        $("#create").click(function () {
+            if ($("#Row").val() != 0 && $("#Col").val() != 0) {
+                var nextRow = 0;
+                var nextCol = 0;
+                for (var r = 0; r < $("#Row").val(); r++) {
+                    nextRow = 0;
+                    for (var c = 0; c < $("#Col").val(); c++) {
+                        var name = "Row:" + r + "-Col:" + c;
 
-                $("#save").click(function () {
-                    var tmp = {};
-                     var seats = [];                   
-                    
-                     var canvasObjects = canvas.getObjects();
-                    for (obj in canvasObjects) {                     
-                      if (canvasObjects[obj].get('type') == 'rect') {
-                          tmp.top = canvasObjects[obj].get('top');  
-                          tmp.left = canvasObjects[obj].get('left'); 
-                          tmp.Name = canvasObjects[obj].get('id');   
-                          seats.push(tmp);
-                          
-                            tmp = {};
-                        }         
+                        var rect = new fabric.Rect({
+                            width: 50,
+                            height: 50,
+                            left: 100 + nextRow,
+                            top: 100 + nextCol,
+                            fill: 'grey',
+                            scaleY: 0.5,
+                            id: name,
+                            originX: 'center',
+                            originY: 'center'
+                        });
+                        nextRow = nextRow + 60;
+                        canvas.add(rect);
                     }
-                    console.log(JSON.stringify(seats));
-                  $.ajax(
-                 {
-                    type: "post",
-                    url: '@Url.Action("CreateTableMap", "Seat",new { subAreaId = ViewBag.subAreaId })',
-                   dataType: 'json',
-                          contentType: 'application/json; charset=utf-8',
-                          data: JSON.stringify(seats),                   
-                          success: function (data) { alert("saved"); },
-                          error: function (data) { alert("fail to save");},
-                    accept: 'application/json'
-                    })
-                });         
-            </script>
- }
+                    nextCol = nextCol + 35;
+                }
+            }
+        });
 
+        $("#save").click(function () {
+            var tmp = {};
+            var seats = [];
+            var canvasObjects = canvas.getObjects();
+            for (obj in canvasObjects) {
+                if (canvasObjects[obj].get('type') == 'rect') {
+                    tmp.top = canvasObjects[obj].get('top');
+                    tmp.left = canvasObjects[obj].get('left');
+                    tmp.Name = canvasObjects[obj].get('id');
+                    seats.push(tmp);
+                    tmp = {};
+                }
+            }
+            $.ajax({
+                type: "post",
+                url: '@Url.Action("CreateTableMap", "Seat", new { subAreaId = ViewBag.subAreaId })',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(seats),
+                success: function (data) { alert("Saved"); },
+                error: function (data) { alert("Failed to save"); },
+                accept: 'application/json'
+            });
+        });
+    </script>
+}
