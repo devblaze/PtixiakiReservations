@@ -32,82 +32,107 @@
         </button>
     </div>
 
-    <!-- Canvas -->
+    <!-- Seat Input Section -->
+    <div class="mb-4 flex gap-4">
+        <div>
+            <label for="Row" class="block text-sm font-medium text-gray-700">Rows</label>
+            <input type="number" id="Row" class="block w-full px-3 py-2 border rounded-md" min="1" value="1" />
+        </div>
+        <div>
+            <label for="Col" class="block text-sm font-medium text-gray-700">Columns</label>
+            <input type="number" id="Col" class="block w-full px-3 py-2 border rounded-md" min="1" value="1" />
+        </div>
+    </div>
+
+    <!-- Canvas Section -->
     <div class="mt-6">
         <h4 class="text-lg font-medium text-gray-700 mb-2">Canvas</h4>
         <canvas id="c" width="600" height="600" class="border border-gray-400"></canvas>
     </div>
 </div>
 
-@section Scripts{
+@section Scripts {
     <script>
-        var canvas = new fabric.Canvas('c');
-        $("#create").click(function () {
-            var rect = new fabric.Rect({
-                width: 100,
-                height: 100,
-                fill: '#eef',
-                scaleY: 0.5,
-                originX: 'center',
-                originY: 'center'
-            });
-            var name = $("#name").val();
+        $(document).ready(function () {
+            // Initialize Fabric.js Canvas
+            var canvas = new fabric.Canvas('c');
 
-            var text = new fabric.Text(name, {
-                fontSize: 15,
-                originX: 'center',
-                originY: 'center',
-                selectable: false
-            });
+            /*** Constants for Seat Positioning ***/
+            const SEAT_SIZE = 50; // Size of each seat (square)
+            const SEAT_SPACING = 30; // Space between seats
 
-            var group = new fabric.Group([rect, text], {
-                left: 150,
-                top: 100,
-                subTargetCheck: true,
-                hasControls: true,
-                id: name,
-                angle: 0
-            });
-            group.on('mouse:down', function () {
-                console.log("rect:");
-                console.log(rect.getWidth());
-                console.log(rect.get('height'));
-            });
+            // Create Seats Functionality
+            $("#create").click(function () {
+                const rows = parseInt($("#Row").val());
+                const cols = parseInt($("#Col").val());
+                const startX = 50; // Initial x position
+                const startY = 50; // Initial y position
 
-            canvas.add(group);
-            canvas.add(text);
-        });
+                if (rows > 0 && cols > 0) {
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            const x = startX + c * (SEAT_SIZE + SEAT_SPACING);
+                            const y = startY + r * (SEAT_SIZE + SEAT_SPACING);
 
-        $("#save").click(function () {
-            var tmp = {};
-            var SubAreas = [];
+                            // Create seat as a rectangle
+                            const rect = new fabric.Rect({
+                                left: x,
+                                top: y,
+                                width: SEAT_SIZE,
+                                height: SEAT_SIZE,
+                                fill: "#666",
+                                originX: "center",
+                                originY: "center",
+                            });
 
-            var canvasObjects = canvas.getObjects();
-            for (obj in canvasObjects) {
-                if (canvasObjects[obj].get('type') === 'group') {
-                    tmp.Top = canvasObjects[obj].get('top');
-                    tmp.Left = canvasObjects[obj].get('left');
-                    tmp.AreaName = canvasObjects[obj].get('id');
-                    tmp.Rotate = canvasObjects[obj].get('angle');
-                    tmp.Width = canvasObjects[obj].getScaledWidth();
-                    tmp.Height = canvasObjects[obj].getScaledHeight();
+                            // Create text label
+                            const text = new fabric.Text(`R:${r + 1}-C:${c + 1}`, {
+                                left: x,
+                                top: y + SEAT_SIZE / 2 + 10, // Offset text below rectangle
+                                fontSize: 14,
+                                fill: "#fff",
+                                originX: "center",
+                                originY: "center",
+                            });
+
+                            // Group seat and label together
+                            const group = new fabric.Group([rect, text], {
+                                left: x,
+                                top: y,
+                                hasControls: true, // Allow resizing/moving
+                                hasBorders: true,
+                            });
+
+                            canvas.add(group); // Add to canvas
+                        }
+                    }
                 }
-                if (canvasObjects[obj].get('type') === 'text') {
-                    tmp.AreaName = canvasObjects[obj].get('text');
-                    SubAreas.push(tmp);
-                    tmp = {};
-                }
-            }
-            $.ajax({
-                type: "Post",
-                url: '@Url.Action("Create", "SubAreas")',
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify(SubAreas),
-                success: function (data) { alert("saved"); },
-                error: function (data) { alert("fail to save"); },
-                accept: 'application/json'
+
+                canvas.renderAll(); // Render changes
+            });
+
+            // Save Seats Functionality
+            $("#save").click(function () {
+                const seatData = [];
+                canvas.getObjects().forEach((obj) => {
+                    if (obj.type === 'group') {
+                        const rect = obj.item(0); // Seat rectangle
+                        const text = obj.item(1); // Seat label
+
+                        seatData.push({
+                            name: text.text, // Seat name
+                            width: rect.width * rect.scaleX, // Scaled width
+                            height: rect.height * rect.scaleY, // Scaled height
+                            x: obj.left, // Position left
+                            y: obj.top, // Position top
+                        });
+                    }
+                });
+
+                console.log("Serialized Seat Data:", JSON.stringify(seatData));
+                // You can POST seatData to your server or backend here
             });
         });
     </script>
+
 }

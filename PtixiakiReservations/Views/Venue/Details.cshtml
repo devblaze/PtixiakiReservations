@@ -4,74 +4,93 @@
 @{
     ViewData["Title"] = "Details";
     var photopath = "~/images/" + (Model.imgUrl ?? "noimage.jpg");
-    var ViewBag = Model.Address + Model.City;
 }
 
-<h1>Details</h1>
+<div class="bg-gray-100 min-h-screen py-8 px-4 sm:px-8">
+    <!-- Venue Details Card -->
+    <div class="bg-white shadow-lg rounded-lg p-6">
+        <!-- Venue Heading -->
+        <div class="mb-8 text-center">
+            <h2 class="text-2xl font-medium text-gray-900 mb-2">@Model.Name</h2>
+            <img class="mt-4 mx-auto h-40 w-40 rounded-md object-cover" src=@photopath asp-append-version="true"
+                 alt="@Model.Name" />
+        </div>
 
-<div onload="initMap()">
-    <h4>Venue</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.City)
-        </dt>
-        <dd class="col-sm-10">
-           @Html.DisplayFor(model => model.City.Name)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.PostalCode)
-        </dt>
-        <dd class="col-sm-10">
-             @Html.DisplayFor(model => model.PostalCode)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Phone)            
-        <dt class="col-sm-12">
-            <img class="card-img h-50  w-25" src=@photopath asp-append-version="true" />
-        </dt>
-    </dl>
-    <div id="map" style="width: 600px;height: 400px;border: 1px solid #333">
+        <!-- Venue Information -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4">
+            <!-- Name -->
+            <div>
+                <p class="text-sm font-semibold text-gray-500">@Html.DisplayNameFor(model => model.Name):</p>
+                <p class="text-gray-800">@Html.DisplayFor(model => model.Name)</p>
+            </div>
+            <!-- Address -->
+            <div>
+                <p class="text-sm font-semibold text-gray-500">@Html.DisplayNameFor(model => model.Address):</p>
+                <p class="text-gray-800">@Html.DisplayFor(model => model.Address)</p>
+            </div>
+            <!-- City -->
+            <div>
+                <p class="text-sm font-semibold text-gray-500">@Html.DisplayNameFor(model => model.City):</p>
+                <p class="text-gray-800">@Html.DisplayFor(model => model.City.Name)</p>
+            </div>
+            <!-- Postal Code -->
+            <div>
+                <p class="text-sm font-semibold text-gray-500">@Html.DisplayNameFor(model => model.PostalCode):</p>
+                <p class="text-gray-800">@Html.DisplayFor(model => model.PostalCode)</p>
+            </div>
+            <!-- Phone -->
+            <div>
+                <p class="text-sm font-semibold text-gray-500">@Html.DisplayNameFor(model => model.Phone):</p>
+                <p class="text-gray-800">@Html.DisplayFor(model => model.Phone)</p>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="mt-6">
+            <div class="w-full h-72 bg-gray-200 border border-gray-300" id="map"></div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="mt-8 flex justify-between items-center">
+            <a asp-controller="Events" asp-action="VenueEvents" asp-route-venueId="@Model.Id"
+               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                View All Events
+            </a>
+            <a asp-controller="Reservation" asp-action="Create" asp-route-venueId="@Model.Id"
+               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                Make a Reservation
+            </a>
+            <a asp-action="Index" asp-route-id="@Html.DisplayFor(model => model.City)"
+               class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">
+                Back to List
+            </a>
+        </div>
     </div>
-</div>
-<div>
-     <a asp-controller="Events" asp-action="VenueEvents" asp-route-venueId="@Model.Id"> All Events </a> <br/>
-    <a asp-controller="Reservation" asp-action="Create" asp-route-venueId="@Model.Id">Reservation</a>
-    <br><a asp-action="Index"  asp-route-id=@Html.DisplayFor(model =>model.City)>Back to List</a>
 </div>
 
 @section Scripts {
     <script>
         var geocoder;
         var map;
-        var address = document.getElementById("address").innerHTML + " "+ document.getElementById("address2").innerHTML +  " "+ document.getElementById("address3").innerHTML;
+        var address = document.getElementById("address")?.innerHTML + " "
+            + document.getElementById("address2")?.innerHTML + " "
+            + document.getElementById("address3")?.innerHTML;
+
         console.log(address);
+
         function initMap() {
             var map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 8,
                 center: { lat: -34.397, lng: 150.644 }
             });
-          //  geocoder = new google.maps.Geocoder();
-          //  codeAddress(geocoder, map);
+            // Uncomment below code to use Google Maps API (needs API key)
+            // geocoder = new google.maps.Geocoder();
+            // codeAddress(geocoder, map);
         }
 
-        //need payment
-      /*  function codeAddress(geocoder, map) {
+        // Uncomment below if enabling geocoding
+        /*  
+        function codeAddress(geocoder, map) {
             geocoder.geocode({ 'address': address }, function (results, status) {
                 if (status === 'OK') {
                     map.setCenter(results[0].geometry.location);
@@ -83,6 +102,7 @@
                     alert('Geocode was not successful for the following reason: ' + status);
                 }
             });
-        } */
+        }
+        */
     </script>
 }

@@ -116,8 +116,12 @@
 </div>
 
 <script>
-    // Example toggle function for modals
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('myModal');
+        if (modal) {
+            modal.addEventListener('click', function() {
+                console.log('Modal clicked!');
+            });
+        }
+    });
 </script>

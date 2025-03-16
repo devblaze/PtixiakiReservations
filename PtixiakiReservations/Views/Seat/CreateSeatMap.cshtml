@@ -36,57 +36,83 @@
 
 @section Scripts {
     <script>
-        var canvas = new fabric.Canvas('c');
-        $("#create").click(function () {
-            if ($("#Row").val() != 0 && $("#Col").val() != 0) {
-                var nextRow = 0;
-                var nextCol = 0;
-                for (var r = 0; r < $("#Row").val(); r++) {
-                    nextRow = 0;
-                    for (var c = 0; c < $("#Col").val(); c++) {
-                        var name = "Row:" + r + "-Col:" + c;
+        $(document).ready(function() {
+            var canvas = new fabric.Canvas('c');
 
-                        var rect = new fabric.Rect({
-                            width: 50,
-                            height: 50,
-                            left: 100 + nextRow,
-                            top: 100 + nextCol,
-                            fill: 'grey',
-                            scaleY: 0.5,
-                            id: name,
-                            originX: 'center',
-                            originY: 'center'
-                        });
-                        nextRow = nextRow + 60;
-                        canvas.add(rect);
+            // Set initial position based on canvas dimensions
+            const INITIAL_POSITION_X = 50;
+            const INITIAL_POSITION_Y = 50;
+
+            $("#create").click(function() {
+                if ($("#Row").val() != 0 && $("#Col").val() != 0) {
+                    var nextX = INITIAL_POSITION_X;
+                    var nextY = INITIAL_POSITION_Y;
+
+                    for (let r = 0; r < parseInt($("#Row").val()); r++) {
+                        nextY = INITIAL_POSITION_Y + r * (50 + 30); // 50 is seat size, 30 is spacing
+
+                        for (let c = 0; c < parseInt($("#Col").val()); c++) {
+                            var name = `Row:${r + 1}-Col:${c + 1}`;
+
+                            fabric.Rect.create({
+                                width: 50,
+                                height: 50,
+                                left: nextX + c * (50 + 30),
+                                top: nextY,
+                                fill: '#666',
+                                scaleY: 0.5,
+                                id: name,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+
+                            // Add text
+                            fabric.Text.create({
+                                text: name,
+                                fontSize: 14,
+                                left: nextX + c * (50 + 30),
+                                top: nextY + 25,
+                                fill: '#fff',
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                        }
                     }
-                    nextCol = nextCol + 35;
-                }
-            }
-        });
 
-        $("#save").click(function () {
-            var tmp = {};
-            var seats = [];
-            var canvasObjects = canvas.getObjects();
-            for (obj in canvasObjects) {
-                if (canvasObjects[obj].get('type') == 'rect') {
-                    tmp.top = canvasObjects[obj].get('top');
-                    tmp.left = canvasObjects[obj].get('left');
-                    tmp.Name = canvasObjects[obj].get('id');
-                    seats.push(tmp);
-                    tmp = {};
+                    canvas.renderAll();
                 }
-            }
-            $.ajax({
-                type: "post",
-                url: '@Url.Action("CreateTableMap", "Seat", new { subAreaId = ViewBag.subAreaId })',
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify(seats),
-                success: function (data) { alert("Saved"); },
-                error: function (data) { alert("Failed to save"); },
-                accept: 'application/json'
+            });
+
+            // Add interactivity
+            canvas.on('mouse:move', function(options) {
+                if (options.target && options.target.isSelected) {
+                    var newActiveObject = canvas.getActiveObjects()[0];
+                    newActiveObject.setCoords();
+                }
+            });
+
+            $("#save").click(function() {
+                const seats = [];
+
+                // Proper iteration using forEach
+                canvas.getObjects().forEach(obj => {
+                    if (obj.type === 'rect') {
+                        seats.push({
+                            id: obj.id,
+                            top: obj.top,
+                            left: obj.left,
+                            name: obj.name
+                        });
+                    }
+                });
+
+                $.ajax({
+                    type: "post",
+                    url: '@Url.Action("CreateTableMap", "Seat", new { subAreaId = ViewBag.subAreaId })',
+                    data: JSON.stringify(seats),
+                    success: function() { alert("Saved successfully"); },
+                    error: function() { alert("Failed to save"); }
+                });
             });
         });
     </script>
