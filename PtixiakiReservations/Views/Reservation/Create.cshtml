@@ -1,103 +1,126 @@
 ﻿@model PtixiakiReservations.Models.Event
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Reservation";
 }
 
-<h1>Create</h1>
+<div class="container mx-auto my-10 bg-white shadow rounded-lg p-6 dark:bg-gray-800">
+    <h1 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Create new Reservation</h1>
+    <div class="border-b border-gray-300 dark:border-gray-700 mb-5"></div>
 
-<h4>Reservation</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        Start Time -End Time:<input class="form-control" type="datetime" id="date" value="@Model.StartDateTime-@Model.EndTime.TimeOfDay" readonly="readonly" />
-        <input class="form-control" type="hidden" id="startTime" value="@Model.StartDateTime.TimeOfDay" readonly="readonly" />
-        <input class="form-control" type="hidden" id="endTime" value="@Model.EndTime.TimeOfDay" readonly="readonly" />
-        <div class="col-md-6">
-            Start Time:<input class="form-control" type="time" id="StartTime" />From Start: <input type="checkbox" id="StartCheck" />
-            <br />End Time:<input class="form-control" type="time" id="EndTime" />Until End: <input type="checkbox" id="EndCheck" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Date & Time Information -->
+        <div class="col-span-1">
+            <label class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Start and End Time</label>
+            <input class="form-input w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200" type="text" id="date" value="@Model.StartDateTime - @Model.EndTime.TimeOfDay" readonly />
+
+            <input class="hidden" type="hidden" id="startTime" value="@Model.StartDateTime.TimeOfDay" />
+            <input class="hidden" type="hidden" id="endTime" value="@Model.EndTime.TimeOfDay" />
+        </div>
+
+        <!-- Select Time inputs -->
+        <div class="col-span-1 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow">
+            <label class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Reservation Time</label>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400">Start Time</label>
+                <div class="flex items-center space-x-3">
+                    <input class="form-input w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-200" type="time" id="StartTime" />
+                    <div class="flex items-center">
+                        <input type="checkbox" id="StartCheck" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                        <label for="StartCheck" class="ml-2 text-sm text-gray-600 dark:text-gray-400">From Start</label>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-400">End Time</label>
+                <div class="flex items-center space-x-3">
+                    <input class="form-input w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-200" type="time" id="EndTime" />
+                    <div class="flex items-center">
+                        <input type="checkbox" id="EndCheck" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                        <label for="EndCheck" class="ml-2 text-sm text-gray-600 dark:text-gray-400">Until End</label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<div>
-    <input type="submit" value="Choose Sub Area" class="btn btn-primary" id="goto" />  
+    <!-- Buttons and additional actions -->
+    <div class="flex justify-end mt-6">
+        <button id="goto" class="px-5 py-2 inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow transition duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Choose Sub Area
+        </button>
+    </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-<script>
 
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const venueId = urlParams.get('VenueId');
+        const EventId = urlParams.get('EventId');
 
-    const qstr = window.location.search;
-    const urlParams = new URLSearchParams(qstr);
-    const venueId = urlParams.get('VenueId');
-    const EventId = urlParams.get('EventId');
+        function msToTime(s) {
+            var ms = s % 1000;
+            s = (s - ms) / 1000;
+            var secs = s % 60;
+            s = (s - secs) / 60;
+            var mins = s % 60;
+            var hrs = (s - mins) / 60;
+            return hrs + ':' + mins;
+        }
 
+        $("#goto").click(function () {
+            var StartTime = 0;
+            var EndTime = 0;
+            var date = 0;
+            EndTime = $("#endTime").val();
+            date = '@Model.StartDateTime.ToString("yyyy-MM-dd")';
+            date = new Date(date);
+            date.setHours(@Model.EndTime.Hour);
+            date.setMinutes(@Model.EndTime.Minute);
 
-    function msToTime(s) {
-    var ms = s % 1000;
-    s = (s - ms) / 1000;
-    var secs = s % 60;
-    s = (s - secs) / 60;
-    var mins = s % 60;
-    var hrs = (s - mins) / 60;
-
-    return hrs + ':' + mins;
-}
-    $("#goto").click(function () {
-        var StartTime = 0;
-        var EndTime = 0;
-        var date = 0;
-        EndTime = $("#endTime").val();
-        date =  @Model.StartDateTime.Year + "-" + @Model.StartDateTime.Month +"-" + @Model.StartDateTime.Day;
-        date = new Date(date);
-        date = date.setHours(date.getHours() + @Model.EndTime.Hour );
-        date = new Date(date);
-        date= date.setMinutes(date.getMinutes() + @Model.EndTime.Minute );
-        if (new Date() > new Date(date)) {
-            alert("This event has passed");
-            
-        } else {
-            if ($("#StartTime").val() != 0 && $("#StartCheck").is(':checked')) {
-                alert("Check the Box Or Fill the Time");
-            } else
-                if ($("#StartTime").val() != 0) {
+            if (new Date() > date) {
+                alert("This event has passed");
+            } else {
+                if ($("#StartTime").val() && $("#StartCheck").is(':checked')) {
+                    alert("Check the box or fill the time (start)");
+                    return;
+                } else if ($("#StartTime").val()) {
                     StartTime = $("#StartTime").val();
-                    date =  @Model.StartDateTime.Year + "-" + @Model.StartDateTime.Month +"-" + @Model.StartDateTime.Day +"T" + StartTime;
                 } else if ($("#StartCheck").is(':checked')) {
                     StartTime = $("#startTime").val();
-
-                    console.log(StartTime);
-                    date =  @Model.StartDateTime.Year + "-" + @Model.StartDateTime.Month +"-" + @Model.StartDateTime.Day +"T" + StartTime;
-                    console.log(date);
                 }
-            if ($("#EndTime").val() != 0 && $("#EndCheck").is(':checked')) {
-                alert("Check the Box Or Fill the Time");
-            } else
-                if ($("#EndTime").val() != 0) {
+
+                if ($("#EndTime").val() && $("#EndCheck").is(':checked')) {
+                    alert("Check the box or fill the time (end)");
+                    return;
+                } else if ($("#EndTime").val()) {
                     EndTime = $("#EndTime").val();
                 } else if ($("#EndCheck").is(':checked')) {
-                    EndTime = @Model.EndTime.Hour +':' +@Model.EndTime.Minute;
+                    EndTime = $("#endTime").val();
                 }
-            if (StartTime == 0 || EndTime == 0) {
-                alert("Fill start time and end time or check the boxes");
-            }
-            else {
+
+                if (!StartTime || !EndTime) {
+                    alert("Fill start and end times or check the boxes");
+                    return;
+                }
+
                 var timeStart = new Date("01/01/2007 " + StartTime);
                 var timeEnd = new Date("01/01/2007 " + EndTime);
                 var difference = timeEnd - timeStart;
                 var Duration = msToTime(difference);
+
                 if (difference < 0) {
-                    alert("your end time must higer than your start");
+                    alert("End time must be greater than start time");
                 } else {
-                    var url = "/SubAreas/ChooseSubArea?VenueId=" + venueId + "&EventId=" + @Model.Id + "&Duration=" + Duration + "&ResDate=" + date;
-                       window.location.href = url;
+                    var reservationDate = '@Model.StartDateTime.ToString("yyyy-MM-dd")' + "T" + StartTime;
+                    var url = `/SubAreas/ChooseSubArea?VenueId=${venueId}&EventId=@Model.Id&Duration=${Duration}&ResDate=${reservationDate}`;
+                    window.location.href = url;
                 }
             }
-        }
         });
-
-</script>
-
+    </script>
 }

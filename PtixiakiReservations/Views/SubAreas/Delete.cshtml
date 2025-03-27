@@ -1,33 +1,37 @@
 ﻿@model PtixiakiReservations.Models.SubArea
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Confirm Delete";
+    Layout = "_Layout"; // Set this to your layout if it's missing
 }
 
-<h1>Delete</h1>
+<div class="max-w-3xl mx-auto my-10 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Confirm Delete</h1>
+    <p class="text-gray-600 dark:text-gray-400 mb-6">Are you sure you want to delete this SubArea? This action cannot be undone.</p>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>SubArea</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AreaName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AreaName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Desc)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Desc)
-        </dd>
-    </dl>
-    
+    <div class="border-t border-b border-gray-200 dark:border-gray-700 py-4 mb-6">
+        <dl class="divide-y divide-gray-200 dark:divide-gray-700">
+            <div class="py-3 flex items-center">
+                <dt class="w-1/3 text-sm font-semibold text-gray-700 dark:text-gray-200">Area Name:</dt>
+                <dd class="w-2/3 text-sm text-gray-800 dark:text-gray-300">@Html.DisplayFor(model => model.AreaName)</dd>
+            </div>
+
+            <div class="py-3 flex items-center">
+                <dt class="w-1/3 text-sm font-semibold text-gray-700 dark:text-gray-200">Description:</dt>
+                <dd class="w-2/3 text-sm text-gray-800 dark:text-gray-300">@Html.DisplayFor(model => model.Desc)</dd>
+            </div>
+        </dl>
+    </div>
+
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <div class="flex justify-between items-center">
+            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none">
+                Delete Permanently
+            </button>
+            <a asp-action="Index" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-200">
+                Cancel
+            </a>
+        </div>
     </form>
 </div>

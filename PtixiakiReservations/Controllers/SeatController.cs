@@ -34,6 +34,7 @@ namespace PtixiakiReservations.Controllers
 
             return View();
         }
+        
         [HttpGet]
         public JsonResult get_data(int? SubAreaId)
         {

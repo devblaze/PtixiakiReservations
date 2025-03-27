@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -65,6 +63,7 @@ namespace PtixiakiReservations.Controllers
 
         // GET: SubAreas/Create
         [Authorize(Roles = "Venue")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             // var venue = _context.Venue.SingleOrDefault(v => v.UserId == _usermanager.GetUserId(HttpContext.User));
@@ -80,24 +79,24 @@ namespace PtixiakiReservations.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]JsonSubAreaModel[] subAreas)
+        public async Task<IActionResult> Create([FromBody]JsonSubAreaModel[] subareas)
         {
-            if(subAreas == null)
+            if(subareas == null)
             {
                 ViewBag.Error = "Something went wrong";
                 return View("Error");
             }
             var venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == _usermanager.GetUserId(HttpContext.User));
-            foreach (var sA in subAreas)
+            foreach (var subarea in subareas)
             {
                 SubArea newSubArea = new SubArea
                 {
-                    AreaName = sA.AreaName,
-                    Height = sA.Height,
-                    Width = sA.Width,
-                    Rotate = sA.Rotate,
-                    Top = sA.Top,
-                    Left = sA.Left,
+                    AreaName = subarea.AreaName,
+                    Height = subarea.Height,
+                    Width = subarea.Width,
+                    Rotate = subarea.Rotate,
+                    Top = subarea.Top,
+                    Left = subarea.Left,
                     VenueId = venue.Id
                 };
                 _context.Add(newSubArea);
@@ -129,7 +128,6 @@ namespace PtixiakiReservations.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-
         public async Task<IActionResult> Edit(int id,SubArea subAreaEdit)
         {
             var subArea = _context.SubArea.SingleOrDefault(s => s.Id == id);

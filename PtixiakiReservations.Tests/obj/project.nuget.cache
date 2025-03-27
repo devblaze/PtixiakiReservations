@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "6T0Y3F5aC6k=",
+  "dgSpecHash": "GImhjqcQ8dA=",
   "success": true,
   "projectFilePath": "D:\\Rider Projects\\PtixiakiReservations\\PtixiakiReservations.Tests\\PtixiakiReservations.Tests.csproj",
   "expectedPackageFiles": [
@@ -279,9 +279,7 @@
     "C:\\Users\\nikos\\.nuget\\packages\\xunit.core\\2.5.3\\xunit.core.2.5.3.nupkg.sha512",
     "C:\\Users\\nikos\\.nuget\\packages\\xunit.extensibility.core\\2.5.3\\xunit.extensibility.core.2.5.3.nupkg.sha512",
     "C:\\Users\\nikos\\.nuget\\packages\\xunit.extensibility.execution\\2.5.3\\xunit.extensibility.execution.2.5.3.nupkg.sha512",
-    "C:\\Users\\nikos\\.nuget\\packages\\xunit.runner.visualstudio\\2.5.3\\xunit.runner.visualstudio.2.5.3.nupkg.sha512",
-    "C:\\Users\\nikos\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.5\\microsoft.netcore.app.ref.8.0.5.nupkg.sha512",
-    "C:\\Users\\nikos\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.5\\microsoft.windowsdesktop.app.ref.8.0.5.nupkg.sha512"
+    "C:\\Users\\nikos\\.nuget\\packages\\xunit.runner.visualstudio\\2.5.3\\xunit.runner.visualstudio.2.5.3.nupkg.sha512"
   ],
   "logs": []
 }

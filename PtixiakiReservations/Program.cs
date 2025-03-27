@@ -11,8 +11,6 @@ using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
 using PtixiakiReservations.Seeders;
 using PtixiakiReservations.Services;
-using System;
-using System.Collections.Immutable;
 
 var builder = WebApplication.CreateBuilder(args);
 

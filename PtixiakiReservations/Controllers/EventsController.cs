@@ -5,390 +5,372 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
 using PtixiakiReservations.Models.ViewModels;
 using PtixiakiReservations.Services;
 
-namespace PtixiakiReservations.Controllers
+namespace PtixiakiReservations.Controllers;
+
+public class EventsController : Controller
 {
-    public class EventsController : Controller
+    private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly IElasticSearch _elasticSearchService;
+
+    public EventsController(ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<ApplicationRole> roleManager,
+        IElasticSearch elasticSearchService)
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
-        private readonly IElasticSearch _elasticSearchService;
+        _context = context;
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _elasticSearchService = elasticSearchService;
+    }
+
+    // GET: Events
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    public async Task<IActionResult> EventsForToday(String city)
+    {
+        if (city is null) return View(await _context.Event.ToListAsync());
         
-        public EventsController(ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager,
-            IElasticSearch elasticSearchService)
-        {
-            _context = context;
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _elasticSearchService = elasticSearchService;
-        }
+        var applicationDbContext = _context.Event
+            .Include(r => r.FamilyEvent)
+            .Include(r => r.Venue)
+            .Where(e => e.StartDateTime.Date == DateTime.Now.Date && e.EndTime.TimeOfDay > DateTime.Now.TimeOfDay);
 
-        // GET: Events
-        public IActionResult Index()
-        {
-            return View();
-        }
+        applicationDbContext = applicationDbContext.Where(r => r.Venue.City.Name == city);
 
-        public async Task<IActionResult> EventsForToday(String city)
-        {
-            var applicationDbContext = _context.Event
-                .Include(r => r.FamilyEvent)
-                .Include(r => r.Venue)
-                .Where(e => e.StartDateTime.Date == DateTime.Now.Date && e.EndTime.TimeOfDay > DateTime.Now.TimeOfDay);
-            if (city == null)
-            {
-                return View(await applicationDbContext.ToListAsync());
-            }
+        return View(await applicationDbContext.ToListAsync());
+    }
 
-            applicationDbContext = applicationDbContext.Where(r => r.Venue.City.Name == city);
+    // GET: Events/Details/5
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id is null) return NotFound();
 
-            return View(await applicationDbContext.ToListAsync());
-        }
-        // GET: Events/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        var @event = await _context.Event
+            .Include(r => r.FamilyEvent)
+            .Include(r => r.Venue)
+            .FirstOrDefaultAsync(m => m.Id == id);
+        
+        if (@event is null) return NotFound();
+        
+        return View(@event);
+    }
 
-            var @event = await _context.Event
-                .Include(r => r.FamilyEvent)
-                .Include(r => r.Venue)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (@event == null)
-            {
-                return NotFound();
-            }
-
-            return View(@event);
-        }
-
-        // GET: Events/Create      
-        public JsonResult GetEvents()
-        {
-            var events = _context.Event.Include(e => e.EventType)
+    // GET: Events/Create      
+    public JsonResult GetEvents()
+    {
+        var events = _context.Event.Include(e => e.EventType)
             .Where(e => e.Venue.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User)).ToList();
-            return new JsonResult(events);
-        }
-        public JsonResult GetEvents2(int? venueId)
+        return new JsonResult(events);
+    }
+
+    public JsonResult GetEvents2(int? venueId)
+    {
+        var events = _context.Event.Where(e => e.Venue.Id == venueId).ToList();
+
+        return new JsonResult(events);
+    }
+
+    public JsonResult GetEventTypes()
+    {
+        var eventsTypes = _context.EventType.ToList();
+
+        return new JsonResult(eventsTypes);
+    }
+
+    public async Task<IActionResult> VenueEvents(int venueId)
+    {
+        var venue = await _context.Venue.FirstOrDefaultAsync(v => v.Id == venueId);
+
+        if (venue is null) return NotFound();
+
+        return View(venue);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateEvent([FromBody] JsonEventModel ev)
+    {
+        if (ev == null)
         {
-            var events = _context.Event.Where(e => e.Venue.Id == venueId).ToList();
-
-            return new JsonResult(events);
+            return NotFound();
         }
-
-        public JsonResult GetEventTypes()
+        else
         {
-            var eventsTypes = _context.EventType.ToList();
-
-            return new JsonResult(eventsTypes);
-        }
-        public IActionResult VenueEvents(int venueId)
-        {
-
-            var Venue = _context.Venue.SingleOrDefault(e => e.Id == venueId);
-
-            return View(Venue);
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> CreateEvent([FromBody] JsonEventModel ev)
-        {
-            if (ev == null)
+            var Venue = _context.Venue.SingleOrDefault(v =>
+                v.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User));
+            var FamilyEvent = _context.FamilyEvent.SingleOrDefault(f => f.Name == ev.Name);
+            int days = 0;
+            if (Venue == null)
             {
                 return NotFound();
             }
-            else
+            else if (FamilyEvent == null)
             {
-                var Venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User));
-                var FamilyEvent = _context.FamilyEvent.SingleOrDefault(f => f.Name == ev.Name);
-                int days = 0;
-                if (Venue == null)
+                FamilyEvent familyEvent = new FamilyEvent
                 {
-                    return NotFound();
-                }
-                else if (FamilyEvent == null)
-                {
-                    FamilyEvent familyEvent = new FamilyEvent
+                    Name = ev.Name
+                };
+                _context.Add(familyEvent);
+                await _context.SaveChangesAsync();
+                FamilyEvent = _context.FamilyEvent.SingleOrDefault(f => f.Name == ev.Name);
+            }
+            int everyNum = 0;
+            switch (ev.Repeat.SelectRepeat)
+            {
+                case "Day":
+                    if (ev.Repeat.AfterNumTimes != "")
                     {
-                        Name = ev.Name
-                    };
-                    _context.Add(familyEvent);
-                    await _context.SaveChangesAsync();
-                    FamilyEvent = _context.FamilyEvent.SingleOrDefault(f => f.Name == ev.Name);
-                }
-                int everyNum = 0;
-                switch (ev.Repeat.SelectRepeat)
-                {
-                    case "Day":
-                        if (ev.Repeat.AfterNumTimes != "")
+                        for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes); i++)
                         {
-                            for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes); i++)
+                            Event nEvent = new Event
                             {
-
-                                Event nEvent = new Event
-                                {
-                                    Name = ev.Name,
-                                    StartDateTime = ev.StartDateTime.AddDays(everyNum).ToLocalTime(),
-                                    EndTime = ev.EndTime.AddDays(everyNum).ToLocalTime(),
-                                    EventTypeId = int.Parse(ev.EventTypeId),
-                                    VenueId = Venue.Id,
-                                    FamilyEventId = FamilyEvent.Id
-
-                                };
-                                everyNum += int.Parse(ev.Repeat.NumOfRepeat);
-                                _context.Add(nEvent);
-                            }
+                                Name = ev.Name,
+                                StartDateTime = ev.StartDateTime.AddDays(everyNum).ToLocalTime(),
+                                EndTime = ev.EndTime.AddDays(everyNum).ToLocalTime(),
+                                EventTypeId = int.Parse(ev.EventTypeId),
+                                VenueId = Venue.Id,
+                                FamilyEventId = FamilyEvent.Id
+                            };
+                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
+                            _context.Add(nEvent);
                         }
-                        else
+                    }
+                    else
+                    {
+                        while (ev.Repeat.UntilDate > ev.StartDateTime.AddDays(everyNum))
                         {
-                            while (ev.Repeat.UntilDate > ev.StartDateTime.AddDays(everyNum)) {
-                                Event nEvent = new Event
-                                {
-                                    Name = ev.Name,
-                                    StartDateTime = ev.StartDateTime.AddDays(everyNum).ToLocalTime(),
-                                    EndTime = ev.EndTime.AddDays(everyNum).ToLocalTime(),
-                                    EventTypeId = int.Parse(ev.EventTypeId),
-                                    VenueId = Venue.Id,
-                                    FamilyEventId = FamilyEvent.Id
-
-                                };
-                                everyNum += int.Parse(ev.Repeat.NumOfRepeat);
-                                _context.Add(nEvent);
-                            }
-                        }
-                        break;
-                    case "Week":
-                       
-                        if (ev.Repeat.AfterNumTimes != "")
-                        {
-                            for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes)*7; i++)
-                            {                                
-                                if (CorrectDay(ev,i, everyNum) == true)
-                                {
-                                    Event nEvent = new Event
-                                    {
-                                        Name = ev.Name,
-                                        StartDateTime = ev.StartDateTime.AddDays(i+ (everyNum * 7)).ToLocalTime(),
-                                        EndTime = ev.EndTime.AddDays(i+ (everyNum * 7)).ToLocalTime(),
-                                        EventTypeId = int.Parse(ev.EventTypeId),
-                                        VenueId = Venue.Id,
-                                        FamilyEventId = FamilyEvent.Id
-
-                                    };
-                                   
-                                     _context.Add(nEvent);
-                                }
-                                if (i+1 >= 7)
-                                {
-                                    if ((i+1) % 7 == 0)
-                                    {                                     
-                                            everyNum += (int.Parse(ev.Repeat.NumOfRepeat)-1);
-                                        
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            int i = 0;
-                            while (ev.Repeat.UntilDate > ev.StartDateTime.AddDays(i))
+                            Event nEvent = new Event
                             {
-                                if (CorrectDay(ev, i,everyNum))
-                                {
-                                    Event nEvent = new Event
-                                    {
-                                        Name = ev.Name,
-                                        StartDateTime = ev.StartDateTime.AddDays(i+ (everyNum*7)).ToLocalTime(),
-                                        EndTime = ev.EndTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
-                                        EventTypeId = int.Parse(ev.EventTypeId),
-                                        VenueId = Venue.Id,
-                                        FamilyEventId = FamilyEvent.Id
-
-                                    };
-                                    
-                                    _context.Add(nEvent);
-                                }
-                                if (i + 1 >= 7)
-                                {
-                                    if ((i + 1) % 7 == 0)
-                                    {
-                                        everyNum += (int.Parse(ev.Repeat.NumOfRepeat) - 1);
-
-                                    }
-                                }
-                                i++;
-                            }
+                                Name = ev.Name,
+                                StartDateTime = ev.StartDateTime.AddDays(everyNum).ToLocalTime(),
+                                EndTime = ev.EndTime.AddDays(everyNum).ToLocalTime(),
+                                EventTypeId = int.Parse(ev.EventTypeId),
+                                VenueId = Venue.Id,
+                                FamilyEventId = FamilyEvent.Id
+                            };
+                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
+                            _context.Add(nEvent);
                         }
-                        break;
-                    case "Month":
-                        if (ev.Repeat.AfterNumTimes != "")
-                        {
-                            for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes); i++)
-                            {
+                    }
+                    break;
+                case "Week":
 
-                                Event nEvent = new Event
-                                {
-                                    Name = ev.Name,
-                                    StartDateTime = ev.StartDateTime.AddMonths(everyNum).ToLocalTime(),
-                                    EndTime = ev.EndTime.AddMonths(everyNum).ToLocalTime(),
-                                    EventTypeId = int.Parse(ev.EventTypeId),
-                                    VenueId = Venue.Id,
-                                    FamilyEventId = FamilyEvent.Id
-
-                                };
-                                everyNum += int.Parse(ev.Repeat.NumOfRepeat);
-                                _context.Add(nEvent);
-                            }
-                        }
-                        else
+                    if (ev.Repeat.AfterNumTimes != "")
+                    {
+                        for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes) * 7; i++)
                         {
-                            while (ev.Repeat.UntilDate > ev.StartDateTime.AddMonths(everyNum))
+                            if (CorrectDay(ev, i, everyNum) == true)
                             {
                                 Event nEvent = new Event
                                 {
                                     Name = ev.Name,
-                                    StartDateTime = ev.StartDateTime.AddMonths(everyNum).ToLocalTime(),
-                                    EndTime = ev.EndTime.AddMonths(everyNum).ToLocalTime(),
+                                    StartDateTime = ev.StartDateTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
+                                    EndTime = ev.EndTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
                                     EventTypeId = int.Parse(ev.EventTypeId),
                                     VenueId = Venue.Id,
                                     FamilyEventId = FamilyEvent.Id
-
                                 };
-                                everyNum += int.Parse(ev.Repeat.NumOfRepeat);
+
                                 _context.Add(nEvent);
                             }
+                            if (i + 1 >= 7)
+                            {
+                                if ((i + 1) % 7 == 0)
+                                {
+                                    everyNum += (int.Parse(ev.Repeat.NumOfRepeat) - 1);
+                                }
+                            }
                         }
-                        break;
-                }            
-                         
-            }
-            await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        int i = 0;
+                        while (ev.Repeat.UntilDate > ev.StartDateTime.AddDays(i))
+                        {
+                            if (CorrectDay(ev, i, everyNum))
+                            {
+                                Event nEvent = new Event
+                                {
+                                    Name = ev.Name,
+                                    StartDateTime = ev.StartDateTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
+                                    EndTime = ev.EndTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
+                                    EventTypeId = int.Parse(ev.EventTypeId),
+                                    VenueId = Venue.Id,
+                                    FamilyEventId = FamilyEvent.Id
+                                };
 
-            Response.StatusCode = (int)HttpStatusCode.OK;
-            return Json(Response.StatusCode);
-        }  
-
-        public bool CorrectDay(JsonEventModel ev,int i,int everyNum)
-        {
-            bool correctDay = false;
-            if (ev.Repeat.M == true && ev.StartDateTime.AddDays(i+everyNum * 7).DayOfWeek.ToString() == "Monday")
-            {
-                correctDay = true;
+                                _context.Add(nEvent);
+                            }
+                            if (i + 1 >= 7)
+                            {
+                                if ((i + 1) % 7 == 0)
+                                {
+                                    everyNum += (int.Parse(ev.Repeat.NumOfRepeat) - 1);
+                                }
+                            }
+                            i++;
+                        }
+                    }
+                    break;
+                case "Month":
+                    if (ev.Repeat.AfterNumTimes != "")
+                    {
+                        for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes); i++)
+                        {
+                            Event nEvent = new Event
+                            {
+                                Name = ev.Name,
+                                StartDateTime = ev.StartDateTime.AddMonths(everyNum).ToLocalTime(),
+                                EndTime = ev.EndTime.AddMonths(everyNum).ToLocalTime(),
+                                EventTypeId = int.Parse(ev.EventTypeId),
+                                VenueId = Venue.Id,
+                                FamilyEventId = FamilyEvent.Id
+                            };
+                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
+                            _context.Add(nEvent);
+                        }
+                    }
+                    else
+                    {
+                        while (ev.Repeat.UntilDate > ev.StartDateTime.AddMonths(everyNum))
+                        {
+                            Event nEvent = new Event
+                            {
+                                Name = ev.Name,
+                                StartDateTime = ev.StartDateTime.AddMonths(everyNum).ToLocalTime(),
+                                EndTime = ev.EndTime.AddMonths(everyNum).ToLocalTime(),
+                                EventTypeId = int.Parse(ev.EventTypeId),
+                                VenueId = Venue.Id,
+                                FamilyEventId = FamilyEvent.Id
+                            };
+                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
+                            _context.Add(nEvent);
+                        }
+                    }
+                    break;
             }
-            else if (ev.Repeat.Tu == true && ev.StartDateTime.AddDays(i+everyNum * 7).DayOfWeek.ToString() == "Tuesday")
-            {
-                correctDay = true;
-            }
-            else if (ev.Repeat.W == true && ev.StartDateTime.AddDays(i+everyNum * 7).DayOfWeek.ToString() == "Wednesday")
-            {
-                correctDay = true;
-            }
-            else if (ev.Repeat.Th == true && ev.StartDateTime.AddDays(i+everyNum * 7).DayOfWeek.ToString() == "Thursday")
-            {
-                correctDay = true;
-
-            }
-            else if (ev.Repeat.F == true && ev.StartDateTime.AddDays(i+everyNum * 7).DayOfWeek.ToString() == "Friday")
-            {
-                correctDay = true;
-            }
-            else if (ev.Repeat.Sa == true && ev.StartDateTime.AddDays(i+everyNum * 7).DayOfWeek.ToString() == "Saturday")
-            {
-                correctDay = true;
-            }
-            else if (ev.Repeat.Su == true && ev.StartDateTime.AddDays(i+everyNum * 7).DayOfWeek.ToString() == "Sunday")
-            {
-                correctDay = true;
-            }
-            return correctDay;
         }
+        await _context.SaveChangesAsync();
 
-        public async Task<IActionResult> Delete(int? id,bool dAll)
+        Response.StatusCode = (int)HttpStatusCode.OK;
+        return Json(Response.StatusCode);
+    }
+
+    public bool CorrectDay(JsonEventModel ev, int i, int everyNum)
+    {
+        bool correctDay = false;
+        if (ev.Repeat.M == true && ev.StartDateTime.AddDays(i + everyNum * 7).DayOfWeek.ToString() == "Monday")
         {
+            correctDay = true;
+        }
+        else if (ev.Repeat.Tu == true && ev.StartDateTime.AddDays(i + everyNum * 7).DayOfWeek.ToString() == "Tuesday")
+        {
+            correctDay = true;
+        }
+        else if (ev.Repeat.W == true && ev.StartDateTime.AddDays(i + everyNum * 7).DayOfWeek.ToString() == "Wednesday")
+        {
+            correctDay = true;
+        }
+        else if (ev.Repeat.Th == true && ev.StartDateTime.AddDays(i + everyNum * 7).DayOfWeek.ToString() == "Thursday")
+        {
+            correctDay = true;
+        }
+        else if (ev.Repeat.F == true && ev.StartDateTime.AddDays(i + everyNum * 7).DayOfWeek.ToString() == "Friday")
+        {
+            correctDay = true;
+        }
+        else if (ev.Repeat.Sa == true && ev.StartDateTime.AddDays(i + everyNum * 7).DayOfWeek.ToString() == "Saturday")
+        {
+            correctDay = true;
+        }
+        else if (ev.Repeat.Su == true && ev.StartDateTime.AddDays(i + everyNum * 7).DayOfWeek.ToString() == "Sunday")
+        {
+            correctDay = true;
+        }
+        return correctDay;
+    }
 
-            if (id == null)
+    public async Task<IActionResult> Delete(int? id, bool dAll)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var ev = await _context.Event
+            .Include(r => r.FamilyEvent)
+            .Include(r => r.Venue)
+            .Include(r => r.EventType)
+            .FirstOrDefaultAsync(m => m.Id == id);
+        if (ev == null)
+        {
+            return NotFound();
+        }
+        if (dAll == true)
+        {
+            var familyEvents = _context.Event.Include(r => r.FamilyEvent).Include(r => r.EventType)
+                .Where(e => e.FamilyEventId == ev.FamilyEventId).ToList();
+            foreach (var @event in familyEvents)
             {
-                return NotFound();
-            }
-            var ev = await _context.Event
-                  .Include(r => r.FamilyEvent)
-                  .Include(r => r.Venue)
-                  .Include(r => r.EventType)
-                  .FirstOrDefaultAsync(m => m.Id == id);
-            if (ev == null)
-            {
-                return NotFound();
-            }
-            if (dAll == true)
-            {
-                var familyEvents = _context.Event.Include(r => r.FamilyEvent).Include(r => r.EventType)
-                    .Where(e => e.FamilyEventId == ev.FamilyEventId).ToList();
-                foreach(var @event in familyEvents)
-                {
-                    var hasReservations = _context.Reservation.Where(r => r.EventId == @event.Id).ToList();
-                    _context.Reservation.RemoveRange(hasReservations);
-                }
-                _context.Event.RemoveRange(familyEvents);                
-            }                         
-            else
-            {
-                var hasReservations = _context.Reservation.Where(r => r.EventId == ev.Id).ToList();
+                var hasReservations = _context.Reservation.Where(r => r.EventId == @event.Id).ToList();
                 _context.Reservation.RemoveRange(hasReservations);
-                _context.Event.Remove(ev);
-                
             }
-
-            await _context.SaveChangesAsync();
-            Response.StatusCode = (int)HttpStatusCode.OK;
-            return Json(Response.StatusCode);
+            _context.Event.RemoveRange(familyEvents);
         }
-      
-        private bool EventExists(int id)
+        else
         {
-            return _context.Event.Any(e => e.Id == id);
+            var hasReservations = _context.Reservation.Where(r => r.EventId == ev.Id).ToList();
+            _context.Reservation.RemoveRange(hasReservations);
+            _context.Event.Remove(ev);
         }
 
-        // Index events into Elasticsearch
-        [HttpPost]
-        public async Task<IActionResult> IndexEventsToElastic()
+        await _context.SaveChangesAsync();
+        Response.StatusCode = (int)HttpStatusCode.OK;
+        return Json(Response.StatusCode);
+    }
+
+    private bool EventExists(int id)
+    {
+        return _context.Event.Any(e => e.Id == id);
+    }
+
+    // Index events into Elasticsearch
+    [HttpPost]
+    public async Task<IActionResult> IndexEventsToElastic()
+    {
+        var events = new List<Event>
         {
-            var events = new List<Event>
+            new Event
             {
-                new Event
-                {
-                    Id = 1, Name = "Concert", StartDateTime = DateTime.Now, EndTime = DateTime.Now.AddHours(2)
-                },
-                new Event
-                {
-                    Id = 2, Name = "Conference", StartDateTime = DateTime.Now.AddDays(1),
-                    EndTime = DateTime.Now.AddDays(1).AddHours(3)
-                }
-            };
+                Id = 1, Name = "Concert", StartDateTime = DateTime.Now, EndTime = DateTime.Now.AddHours(2)
+            },
+            new Event
+            {
+                Id = 2, Name = "Conference", StartDateTime = DateTime.Now.AddDays(1),
+                EndTime = DateTime.Now.AddDays(1).AddHours(3)
+            }
+        };
 
-            await _elasticSearchService.CreateIndexIfNotExistsAsync("events");
-            var result = await _elasticSearchService.AddOrUpdateBulkAsync(events, "events");
+        await _elasticSearchService.CreateIndexIfNotExistsAsync("events");
+        var result = await _elasticSearchService.AddOrUpdateBulkAsync(events, "events");
 
-            return result ? Ok("Events indexed successfully!") : BadRequest("Failed to index events.");
-        }
+        return result ? Ok("Events indexed successfully!") : BadRequest("Failed to index events.");
+    }
 
-        // Search events
-        [HttpGet]
-        public async Task<IActionResult> SearchEvents(string query)
-        {
-            var results = await _elasticSearchService.SearchAsync<Event>(query, "events");
-            return View(results);
-        }
+    // Search events
+    [HttpGet]
+    public async Task<IActionResult> SearchEvents(string query)
+    {
+        var results = await _elasticSearchService.SearchAsync<Event>(query, "events");
+        return View(results);
     }
 }

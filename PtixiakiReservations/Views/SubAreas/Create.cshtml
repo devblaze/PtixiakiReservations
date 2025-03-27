@@ -4,135 +4,34 @@
     ViewData["Title"] = "Create";
 }
 
-<h1 class="text-3xl font-bold text-gray-800 mb-6">Create SubArea</h1>
-
 <div class="max-w-4xl mx-auto bg-white p-8 shadow-lg rounded-lg">
-    <h4 class="text-xl font-semibold text-gray-700 mb-4">SubArea Details</h4>
+    <h4 class="text-xl font-semibold text-gray-700 mb-4">Create SubArea</h4>
 
     <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
 
     <!-- Area Name Input -->
     <div class="mb-4">
         <label asp-for="AreaName" class="block text-sm font-medium text-gray-700 mb-1">Area Name</label>
-        <input asp-for="AreaName" id="name"
-               class="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
+        <input asp-for="AreaName" class="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
     </div>
 
-    <!-- Buttons -->
-    <div class="flex gap-4">
-        <button id="create"
-                type="button"
-                class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Create
-        </button>
-        <button id="save"
-                type="button"
-                class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow hover:bg-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-            Save
-        </button>
-    </div>
-
-    <!-- Seat Input Section -->
+    <!-- Size Inputs Only -->
     <div class="mb-4 flex gap-4">
         <div>
-            <label for="Row" class="block text-sm font-medium text-gray-700">Rows</label>
-            <input type="number" id="Row" class="block w-full px-3 py-2 border rounded-md" min="1" value="1" />
+            <label for="Rows" class="block text-sm font-medium text-gray-700">Rows</label>
+            <input type="number" id="Rows" name="Rows" class="block w-full px-3 py-2 border rounded-md" min="1" value="1" />
         </div>
         <div>
-            <label for="Col" class="block text-sm font-medium text-gray-700">Columns</label>
-            <input type="number" id="Col" class="block w-full px-3 py-2 border rounded-md" min="1" value="1" />
+            <label for="Columns" class="block text-sm font-medium text-gray-700">Columns</label>
+            <input type="number" id="Columns" name="Columns" class="block w-full px-3 py-2 border rounded-md" min="1" value="1" />
         </div>
     </div>
 
-    <!-- Canvas Section -->
+    <!-- Create Button -->
     <div class="mt-6">
-        <h4 class="text-lg font-medium text-gray-700 mb-2">Canvas</h4>
-        <canvas id="c" width="600" height="600" class="border border-gray-400"></canvas>
+        <button type="submit"
+                class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Create SubArea
+        </button>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Initialize Fabric.js Canvas
-            var canvas = new fabric.Canvas('c');
-
-            /*** Constants for Seat Positioning ***/
-            const SEAT_SIZE = 50; // Size of each seat (square)
-            const SEAT_SPACING = 30; // Space between seats
-
-            // Create Seats Functionality
-            $("#create").click(function () {
-                const rows = parseInt($("#Row").val());
-                const cols = parseInt($("#Col").val());
-                const startX = 50; // Initial x position
-                const startY = 50; // Initial y position
-
-                if (rows > 0 && cols > 0) {
-                    for (let r = 0; r < rows; r++) {
-                        for (let c = 0; c < cols; c++) {
-                            const x = startX + c * (SEAT_SIZE + SEAT_SPACING);
-                            const y = startY + r * (SEAT_SIZE + SEAT_SPACING);
-
-                            // Create seat as a rectangle
-                            const rect = new fabric.Rect({
-                                left: x,
-                                top: y,
-                                width: SEAT_SIZE,
-                                height: SEAT_SIZE,
-                                fill: "#666",
-                                originX: "center",
-                                originY: "center",
-                            });
-
-                            // Create text label
-                            const text = new fabric.Text(`R:${r + 1}-C:${c + 1}`, {
-                                left: x,
-                                top: y + SEAT_SIZE / 2 + 10, // Offset text below rectangle
-                                fontSize: 14,
-                                fill: "#fff",
-                                originX: "center",
-                                originY: "center",
-                            });
-
-                            // Group seat and label together
-                            const group = new fabric.Group([rect, text], {
-                                left: x,
-                                top: y,
-                                hasControls: true, // Allow resizing/moving
-                                hasBorders: true,
-                            });
-
-                            canvas.add(group); // Add to canvas
-                        }
-                    }
-                }
-
-                canvas.renderAll(); // Render changes
-            });
-
-            // Save Seats Functionality
-            $("#save").click(function () {
-                const seatData = [];
-                canvas.getObjects().forEach((obj) => {
-                    if (obj.type === 'group') {
-                        const rect = obj.item(0); // Seat rectangle
-                        const text = obj.item(1); // Seat label
-
-                        seatData.push({
-                            name: text.text, // Seat name
-                            width: rect.width * rect.scaleX, // Scaled width
-                            height: rect.height * rect.scaleY, // Scaled height
-                            x: obj.left, // Position left
-                            y: obj.top, // Position top
-                        });
-                    }
-                });
-
-                console.log("Serialized Seat Data:", JSON.stringify(seatData));
-                // You can POST seatData to your server or backend here
-            });
-        });
-    </script>
-
-}

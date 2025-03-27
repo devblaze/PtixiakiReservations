@@ -1,82 +1,88 @@
-﻿
-@{
-    ViewData["Title"] = "ChooseSubArea";
+﻿@{
+    ViewData["Title"] = "Choose Sub Area";
 }
 
-<h1>ChooseSubArea</h1>
+<div class="container mx-auto p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 my-8">
+    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
+        Choose the Sub Area
+    </h1>
 
-<canvas id="c" width="600" height="600" style="border:1px solid #000000;"></canvas>
+    <div class="border-b mb-5 border-gray-300 dark:border-gray-700"></div>
+
+    <div class="flex justify-center">
+        <canvas id="c" width="800" height="600" class="border border-gray-400 dark:border-gray-600 rounded-md shadow-lg bg-gray-50 dark:bg-gray-700"></canvas>
+    </div>
+
+    <div class="mt-6 text-center text-sm text-gray-600 dark:text-gray-300 italic">
+        Click on a sub area to select seats.
+    </div>
+</div>
+
 @section Scripts{
     <script>
-        var canvas = new fabric.Canvas('c');
+        const canvas = new fabric.Canvas('c');
 
-        const qstr = window.location.search;
-        const urlParams = new URLSearchParams(qstr);
+        const urlParams = new URLSearchParams(window.location.search);
         const venueId = urlParams.get('VenueId');
-        const EventId = urlParams.get('EventId');
-        const Duration = urlParams.get('Duration');
+        const eventId = urlParams.get('EventId');
+        const duration = urlParams.get('Duration');
         const date = urlParams.get('ResDate');
 
-        var subAreaId = 0;
+        canvas.on('mouse:down', function (evt) {
+            const selected = evt.target;
+            if (selected && selected.get("id")) {
+                const subAreaId = selected.get('id');
+                window.location.href = `/Seat/Index/?SubAreaId=${subAreaId}&EventId=${eventId}&Duration=${duration}&ResDate=${date}`;
+            }
+        });
 
-        var moveHandler = function (evt) {
-            var selected = evt.target;
-            subAreaId = selected.get('id');
-            window.location.href = '/Seat/Index/?SubAreaId=' + subAreaId + '&EventId='+EventId + "&Duration="+Duration +"&ResDate="+date;
-        };
+        $(document).ready(function () {
+            $.ajax({
+                type: "get",
+                url: '@Url.Action("GetSubAreas", "SubAreas")',
+                dataType: 'json',
+                data: { "venueId": venueId },
+                contentType: 'application/json; charset=utf-8',
+                success: function (subAreas) {
+                    subAreas.forEach(function (area) {
+                        const rect = new fabric.Rect({
+                            width: area.width,
+                            height: area.height,
+                            fill: '#CBD5E1',
+                            stroke: '#64748B',
+                            strokeWidth: 1,
+                            strokeUniform: true,
+                            originX: 'center',
+                            originY: 'center'
+                        });
 
-        canvas.on('mouse:down', moveHandler);
-        $("document").ready(function () {
-            $.ajax(
-                {
-                    type: "get",
-                    url: '@Url.Action("GetSubAreas", "SubAreas")',
-                    dataType: 'json',
-                    data: { "venueId": venueId },
-                    contentType: 'application/json; charset=utf-8',
-                    success: function (data) {
-                        var subAreas = jQuery.parseJSON(JSON.stringify(data));
-                        for (var i = 0; i < subAreas.length; i++) {
+                        const text = new fabric.Text(area.areaName, {
+                            fontSize: 14,
+                            originX: 'center',
+                            originY: 'center',
+                            fill: '#334155',
+                            selectable: false,
+                        });
 
-                            var rect = new fabric.Rect({
-                                width: subAreas[i].width,
-                                height: subAreas[i].height,                                
-                                fill: '#eef',
-                                scaleY: 1,
-                                scaleX: 1,
-                                originX: 'center',
-                                originY: 'center'
+                        const group = new fabric.Group([rect, text], {
+                            left: area.left,
+                            top: area.top,
+                            angle: area.rotate,
+                            hasControls: false,
+                            selectable: false,
+                            lockMovementX: true,
+                            lockMovementY: true,
+                            id: area.id,
+                            hoverCursor: 'pointer'
+                        });
 
-                            });
-
-                            var str = subAreas[i].areaName + "";
-
-                            var text = new fabric.Text(str, {
-                                fontSize: 15,
-                                originX: 'center',
-                                originY: 'center',
-                                selectable: false
-                            });
-
-                            var group = new fabric.Group([rect, text], {     
-                                fill: '#eef',
-                                left: subAreas[i].left,
-                                top: subAreas[i].top,
-                                subTargetCheck: true,
-                                hasControls: false,
-                                selectable: false,
-                                lockMovementX: true, lockMovementY: true,
-                                id: subAreas[i].id,
-                                angle: subAreas[i].rotate
-                            });
-                            canvas.add(group);
-                        }
-
-                    },
-                    error: function (data) { alert("fail to save"); },
-                    accept: 'application/json'
-                });
-
-                });
+                        canvas.add(group);
+                    });
+                },
+                error: function () {
+                    alert("Failed to load sub areas.");
+                }
+            });
+        });
     </script>
 }

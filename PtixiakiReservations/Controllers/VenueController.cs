@@ -159,11 +159,11 @@ namespace PtixiakiReservations.Controllers
             string id = userManager.GetUserId(HttpContext.User);
             var tmp = _context.Venue.Include(v => v.City).Where(s => s.UserId == id).ToList();
 
-            if (tmp.Count != 0)
-            {
-                ViewBag.Error = string.Format("You can have only 1 Venue");
-                return View("Error");
-            }
+            // if (tmp.Count != 0)
+            // {
+            //     ViewBag.Error = string.Format("You can have only 1 Venue");
+            //     return View("Error");
+            // }
             ViewBag.ListOfCity = _context.City.ToList();
             return View();
         }     
@@ -178,6 +178,8 @@ namespace PtixiakiReservations.Controllers
         {
             if (ModelState.IsValid)
             {
+                var userId = userManager.GetUserId(User);
+                
                 string uniqueFileName = null;
                 if(model.Photo != null)
                 {
@@ -194,7 +196,7 @@ namespace PtixiakiReservations.Controllers
                     CityId = model.CityId,                   
                     PostalCode = model.PostalCode,
                     Phone = model.Phone,    
-                    UserId = userManager.GetUserId(HttpContext.User),
+                    UserId = userId,
                     imgUrl = uniqueFileName
                    
                 };                
