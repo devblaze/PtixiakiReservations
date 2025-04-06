@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PtixiakiReservations.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f2296768b5db00fc8e312cd2270fffbf3d104691")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+74bbe4632f47a4db4d9e02897493496b6ad19c59")]
 [assembly: System.Reflection.AssemblyProductAttribute("PtixiakiReservations.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PtixiakiReservations.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

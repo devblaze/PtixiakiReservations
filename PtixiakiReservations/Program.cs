@@ -60,17 +60,16 @@ builder.Services.AddMvc(options =>
 var app = builder.Build();
 
 // Configure the HTTP Request Pipeline (formerly in Startup.Configure)
-using (var scope = app.Services.CreateScope())
+using(var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    
+    var context = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
-    var dbContext = services.GetRequiredService<ApplicationDbContext>();
-    var elasticSearchService = services.GetRequiredService<IElasticSearch>();
-    
-    await ApplicationDbSeed.SeedAsync(services);
+
+    DatabaseSeeder.SeedData(context, userManager, roleManager);
 }
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -82,6 +81,8 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

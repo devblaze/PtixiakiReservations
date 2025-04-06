@@ -76,8 +76,7 @@ namespace PtixiakiReservations.Controllers
             
             return View();
         }
-
-
+        
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]JsonSubAreaModel[] subareas)
         {

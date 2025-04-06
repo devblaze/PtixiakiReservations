@@ -16,22 +16,21 @@ using PtixiakiReservations.Models.ViewModels;
 
 namespace PtixiakiReservations.Controllers
 {
-    
     public class VenueController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<ApplicationRole> roleManager;
-        [Obsolete]
-        public IHostingEnvironment HostingEnviromnet;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
+        [Obsolete] public readonly IHostingEnvironment HostingEnviromnet;
 
         [Obsolete]
         public VenueController(ApplicationDbContext context,
-                                IHostingEnvironment hostingEnviromnet, UserManager<ApplicationUser> UserManager, RoleManager<ApplicationRole> roleManager)
+            IHostingEnvironment hostingEnviromnet, UserManager<ApplicationUser> userManager,
+            RoleManager<ApplicationRole> roleManager)
         {
-            this.roleManager = roleManager;
-            this.userManager = UserManager;
+            _roleManager = roleManager;
+            _userManager = userManager;
             _context = context;
             HostingEnviromnet = hostingEnviromnet;
         }
@@ -40,15 +39,12 @@ namespace PtixiakiReservations.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index(string city)
         {
-            var venues =  _context.Venue.Include(v => v.City).ToList();
+            var venues = await _context.Venue.Include(v => v.City).ToListAsync();
 
-            if (!String.IsNullOrEmpty(city))
-            {
-                var venues2 = _context.Venue.Include(v => v.City).Where(v => v.City.Name == city).ToList();
-                return View(venues2);
-            }
+            if (city is null) return View(venues);
 
-            return View(venues);
+            var venues2 = await _context.Venue.Include(v => v.City).Where(v => v.City.Name == city).ToListAsync();
+            return View(venues2);
         }
 
         // GET: Shops/Details/5
@@ -56,7 +52,7 @@ namespace PtixiakiReservations.Controllers
         [Authorize(Roles = "Venue")]
         public IActionResult Edit()
         {
-            string tmp = userManager.GetUserId(HttpContext.User);
+            string tmp = _userManager.GetUserId(HttpContext.User);
 
             if (tmp == null)
             {
@@ -83,21 +79,22 @@ namespace PtixiakiReservations.Controllers
                 PostalCode = Venue.PostalCode,
                 CityId = Venue.City.Id,
                 Phone = Venue.Phone,
-                UserId = userManager.GetUserId(HttpContext.User)
+                UserId = _userManager.GetUserId(HttpContext.User)
             };
 
             ViewBag.ListOfCity = _context.City.ToList();
-            
+
             return View(viewModel);
         }
-        
+
         [HttpPost]
         [Obsolete]
         [Authorize(Roles = "Admin")]
         [Authorize(Roles = "Venue")]
         public async Task<IActionResult> Edit(VenueViewModel model)
         {
-            Venue venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == userManager.GetUserId(HttpContext.User));
+            Venue venue =
+                _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User));
             if (model == null || venue == null)
             {
                 ViewBag.Error = string.Format("You dont have a Venue yet or something went wrong on your edit");
@@ -108,7 +105,6 @@ namespace PtixiakiReservations.Controllers
                 string uniqueFileName = null;
                 try
                 {
-                      
                     if (model.Photo == null)
                     {
                         uniqueFileName = _context.Venue.SingleOrDefault(s => s.Id == venue.Id).imgUrl;
@@ -146,7 +142,6 @@ namespace PtixiakiReservations.Controllers
                         throw;
                     }
                 }
-            
             }
             return RedirectToAction("details", new { id = venue.Id });
         }
@@ -156,7 +151,7 @@ namespace PtixiakiReservations.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            string id = userManager.GetUserId(HttpContext.User);
+            string id = _userManager.GetUserId(HttpContext.User);
             var tmp = _context.Venue.Include(v => v.City).Where(s => s.UserId == id).ToList();
 
             // if (tmp.Count != 0)
@@ -166,7 +161,7 @@ namespace PtixiakiReservations.Controllers
             // }
             ViewBag.ListOfCity = _context.City.ToList();
             return View();
-        }     
+        }
 
         // POST: Shops/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
@@ -178,10 +173,10 @@ namespace PtixiakiReservations.Controllers
         {
             if (ModelState.IsValid)
             {
-                var userId = userManager.GetUserId(User);
-                
+                var userId = _userManager.GetUserId(User);
+
                 string uniqueFileName = null;
-                if(model.Photo != null)
+                if (model.Photo != null)
                 {
                     string uploadsFolder = Path.Combine(HostingEnviromnet.WebRootPath, "images");
                     uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Photo.FileName;
@@ -190,28 +185,27 @@ namespace PtixiakiReservations.Controllers
                 }
 
                 Venue newshop = new Venue
-                 {
+                {
                     Name = model.Name,
                     Address = model.Address,
-                    CityId = model.CityId,                   
+                    CityId = model.CityId,
                     PostalCode = model.PostalCode,
-                    Phone = model.Phone,    
+                    Phone = model.Phone,
                     UserId = userId,
                     imgUrl = uniqueFileName
-                   
-                };                
+                };
                 _context.Add(newshop);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("details",new { id = newshop.Id });
+                return RedirectToAction("details", new { id = newshop.Id });
             }
             ViewBag.Error = string.Format("Something Went Wrong");
-            return View("Error");          
+            return View("Error");
         }
-       
+
         // GET: Shops/Edit/5
         public IActionResult Details(int? id)
         {
-            if (id == null)
+            if (id is null)
             {
                 ViewBag.Error = string.Format("Something Went Wrong");
                 return View("Error");
@@ -219,23 +213,19 @@ namespace PtixiakiReservations.Controllers
 
             var venue = _context.Venue.Include(v => v.City).FirstOrDefault(v => v.Id == id);
 
-            if (userManager.GetUserId(HttpContext.User) != venue.UserId)
+            if (_userManager.GetUserId(HttpContext.User) != venue.UserId)
             {
                 ViewBag.Error = string.Format("Something Went Wrong");
                 return View("Error");
             }
-            if (venue == null)
-            {
-                ViewBag.Error = string.Format("Something Went Wrong");
-                return View("Error");
-            }
+
             return View(venue);
         }
 
         // POST: Shops/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        
+
 
         // GET: Shops/Delete/5
         public async Task<IActionResult> Delete(int? id)
