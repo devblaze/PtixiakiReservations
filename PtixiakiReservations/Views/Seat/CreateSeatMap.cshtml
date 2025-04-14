@@ -3,8 +3,13 @@
 @{
     ViewData["Title"] = "Create Seat Map";
 }
+@{
+    int subAreaId = (int)ViewData["SubAreaId"];
+    bool existingSeats = (bool)ViewData["HasExistingSeats"];
+    ViewData["Title"] = existingSeats ? "Edit Seat Map" : "Create Seat Map";
+}
 
-<h1 class="text-2xl font-bold text-gray-800 mb-6">Create Seat Map</h1>
+<h1 class="text-2xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
 
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
     <!-- Form Section -->
@@ -13,18 +18,29 @@
 
         <div class="form-group mb-4">
             <label for="Row" class="block text-sm font-medium text-gray-700 mb-2">Create Rows</label>
-            <input type="number" value="0" class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500" id="Row" />
+            <input type="number" value="0"
+                   class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500"
+                   id="Row"/>
         </div>
 
         <div class="form-group mb-4">
             <label for="Col" class="block text-sm font-medium text-gray-700 mb-2">Create Columns</label>
-            <input type="number" value="0" class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500" id="Col" />
+            <input type="number" value="0"
+                   class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500"
+                   id="Col"/>
         </div>
 
         <!-- Buttons -->
         <div class="flex space-x-3">
-            <button type="button" id="create" class="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Create</button>
-            <button type="button" id="save" class="btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Save</button>
+            <button type="button" id="create" class="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                Create
+            </button>
+            <button type="button" id="save" class="btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
+                Save
+            </button>
+            <button type="button" id="deleteSeat"
+                    class="btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Delete Seat
+            </button>
         </div>
     </div>
 
@@ -36,82 +52,149 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             var canvas = new fabric.Canvas('c');
+            const INITIAL_POSITION_X = 50, INITIAL_POSITION_Y = 50;
+            var subAreaId = @subAreaId;
 
-            // Set initial position based on canvas dimensions
-            const INITIAL_POSITION_X = 50;
-            const INITIAL_POSITION_Y = 50;
+            function loadExistingSeats() {
+                $.getJSON('/Seat/get_data', {SubAreaId: subAreaId})
+                    .done(function (data) {
+                        if (data && data.length > 0) {
+                            canvas.clear();
+                            data.forEach(function (seat) {
+                                var rect = new fabric.Rect({
+                                    width: 50,
+                                    height: 50,
+                                    left: seat.x,
+                                    top: seat.y,
+                                    fill: '#666',
+                                    scaleY: 0.5,
+                                    originX: 'center',
+                                    originY: 'center'
+                                });
 
-            $("#create").click(function() {
-                if ($("#Row").val() != 0 && $("#Col").val() != 0) {
+                                var text = new fabric.Text(seat.name, {
+                                    fontSize: 14,
+                                    left: seat.x,
+                                    top: seat.y,
+                                    fill: '#fff',
+                                    originX: 'center',
+                                    originY: 'center'
+                                });
+
+                                var seatGroup = new fabric.Group([rect, text], {
+                                    selectable: true
+                                });
+
+                                canvas.add(seatGroup);
+                            });
+                            canvas.renderAll();
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error("Failed to fetch seats:", error);
+                    });
+            }
+
+            // Load seats if exists
+            if (@existingSeats.ToString().ToLower()) {
+                loadExistingSeats();
+            }
+
+            $("#create").click(function () {
+                var rows = parseInt($("#Row").val());
+                var cols = parseInt($("#Col").val());
+                if (rows > 0 && cols > 0) {
+                    canvas.clear();
                     var nextX = INITIAL_POSITION_X;
                     var nextY = INITIAL_POSITION_Y;
-
-                    for (let r = 0; r < parseInt($("#Row").val()); r++) {
-                        nextY = INITIAL_POSITION_Y + r * (50 + 30); // 50 is seat size, 30 is spacing
-
-                        for (let c = 0; c < parseInt($("#Col").val()); c++) {
+                    for (let r = 0; r < rows; r++) {
+                        nextY = INITIAL_POSITION_Y + r * (50 + 30);
+                        for (let c = 0; c < cols; c++) {
                             var name = `Row:${r + 1}-Col:${c + 1}`;
-
-                            fabric.Rect.create({
+                            var rect = new fabric.Rect({
                                 width: 50,
                                 height: 50,
                                 left: nextX + c * (50 + 30),
                                 top: nextY,
                                 fill: '#666',
                                 scaleY: 0.5,
-                                id: name,
                                 originX: 'center',
                                 originY: 'center'
                             });
 
-                            // Add text
-                            fabric.Text.create({
-                                text: name,
+                            var text = new fabric.Text(name, {
                                 fontSize: 14,
                                 left: nextX + c * (50 + 30),
-                                top: nextY + 25,
+                                top: nextY,
                                 fill: '#fff',
                                 originX: 'center',
                                 originY: 'center'
                             });
+
+                            var seatGroup = new fabric.Group([rect, text], {
+                                selectable: true
+                            });
+
+                            canvas.add(seatGroup);
                         }
                     }
-
                     canvas.renderAll();
                 }
             });
 
-            // Add interactivity
-            canvas.on('mouse:move', function(options) {
-                if (options.target && options.target.isSelected) {
-                    var newActiveObject = canvas.getActiveObjects()[0];
-                    newActiveObject.setCoords();
+            $("#deleteSeat").click(function () {
+                var activeObjects = canvas.getActiveObjects();
+                if (activeObjects.length > 0) {
+                    if (confirm("Are you sure you want to remove the selected seats?")) {
+                        var seatNames = activeObjects.map(obj => obj.item(1).text); // Assuming the second item is text with Seat Name 
+                        $.ajax({
+                            url: '/Seat/DeleteMultipleSeats',
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({seatNames: seatNames, subAreaId: subAreaId}),
+                            success: function (response) {
+                                if (response.success) {
+                                    activeObjects.forEach(obj => canvas.remove(obj));
+                                    canvas.discardActiveObject().renderAll();
+                                    alert("Selected seats deleted successfully!");
+                                } else {
+                                    alert("Failed to delete some seats: " + response.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.error(err);
+                                alert("Error occurred while deleting seats.");
+                            }
+                        });
+                    }
+                } else {
+                    alert("Please select one or more seats first!");
                 }
             });
 
-            $("#save").click(function() {
-                const seats = [];
-
-                // Proper iteration using forEach
-                canvas.getObjects().forEach(obj => {
-                    if (obj.type === 'rect') {
-                        seats.push({
-                            id: obj.id,
-                            top: obj.top,
-                            left: obj.left,
-                            name: obj.name
-                        });
-                    }
-                });
+            $("#save").click(function () {
+                const seats = canvas.getObjects().map(obj => ({
+                    Name: obj.item(1).text,
+                    X: obj.left,
+                    Y: obj.top,
+                    Available: true,
+                    SubAreaId: subAreaId
+                }));
 
                 $.ajax({
-                    type: "post",
-                    url: '@Url.Action("CreateTableMap", "Seat", new { subAreaId = ViewBag.subAreaId })',
+                    url: `/Seat/CreateTableMap?subAreaId=${subAreaId}`,
+                    type: "POST",
+                    contentType: "application/json",
                     data: JSON.stringify(seats),
-                    success: function() { alert("Saved successfully"); },
-                    error: function() { alert("Failed to save"); }
+                    success: function (response) {
+                        alert("Seats saved successfully!");
+                    },
+                    error: function (error) {
+                        alert("Error occurred during seat save.");
+                        console.error(error);
+                    }
                 });
             });
         });

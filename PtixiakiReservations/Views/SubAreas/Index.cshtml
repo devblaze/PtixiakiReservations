@@ -2,13 +2,12 @@
 
 @{
     ViewData["Title"] = "Index";
+    var subAreas = ViewBag.SubAreas;
 }
 
 <div class="container mx-auto mt-10 px-6">
-    <!-- Page Title -->
     <h1 class="text-3xl font-bold text-gray-800 mb-5">All my Sub Areas</h1>
 
-    <!-- Add New Button -->
     <p class="mb-4">
         <a asp-action="Create"
            class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition duration-200">
@@ -16,43 +15,31 @@
         </a>
     </p>
 
-    <!-- Table Section -->
     <div class="overflow-x-auto">
         <table class="w-full border-collapse border border-gray-300 rounded-lg shadow-md">
-            <!-- Table Head -->
             <thead class="bg-gray-200">
             <tr class="text-left">
-                <th class="px-4 py-3 text-gray-700 font-semibold">
-                    @Html.DisplayNameFor(model => model.AreaName)
-                </th>
-                <th class="px-4 py-3 text-gray-700 font-semibold">
-                    @Html.DisplayNameFor(model => model.Desc)
-                </th>
-                <th class="px-4 py-3 text-gray-700 font-semibold">Actions</th>
+                <th class="px-4 py-3">Area Name</th>
+                <th class="px-4 py-3">Description</th>
+                <th class="px-4 py-3">Actions</th>
             </tr>
             </thead>
 
-            <!-- Table Body -->
             <tbody class="bg-white divide-y divide-gray-200">
-            @foreach (var item in Model)
+            @foreach (var item in subAreas)
             {
                 <tr class="hover:bg-gray-100 transition duration-150">
-                    <td class="px-4 py-3 text-gray-800">
-                        @Html.DisplayFor(modelItem => item.AreaName)
-                    </td>
-                    <td class="px-4 py-3 text-gray-800">
-                        @Html.DisplayFor(modelItem => item.Desc)
-                    </td>
+                    <td class="px-4 py-3">@item.AreaName</td>
+                    <td class="px-4 py-3">@item.Desc</td>
                     <td class="px-4 py-3">
-                        <!-- Action Links -->
                         <a asp-action="Edit" asp-route-id="@item.Id"
                            class="text-blue-500 hover:text-blue-700 mr-2 transition duration-200">
                             Edit
                         </a>
                         |
                         <a asp-controller="Seat" asp-action="Create" asp-route-subAreaId="@item.Id"
-                           class="text-green-500 hover:text-green-700 ml-2 transition duration-200">
-                            Create a Seat Map
+                           class="@(item.HasSeats ? "text-indigo-500 hover:text-indigo-700" : "text-green-500 hover:text-green-700") ml-2 transition duration-200">
+                            @(item.HasSeats ? "Edit Seat Map" : "Create Seat Map")
                         </a>
                         |
                         <a asp-controller="Seat" asp-action="ListOfMySeats" asp-route-subAreaId="@item.Id"

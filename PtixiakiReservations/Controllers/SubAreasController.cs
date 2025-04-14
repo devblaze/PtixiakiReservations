@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -25,9 +26,20 @@ namespace PtixiakiReservations.Controllers
         [Authorize(Roles = "Venue")]
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.SubArea.Include(s => s.Venue);
-            return View(await applicationDbContext.ToListAsync());
+            var subAreas = await _context.SubArea
+                .Select(sa => new
+                {
+                    sa.Id,
+                    sa.AreaName,
+                    sa.Desc,
+                    HasSeats = _context.Seat.Any(seat => seat.SubAreaId == sa.Id)
+                })
+                .ToListAsync();
+
+            ViewBag.SubAreas = subAreas;
+            return View();
         }
+        
         public IActionResult ChooseSubArea()
         {
             return View();
@@ -85,7 +97,7 @@ namespace PtixiakiReservations.Controllers
                 ViewBag.Error = "Something went wrong";
                 return View("Error");
             }
-            var venue = _context.Venue.SingleOrDefault(v => v.ApplicationUser.Id == _usermanager.GetUserId(HttpContext.User));
+            var venue = await _context.Venue.FirstOrDefaultAsync(v => v.ApplicationUser.Id == _usermanager.GetUserId(HttpContext.User));
             foreach (var subarea in subareas)
             {
                 SubArea newSubArea = new SubArea
@@ -146,15 +158,11 @@ namespace PtixiakiReservations.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SubAreaExists(subArea.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!SubAreaExists(subArea.Id)) return NotFound();
+
+                    throw;
                 }
+                
                 return RedirectToAction(nameof(Index));
             }
             ViewData["VenueId"] = new SelectList(_context.Venue, "Id", "Id", subArea.VenueId);
