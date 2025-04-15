@@ -24,7 +24,18 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
     [HttpGet]
     public JsonResult get_data(int? SubAreaId)
     {
-        var seats = context.Seat.Where(s => s.SubAreaId == SubAreaId).ToList();
+        if (SubAreaId == null) return Json(new { });
+
+        var seats = context.Seat
+            .Where(s => s.SubAreaId == SubAreaId)
+            .Select(s => new
+            {
+                id = s.Id,
+                name = s.Name,
+                x = (float)s.X, // Convert decimal to float for JS compatibility
+                y = (float)s.Y, // Convert decimal to float for JS compatibility
+                available = s.Available
+            }).ToList();
 
         return Json(seats);
     }

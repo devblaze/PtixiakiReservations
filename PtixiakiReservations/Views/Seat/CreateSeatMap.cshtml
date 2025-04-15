@@ -58,33 +58,35 @@
             var subAreaId = @subAreaId;
 
             function loadExistingSeats() {
-                $.getJSON('/Seat/get_data', {SubAreaId: subAreaId})
+                $.getJSON('/Seat/get_data', { SubAreaId: subAreaId })
                     .done(function (data) {
                         if (data && data.length > 0) {
                             canvas.clear();
                             data.forEach(function (seat) {
+                                // Create rectangle
                                 var rect = new fabric.Rect({
                                     width: 50,
                                     height: 50,
-                                    left: seat.x,
-                                    top: seat.y,
                                     fill: '#666',
-                                    scaleY: 0.5,
                                     originX: 'center',
                                     originY: 'center'
                                 });
 
+                                // Create text for the seat name
                                 var text = new fabric.Text(seat.name, {
                                     fontSize: 14,
-                                    left: seat.x,
-                                    top: seat.y,
                                     fill: '#fff',
                                     originX: 'center',
                                     originY: 'center'
                                 });
 
+                                // Group the rectangle and text, and set position
                                 var seatGroup = new fabric.Group([rect, text], {
-                                    selectable: true
+                                    left: seat.x,  // Use seat's X-coordinate
+                                    top: seat.y,   // Use seat's Y-coordinate
+                                    selectable: true, // Allow selection
+                                    originX: 'center',
+                                    originY: 'center'
                                 });
 
                                 canvas.add(seatGroup);
@@ -174,11 +176,11 @@
                 }
             });
 
-            $("#save").click(function () {
+            $("#save").click(function() {
                 const seats = canvas.getObjects().map(obj => ({
-                    Name: obj.item(1).text,
-                    X: obj.left,
-                    Y: obj.top,
+                    Name: obj.item(1).text, // Get the name from the second item (text)
+                    X: obj.left,            // Get the x-coordinate of the seat group
+                    Y: obj.top,             // Get the y-coordinate of the seat group
                     Available: true,
                     SubAreaId: subAreaId
                 }));
@@ -188,12 +190,12 @@
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(seats),
-                    success: function (response) {
+                    success: function(response) {
                         alert("Seats saved successfully!");
                     },
-                    error: function (error) {
-                        alert("Error occurred during seat save.");
+                    error: function(error) {
                         console.error(error);
+                        alert("Error occurred while saving seats.");
                     }
                 });
             });
