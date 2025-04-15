@@ -1,0 +1,77 @@
+﻿@model PtixiakiReservations.Models.Event
+
+@{
+    ViewData["Title"] = "Create New Event";
+}
+
+<div class="container mx-auto p-6">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-4">Create New Event</h1>
+
+        @using (Html.BeginForm("CreateEvent", "Events", FormMethod.Post))
+        {
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Event Name -->
+                <div class="flex flex-col">
+                    <label asp-for="Name" class="font-medium text-sm text-gray-700 mb-2">Event Name</label>
+                    <input asp-for="Name"
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 focus:outline-none" />
+                    <span asp-validation-for="Name" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Start Date -->
+                <div class="flex flex-col">
+                    <label asp-for="StartDateTime" class="font-medium text-sm text-gray-700 mb-2">Start Date & Time</label>
+                    <input asp-for="StartDateTime" type="datetime-local"
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 focus:outline-none"
+                           value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                    <span asp-validation-for="StartDateTime" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- End Date -->
+                <div class="flex flex-col">
+                    <label asp-for="EndTime" class="font-medium text-sm text-gray-700 mb-2">End Date & Time</label>
+                    <input asp-for="EndTime" type="datetime-local"
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 focus:outline-none"
+                           value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                    <span asp-validation-for="EndTime" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Venue Dropdown -->
+                <div class="flex flex-col">
+                    <label asp-for="VenueId" class="font-medium text-sm text-gray-700 mb-2">Venue</label>
+                    <select asp-for="VenueId" asp-items="ViewBag.VenueList"
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 focus:outline-none">
+                    </select>
+                    <span asp-validation-for="VenueId" class="text-red-500 text-xs mt-1"></span>
+                </div>
+            </div>
+            
+            <!-- Event Type Dropdown -->
+            <div class="flex flex-col">
+                <label asp-for="EventTypeId" class="font-medium text-sm text-gray-700 mb-2">Event Type</label>
+                <select asp-for="EventTypeId" asp-items="ViewBag.EventTypeList"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 focus:outline-none">
+                </select>
+                <span asp-validation-for="EventTypeId" class="text-red-500 text-xs mt-1"></span>
+            </div>
+
+            <div class="mt-6 flex justify-start">
+                <button type="submit"
+                        class="bg-blue-500 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-600 focus:ring focus:ring-blue-300">
+                    Save Event
+                </button>
+                <a asp-action="Index" asp-controller="Events"
+                   class="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 focus:ring focus:ring-gray-300">
+                    Cancel
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

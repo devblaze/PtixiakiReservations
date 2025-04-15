@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
@@ -13,23 +14,14 @@ using PtixiakiReservations.Services;
 
 namespace PtixiakiReservations.Controllers;
 
-public class EventsController : Controller
+public class EventsController(
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    RoleManager<ApplicationRole> roleManager,
+    IElasticSearch elasticSearchService)
+    : Controller
 {
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IElasticSearch _elasticSearchService;
-
-    public EventsController(ApplicationDbContext context,
-        UserManager<ApplicationUser> userManager,
-        RoleManager<ApplicationRole> roleManager,
-        IElasticSearch elasticSearchService)
-    {
-        _context = context;
-        _userManager = userManager;
-        _roleManager = roleManager;
-        _elasticSearchService = elasticSearchService;
-    }
+    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
 
     // GET: Events
     public IActionResult Index()
@@ -37,18 +29,17 @@ public class EventsController : Controller
         return View();
     }
 
-    public async Task<IActionResult> EventsForToday(String city)
+    public async Task<IActionResult> EventsForToday(string city)
     {
-        if (city is null) return View(await _context.Event.ToListAsync());
+        var today = DateTime.Today;
         
-        var applicationDbContext = _context.Event
-            .Include(r => r.FamilyEvent)
-            .Include(r => r.Venue)
-            .Where(e => e.StartDateTime.Date == DateTime.Now.Date && e.EndTime.TimeOfDay > DateTime.Now.TimeOfDay);
+        var eventsForToday = await context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .Where(e => e.StartDateTime.Date == today)
+            .ToListAsync();
 
-        applicationDbContext = applicationDbContext.Where(r => r.Venue.City.Name == city);
-
-        return View(await applicationDbContext.ToListAsync());
+        return View(eventsForToday);
     }
 
     // GET: Events/Details/5
@@ -56,7 +47,7 @@ public class EventsController : Controller
     {
         if (id is null) return NotFound();
 
-        var @event = await _context.Event
+        var @event = await context.Event
             .Include(r => r.FamilyEvent)
             .Include(r => r.Venue)
             .FirstOrDefaultAsync(m => m.Id == id);
@@ -69,201 +60,83 @@ public class EventsController : Controller
     // GET: Events/Create      
     public JsonResult GetEvents()
     {
-        var events = _context.Event.Include(e => e.EventType)
-            .Where(e => e.Venue.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User)).ToList();
+        var events = context.Event.Include(e => e.EventType)
+            .Where(e => e.Venue.ApplicationUser.Id == userManager.GetUserId(HttpContext.User)).ToList();
         return new JsonResult(events);
     }
 
     public JsonResult GetEvents2(int? venueId)
     {
-        var events = _context.Event.Where(e => e.Venue.Id == venueId).ToList();
+        var events = context.Event.Where(e => e.Venue.Id == venueId).ToList();
 
         return new JsonResult(events);
     }
 
     public JsonResult GetEventTypes()
     {
-        var eventsTypes = _context.EventType.ToList();
+        var eventsTypes = context.EventType.ToList();
 
         return new JsonResult(eventsTypes);
     }
 
     public async Task<IActionResult> VenueEvents(int venueId)
     {
-        var venue = await _context.Venue.FirstOrDefaultAsync(v => v.Id == venueId);
+        var venue = await context.Venue.FirstOrDefaultAsync(v => v.Id == venueId);
 
         if (venue is null) return NotFound();
 
         return View(venue);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateEvent([FromBody] JsonEventModel ev)
+    [HttpGet]
+    public async Task<IActionResult> CreateEvent()
     {
-        if (ev == null)
-        {
-            return NotFound();
-        }
-        else
-        {
-            var Venue = _context.Venue.SingleOrDefault(v =>
-                v.ApplicationUser.Id == _userManager.GetUserId(HttpContext.User));
-            var FamilyEvent = _context.FamilyEvent.SingleOrDefault(f => f.Name == ev.Name);
-            int days = 0;
-            if (Venue == null)
+        // Get the current user ID
+        var userId = userManager.GetUserId(User);
+
+        // Fetch the venues associated with the current user
+        var venues = await context.Venue
+            .Where(v => v.UserId == userId)
+            .Select(v => new SelectListItem
             {
-                return NotFound();
-            }
-            else if (FamilyEvent == null)
-            {
-                FamilyEvent familyEvent = new FamilyEvent
+                Value = v.Id.ToString(),
+                Text = v.Name
+            }).ToListAsync();
+
+        // Pass the venues to the view via ViewBag
+        ViewBag.VenueList = venues;
+        
+        var eventTypes = context.EventType.ToList();
+        ViewBag.EventTypeList = new SelectList(eventTypes, "Id", "Name");
+        
+        return View(new Event());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateEvent(Event newEvent)
+    {
+        if (!ModelState.IsValid)
+        {
+            // Reload venues for the dropdown
+            var userId = userManager.GetUserId(User);
+            ViewBag.VenueList = await context.Venue
+                .Where(v => v.UserId == userId)
+                .Select(v => new SelectListItem
                 {
-                    Name = ev.Name
-                };
-                _context.Add(familyEvent);
-                await _context.SaveChangesAsync();
-                FamilyEvent = _context.FamilyEvent.SingleOrDefault(f => f.Name == ev.Name);
-            }
-            int everyNum = 0;
-            switch (ev.Repeat.SelectRepeat)
-            {
-                case "Day":
-                    if (ev.Repeat.AfterNumTimes != "")
-                    {
-                        for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes); i++)
-                        {
-                            Event nEvent = new Event
-                            {
-                                Name = ev.Name,
-                                StartDateTime = ev.StartDateTime.AddDays(everyNum).ToLocalTime(),
-                                EndTime = ev.EndTime.AddDays(everyNum).ToLocalTime(),
-                                EventTypeId = int.Parse(ev.EventTypeId),
-                                VenueId = Venue.Id,
-                                FamilyEventId = FamilyEvent.Id
-                            };
-                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
-                            _context.Add(nEvent);
-                        }
-                    }
-                    else
-                    {
-                        while (ev.Repeat.UntilDate > ev.StartDateTime.AddDays(everyNum))
-                        {
-                            Event nEvent = new Event
-                            {
-                                Name = ev.Name,
-                                StartDateTime = ev.StartDateTime.AddDays(everyNum).ToLocalTime(),
-                                EndTime = ev.EndTime.AddDays(everyNum).ToLocalTime(),
-                                EventTypeId = int.Parse(ev.EventTypeId),
-                                VenueId = Venue.Id,
-                                FamilyEventId = FamilyEvent.Id
-                            };
-                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
-                            _context.Add(nEvent);
-                        }
-                    }
-                    break;
-                case "Week":
+                    Value = v.Id.ToString(),
+                    Text = v.Name
+                }).ToListAsync();
 
-                    if (ev.Repeat.AfterNumTimes != "")
-                    {
-                        for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes) * 7; i++)
-                        {
-                            if (CorrectDay(ev, i, everyNum) == true)
-                            {
-                                Event nEvent = new Event
-                                {
-                                    Name = ev.Name,
-                                    StartDateTime = ev.StartDateTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
-                                    EndTime = ev.EndTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
-                                    EventTypeId = int.Parse(ev.EventTypeId),
-                                    VenueId = Venue.Id,
-                                    FamilyEventId = FamilyEvent.Id
-                                };
-
-                                _context.Add(nEvent);
-                            }
-                            if (i + 1 >= 7)
-                            {
-                                if ((i + 1) % 7 == 0)
-                                {
-                                    everyNum += (int.Parse(ev.Repeat.NumOfRepeat) - 1);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        int i = 0;
-                        while (ev.Repeat.UntilDate > ev.StartDateTime.AddDays(i))
-                        {
-                            if (CorrectDay(ev, i, everyNum))
-                            {
-                                Event nEvent = new Event
-                                {
-                                    Name = ev.Name,
-                                    StartDateTime = ev.StartDateTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
-                                    EndTime = ev.EndTime.AddDays(i + (everyNum * 7)).ToLocalTime(),
-                                    EventTypeId = int.Parse(ev.EventTypeId),
-                                    VenueId = Venue.Id,
-                                    FamilyEventId = FamilyEvent.Id
-                                };
-
-                                _context.Add(nEvent);
-                            }
-                            if (i + 1 >= 7)
-                            {
-                                if ((i + 1) % 7 == 0)
-                                {
-                                    everyNum += (int.Parse(ev.Repeat.NumOfRepeat) - 1);
-                                }
-                            }
-                            i++;
-                        }
-                    }
-                    break;
-                case "Month":
-                    if (ev.Repeat.AfterNumTimes != "")
-                    {
-                        for (int i = 0; i < int.Parse(ev.Repeat.AfterNumTimes); i++)
-                        {
-                            Event nEvent = new Event
-                            {
-                                Name = ev.Name,
-                                StartDateTime = ev.StartDateTime.AddMonths(everyNum).ToLocalTime(),
-                                EndTime = ev.EndTime.AddMonths(everyNum).ToLocalTime(),
-                                EventTypeId = int.Parse(ev.EventTypeId),
-                                VenueId = Venue.Id,
-                                FamilyEventId = FamilyEvent.Id
-                            };
-                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
-                            _context.Add(nEvent);
-                        }
-                    }
-                    else
-                    {
-                        while (ev.Repeat.UntilDate > ev.StartDateTime.AddMonths(everyNum))
-                        {
-                            Event nEvent = new Event
-                            {
-                                Name = ev.Name,
-                                StartDateTime = ev.StartDateTime.AddMonths(everyNum).ToLocalTime(),
-                                EndTime = ev.EndTime.AddMonths(everyNum).ToLocalTime(),
-                                EventTypeId = int.Parse(ev.EventTypeId),
-                                VenueId = Venue.Id,
-                                FamilyEventId = FamilyEvent.Id
-                            };
-                            everyNum += int.Parse(ev.Repeat.NumOfRepeat);
-                            _context.Add(nEvent);
-                        }
-                    }
-                    break;
-            }
+            return View(newEvent); // Return the form with validation errors
         }
-        await _context.SaveChangesAsync();
+        
+        newEvent.FamilyEventId ??= 1; 
+        
+        context.Event.Add(newEvent);
+        await context.SaveChangesAsync();
 
-        Response.StatusCode = (int)HttpStatusCode.OK;
-        return Json(Response.StatusCode);
+        return RedirectToAction(nameof(EventsForToday));
     }
 
     public bool CorrectDay(JsonEventModel ev, int i, int everyNum)
@@ -306,7 +179,7 @@ public class EventsController : Controller
         {
             return NotFound();
         }
-        var ev = await _context.Event
+        var ev = await context.Event
             .Include(r => r.FamilyEvent)
             .Include(r => r.Venue)
             .Include(r => r.EventType)
@@ -317,30 +190,30 @@ public class EventsController : Controller
         }
         if (dAll == true)
         {
-            var familyEvents = _context.Event.Include(r => r.FamilyEvent).Include(r => r.EventType)
+            var familyEvents = context.Event.Include(r => r.FamilyEvent).Include(r => r.EventType)
                 .Where(e => e.FamilyEventId == ev.FamilyEventId).ToList();
             foreach (var @event in familyEvents)
             {
-                var hasReservations = _context.Reservation.Where(r => r.EventId == @event.Id).ToList();
-                _context.Reservation.RemoveRange(hasReservations);
+                var hasReservations = context.Reservation.Where(r => r.EventId == @event.Id).ToList();
+                context.Reservation.RemoveRange(hasReservations);
             }
-            _context.Event.RemoveRange(familyEvents);
+            context.Event.RemoveRange(familyEvents);
         }
         else
         {
-            var hasReservations = _context.Reservation.Where(r => r.EventId == ev.Id).ToList();
-            _context.Reservation.RemoveRange(hasReservations);
-            _context.Event.Remove(ev);
+            var hasReservations = context.Reservation.Where(r => r.EventId == ev.Id).ToList();
+            context.Reservation.RemoveRange(hasReservations);
+            context.Event.Remove(ev);
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         Response.StatusCode = (int)HttpStatusCode.OK;
         return Json(Response.StatusCode);
     }
 
     private bool EventExists(int id)
     {
-        return _context.Event.Any(e => e.Id == id);
+        return context.Event.Any(e => e.Id == id);
     }
 
     // Index events into Elasticsearch
@@ -360,8 +233,8 @@ public class EventsController : Controller
             }
         };
 
-        await _elasticSearchService.CreateIndexIfNotExistsAsync("events");
-        var result = await _elasticSearchService.AddOrUpdateBulkAsync(events, "events");
+        await elasticSearchService.CreateIndexIfNotExistsAsync("events");
+        var result = await elasticSearchService.AddOrUpdateBulkAsync(events, "events");
 
         return result ? Ok("Events indexed successfully!") : BadRequest("Failed to index events.");
     }
@@ -370,7 +243,7 @@ public class EventsController : Controller
     [HttpGet]
     public async Task<IActionResult> SearchEvents(string query)
     {
-        var results = await _elasticSearchService.SearchAsync<Event>(query, "events");
+        var results = await elasticSearchService.SearchAsync<Event>(query, "events");
         return View(results);
     }
 }
