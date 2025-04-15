@@ -90,3 +90,9 @@ PtixiakiReservations/bin/Release/net8.0/
 *.dll
 
 PtixiakiReservations.Tests/bin/Debug/net8.0/
+
+PtixiakiReservations.Tests/obj/Debug/net8.0/
+
+PtixiakiReservations.Tests/obj/
+
+PtixiakiReservations/obj/
