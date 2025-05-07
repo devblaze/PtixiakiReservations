@@ -1,32 +1,101 @@
 ﻿@model IEnumerable<PtixiakiReservations.Models.Event>
 
 @{
-    ViewData["Title"] = "Events For Today";
+    ViewData["Title"] = "Events";
 }
 
 <div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Events For Today</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Events</h1>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Search Bar -->
+    <div class="mb-8">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="relative w-full sm:w-96">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                </div>
+                <input type="search" id="event-search"
+                       class="block w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Search by event name or city..."/>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Filter Tabs -->
+    <div class="mb-8">
+        <div class="flex justify-center space-x-1 border-b border-gray-200">
+            <button id="filter-today"
+                    class="filter-tab-active py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                Today
+            </button>
+            <button id="filter-upcoming"
+                    class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                Upcoming
+            </button>
+            <button id="filter-past" class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                Past
+            </button>
+            <button id="filter-all" class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                All Events
+            </button>
+        </div>
+    </div>
+
+    <!-- Events Count Display -->
+    <div id="events-count" class="text-center mb-6 text-gray-600">
+        Showing <span id="filtered-count">@Model.Count()</span> events
+    </div>
+
+    <!-- Events Grid -->
+    <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach (var item in Model)
         {
-            // var photopath = "~/images/" + (item.Venue.imgUrl ?? "noimage.jpg");
-            <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                @* <img class="w-full h-48 object-cover" src=@photopath asp-append-version="true" alt="Event Venue Image"> *@
+            string eventTimeClass = GetEventTimeClass(item.StartDateTime);
 
+            <div
+                class="event-card @eventTimeClass shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
+                data-event-name="@item.Name.ToLower()"
+                data-event-city="@item.Venue.City.Name.ToLower()">
                 <div class="p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="text-xs inline-flex items-center">
+                            @if (eventTimeClass == "event-today")
+                            {
+                                <span class="bg-green-500 text-white px-2 py-1 rounded font-medium">Today</span>
+                            }
+                            else if (eventTimeClass == "event-upcoming")
+                            {
+                                <span class="bg-blue-500 text-white px-2 py-1 rounded font-medium">Upcoming</span>
+                            }
+                            else
+                            {
+                                <span class="bg-gray-500 text-white px-2 py-1 rounded font-medium">Past</span>
+                            }
+                            <span class="ml-2 text-gray-500">@item.StartDateTime.ToString("MMM d, yyyy")</span>
+                        </div>
+                    </div>
+
                     <h3 class="text-xl font-bold text-gray-800">
                         @Html.DisplayFor(modelItem => item.Name)
                     </h3>
                     <p class="text-sm text-gray-600">
-                        @Html.DisplayFor(modelItem => item.StartDateTime) – @Html.DisplayFor(modelItem => item.EndTime.TimeOfDay)
+                        @item.StartDateTime.ToString("MMM d, yyyy h:mm tt") – @item.EndTime.ToString("h:mm tt")
                     </p>
 
                     <div class="mt-3 text-sm text-gray-700 space-y-1">
                         <p><span class="font-medium">Venue:</span> @Html.DisplayFor(modelItem => item.Venue.Name)</p>
-                        <p><span class="font-medium">Address:</span> @Html.DisplayFor(modelItem => item.Venue.Address)</p>
-                        <p><span class="font-medium">City:</span> @Html.DisplayFor(modelItem => item.Venue.City.Name)</p>
-                        <p><span class="font-medium">Postal Code:</span> @Html.DisplayFor(modelItem => item.Venue.PostalCode)</p>
+                        <p><span class="font-medium">Address:</span> @Html.DisplayFor(modelItem => item.Venue.Address)
+                        </p>
+                        <p><span class="font-medium">City:</span> @Html.DisplayFor(modelItem => item.Venue.City.Name)
+                        </p>
+                        <p>
+                            <span
+                                class="font-medium">Postal Code:</span> @Html.DisplayFor(modelItem => item.Venue.PostalCode)
+                        </p>
                         <p><span class="font-medium">Phone:</span> @Html.DisplayFor(modelItem => item.Venue.Phone)</p>
                     </div>
 
@@ -35,8 +104,9 @@
                            class="text-sm text-blue-500 hover:underline">
                             Details
                         </a>
-                        <a asp-controller="Reservation" asp-action="Create" asp-route-VenueId="@item.VenueId" asp-route-EventId="@item.Id"
-                           class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600">
+                        <a asp-controller="Reservation" asp-action="SelectSeats" asp-route-EventId="@item.Id"
+                           asp-route-VenueId="@item.VenueId"
+                           class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600 transition-colors">
                             Reservation
                         </a>
                     </div>
@@ -44,4 +114,183 @@
             </div>
         }
     </div>
+
+    <!-- No Results Message -->
+    <div id="no-results" class="hidden text-center py-12">
+        <div class="text-gray-500">
+            <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-xl font-semibold">No events found</p>
+            <p class="mt-2">Try adjusting your search or filter</p>
+        </div>
+    </div>
 </div>
+
+@functions {
+
+    public string GetEventTimeClass(DateTime eventDate)
+    {
+        DateTime today = DateTime.Today;
+
+        if (eventDate.Date == today)
+        {
+            return "event-today";
+        }
+        else if (eventDate.Date > today)
+        {
+            return "event-upcoming";
+        }
+        else
+        {
+            return "event-past";
+        }
+    }
+
+}
+
+<style>
+    .filter-tab {
+        color: #718096;
+        background-color: transparent;
+        transition: all 0.2s;
+    }
+
+    .filter-tab:hover {
+        color: #4299e1;
+    }
+
+    .filter-tab-active {
+        color: #4299e1;
+        background-color: white;
+        border-bottom: 2px solid #4299e1;
+    }
+
+    /* Event card base style */
+    .event-card {
+        opacity: 1;
+        transition: all 0.3s ease-in-out;
+        border-left: 4px solid #e2e8f0; /* Default border */
+    }
+
+    /* Today events - green accent */
+    .event-today {
+        background-color: #f0fff4; /* Light green background */
+        border-left-color: #48bb78; /* Green accent border */
+    }
+
+    /* Upcoming events - blue accent */
+    .event-upcoming {
+        background-color: #ebf8ff; /* Light blue background */
+        border-left-color: #4299e1; /* Blue accent border */
+    }
+
+    /* Past events - gray accent */
+    .event-past {
+        background-color: #f7fafc; /* Light gray background */
+        border-left-color: #a0aec0; /* Gray accent border */
+        opacity: 0.85; /* Slightly faded to indicate past events */
+    }
+
+    .event-hidden {
+        display: none;
+    }
+
+    /* Highlight matching text in search results */
+    .highlight-match {
+        background-color: rgba(66, 153, 225, 0.2);
+        padding: 0 2px;
+        border-radius: 2px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let currentTimeFilter = 'filter-today';
+            let searchTerm = '';
+
+            // Filter tabs functionality
+            $('.filter-tab, .filter-tab-active').click(function () {
+                // Update active tab
+                $('.filter-tab-active').removeClass('filter-tab-active').addClass('filter-tab');
+                $(this).removeClass('filter-tab').addClass('filter-tab-active');
+
+                // Filter events based on the selected tab
+                currentTimeFilter = $(this).attr('id');
+                applyFilters();
+            });
+
+            // Search input functionality with debounce
+            let searchTimeout;
+            $('#event-search').on('input', function () {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function () {
+                    searchTerm = $('#event-search').val().toLowerCase().trim();
+                    applyFilters();
+                }, 300); // 300ms debounce delay
+            });
+
+            // Initial filter (Today)
+            applyFilters();
+
+            function applyFilters() {
+                let visibleCount = 0;
+
+                // Reset all cards to hidden
+                $('.event-card').addClass('event-hidden');
+
+                // First filter by time
+                let timeFilteredCards;
+                switch (currentTimeFilter) {
+                    case 'filter-today':
+                        timeFilteredCards = $('.event-today');
+                        console.log('Today events count:', $('.event-today').length);
+                        break;
+                    case 'filter-upcoming':
+                        timeFilteredCards = $('.event-upcoming');
+                        console.log('Upcoming events count:', $('.event-upcoming').length);
+                        break;
+                    case 'filter-past':
+                        timeFilteredCards = $('.event-past');
+                        console.log('Past events count:', $('.event-past').length);
+                        break;
+                    case 'filter-all':
+                        timeFilteredCards = $('.event-card');
+                        console.log('All events count:', $('.event-card').length);
+                        break;
+                }
+
+                // Then apply search filter if there's a search term
+                if (searchTerm) {
+                    timeFilteredCards.each(function () {
+                        const eventName = $(this).data('event-name');
+                        const eventCity = $(this).data('event-city');
+
+                        if (eventName.includes(searchTerm) || eventCity.includes(searchTerm)) {
+                            $(this).removeClass('event-hidden');
+                            visibleCount++;
+                        }
+                    });
+                } else {
+                    // If no search term, show all time-filtered cards
+                    timeFilteredCards.removeClass('event-hidden');
+                    visibleCount = timeFilteredCards.length;
+                }
+
+                // Update count
+                $('#filtered-count').text(visibleCount);
+
+                // Show/hide no results message
+                if (visibleCount === 0) {
+                    $('#no-results').removeClass('hidden');
+                    $('#events-container').addClass('hidden');
+                } else {
+                    $('#no-results').addClass('hidden');
+                    $('#events-container').removeClass('hidden');
+                }
+            }
+        });
+    </script>
+}

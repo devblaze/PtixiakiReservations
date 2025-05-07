@@ -83,12 +83,25 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
         return View("CreateSeatMap");
     }
 
-    // POST: Table/Create
+// POST: Table/Create
     [HttpPost]
     public async Task<IActionResult> CreateTableMap([FromBody] JsonSeatModel[] seats, int? subAreaId)
     {
-        if (ModelState.IsValid)
+        if (ModelState.IsValid && subAreaId.HasValue)
         {
+            // Check if there are existing seats for this subarea
+            var existingSeats = await context.Seat
+                .Where(s => s.SubAreaId == subAreaId.Value)
+                .ToListAsync();
+
+            // If this is an edit operation (existing seats found), remove them all first
+            if (existingSeats.Any())
+            {
+                context.Seat.RemoveRange(existingSeats);
+                await context.SaveChangesAsync();
+            }
+
+            // Now add the new seats
             foreach (var s in seats)
             {
                 Seat seat = new Seat
@@ -96,14 +109,15 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
                     Name = s.Name,
                     X = s.left,
                     Y = s.top,
-                    SubAreaId = (int)subAreaId,
+                    SubAreaId = subAreaId.Value,
                     Available = true
                 };
                 context.Add(seat);
             }
+
+            await context.SaveChangesAsync();
         }
 
-        await context.SaveChangesAsync();
         Response.StatusCode = (int)HttpStatusCode.OK;
         return Json(Response.StatusCode);
     }

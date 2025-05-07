@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
+using PtixiakiReservations.Models.Requests;
 
 namespace PtixiakiReservations.Controllers;
 
@@ -185,36 +186,67 @@ public class ReservationController(
     }
 
     [HttpPost]
-    public async Task<IActionResult> MakeRes([FromBody] int[] res, int EventId, TimeSpan Duration, DateTime ResDate)
+    public async Task<IActionResult> MakeRes([FromBody] ReservationRequestViewModel request)
     {
-        if (ModelState.IsValid)
+        if (request == null || request.SeatIds == null || !request.SeatIds.Any())
         {
-            //   DateTime date = (DateTime)ResDate;
+            return BadRequest("No seats selected");
+        }
 
-            foreach (var r in res)
+        try
+        {
+            string userId = userManager.GetUserId(HttpContext.User);
+
+            // Validate the event exists
+            var eventEntity = await context.Event.FindAsync(request.EventId);
+            if (eventEntity == null)
             {
-                Reservation reservation = new Reservation
+                return BadRequest("Event not found");
+            }
+
+            // Validate the seats exist and are available
+            var seatIds = request.SeatIds;
+            var seats = await context.Seat
+                .Where(s => seatIds.Contains(s.Id) && s.Available)
+                .ToListAsync();
+
+            if (seats.Count != seatIds.Length)
+            {
+                return BadRequest("One or more selected seats are not available");
+            }
+
+            // Check for existing reservations
+            var existingReservations = await context.Reservation
+                .Where(r => r.EventId == request.EventId && seatIds.Contains(r.SeatId))
+                .AnyAsync();
+
+            if (existingReservations)
+            {
+                return BadRequest("One or more seats have already been reserved");
+            }
+
+            // Create reservations
+            foreach (var seatId in seatIds)
+            {
+                var reservation = new Reservation
                 {
-                    SeatId = r,
-                    UserId = userManager.GetUserId(HttpContext.User),
-                    EventId = EventId,
-                    Duration = Duration,
-                    Date = ResDate
+                    SeatId = seatId,
+                    UserId = userId,
+                    EventId = request.EventId,
+                    Duration = request.Duration,
+                    Date = request.ResDate
                 };
 
                 context.Add(reservation);
             }
-            await context.SaveChangesAsync();
-        }
-        else
-        {
-            Response.StatusCode = (int)HttpStatusCode.BadRequest;
-            return Json(Response.StatusCode);
-        }
 
-        Response.StatusCode = (int)HttpStatusCode.OK;
-        return Json(Response.StatusCode);
-        ;
+            await context.SaveChangesAsync();
+            return Ok("Reservations created successfully");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Error creating reservations: {ex.Message}");
+        }
     }
 
     // GET: Reservations/Edit/5
@@ -300,6 +332,15 @@ public class ReservationController(
         context.Reservation.Remove(reservations);
         await context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
+    }
+    
+    public IActionResult SelectSeats(int eventId, int venueId)
+    {
+        // Pass EventId and VenueId to the Select Seats page
+        ViewData["EventId"] = eventId;
+        ViewData["VenueId"] = venueId;
+
+        return View("SelectSeats");
     }
 
     private bool ReservationsExists(int id)

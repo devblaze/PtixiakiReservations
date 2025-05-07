@@ -10,6 +10,15 @@ namespace PtixiakiReservations.Seeders;
 
 public class DatabaseSeeder
 {
+    public static async Task SeedTestDataAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IServiceProvider serviceProvider)
+    {
+        // Call basic data seeding first
+        SeedData(context, userManager, roleManager);
+    
+        // Then call the test data seeder
+        await TestDataSeeder.SeedTestDataAsync(serviceProvider);
+    }
+    
     public static void SeedData(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager)
     {

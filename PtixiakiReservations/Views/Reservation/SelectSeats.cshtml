@@ -1,0 +1,186 @@
+﻿@{
+    ViewData["Title"] = "Select Seats";
+    var eventId = ViewData["EventId"];
+    var venueId = ViewData["VenueId"];
+}
+
+<div class="container mx-auto my-10">
+    <h1 class="text-3xl font-bold mb-4">Select Seats</h1>
+
+    <!-- Canvas for seat map -->
+    <div class="mb-6 flex justify-center">
+        <canvas id="seatCanvas" width="600" height="600" class="border border-gray-300 rounded-md shadow-md"></canvas>
+    </div>
+
+    <div class="mt-4 mb-2 text-center">
+        <p class="text-sm text-gray-600 mb-2">Click on available seats to select them</p>
+        <div class="flex justify-center space-x-6">
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-green-500 rounded-sm mr-2"></div>
+                <span class="text-sm">Available</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-red-500 rounded-sm mr-2"></div>
+                <span class="text-sm">Unavailable</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-blue-500 rounded-sm mr-2"></div>
+                <span class="text-sm">Selected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <button id="confirm-seats"
+                class="px-5 py-2 bg-blue-500 text-white font-medium rounded-md shadow hover:bg-blue-600">
+            Confirm Reservation
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const eventId = @eventId;
+        const venueId = @venueId;
+        let selectedSeats = [];
+
+        $(document).ready(function () {
+            // Initialize Fabric.js canvas
+            const canvas = new fabric.Canvas('seatCanvas', {
+                selection: false // Disable group selection
+            });
+
+            // Fetch seat data
+            $.getJSON(`/Seat/get_data?SubAreaId=${venueId}`, function (data) {
+                console.log("Seat data received:", data);
+
+                if (data && data.length) {
+                    renderSeats(canvas, data);
+                } else {
+                    // Show message if no seats available
+                    const noSeatsText = new fabric.Text('No seats available for this venue', {
+                        left: 300,
+                        top: 300,
+                        originX: 'center',
+                        originY: 'center',
+                        fill: '#666',
+                        fontSize: 18
+                    });
+                    canvas.add(noSeatsText);
+                    canvas.renderAll();
+                }
+            });
+
+            // Handle confirm button click
+            $("#confirm-seats").on("click", function () {
+                if (selectedSeats.length > 0) {
+                    // Show loading indicator
+                    $(this).prop('disabled', true).text('Processing...');
+
+                    $.ajax({
+                        url: `/Reservation/MakeRes`,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            seatIds: selectedSeats, // Changed from 'res' to 'seatIds'
+                            eventId: eventId,       // Changed from 'EventId' to 'eventId'
+                            duration: "00:00:00",   // Changed from 'Duration' to 'duration'
+                            resDate: new Date().toISOString() // Changed from 'ResDate' to 'resDate'
+                        }),
+                        success: function (response) {
+                            alert("Reservation successful!");
+                            window.location.href = "/Reservation/Index";
+                        },
+                        error: function (xhr) {
+                            // Enable button again
+                            $("#confirm-seats").prop('disabled', false).text('Confirm Reservation');
+
+                            // Display error message
+                            let errorMessage = "Failed to reserve seats. Please try again.";
+                            if (xhr.responseText) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    if (typeof response === 'string') {
+                                        errorMessage = response;
+                                    }
+                                } catch (e) {
+                                    // If it's not JSON, use the response text directly
+                                    errorMessage = xhr.responseText;
+                                }
+                            }
+                            alert(errorMessage);
+                        }
+                    });
+                } else {
+                    alert("Please select at least one seat.");
+                }
+            });
+        });
+
+        function renderSeats(canvas, seats) {
+            // Clear canvas first
+            canvas.clear();
+
+            seats.forEach(seat => {
+                // Create the seat rectangle
+                const rect = new fabric.Rect({
+                    width: 50,
+                    height: 50,
+                    fill: seat.available ? '#4CAF50' : '#F44336', // Green if available, red if not
+                    originX: 'center',
+                    originY: 'center'
+                });
+
+                // Create seat label text
+                const text = new fabric.Text(seat.name, {
+                    fontSize: 14,
+                    fill: '#fff',
+                    originX: 'center',
+                    originY: 'center'
+                });
+
+                // Group rectangle and text
+                const seatGroup = new fabric.Group([rect, text], {
+                    left: seat.x,
+                    top: seat.y,
+                    selectable: false,
+                    seatId: seat.id,
+                    available: seat.available,
+                    originX: 'center',
+                    originY: 'center'
+                });
+
+                // Add click event only for available seats
+                if (seat.available) {
+                    seatGroup.on('mousedown', function () {
+                        toggleSeatSelection(this, canvas);
+                    });
+                }
+
+                canvas.add(seatGroup);
+            });
+
+            canvas.renderAll();
+        }
+
+        function toggleSeatSelection(seatGroup, canvas) {
+            const seatId = seatGroup.seatId;
+            const rect = seatGroup.item(0); // The first item is the rectangle
+
+            // Check if seat is already selected
+            const seatIndex = selectedSeats.indexOf(seatId);
+
+            if (seatIndex === -1) {
+                // Select the seat
+                selectedSeats.push(seatId);
+                rect.set('fill', '#2196F3'); // Blue for selected
+            } else {
+                // Deselect the seat
+                selectedSeats.splice(seatIndex, 1);
+                rect.set('fill', '#4CAF50'); // Green for available
+            }
+
+            canvas.renderAll();
+        }
+    </script>
+}

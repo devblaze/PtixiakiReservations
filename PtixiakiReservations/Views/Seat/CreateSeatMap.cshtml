@@ -61,6 +61,7 @@
                 $.getJSON('/Seat/get_data', { SubAreaId: subAreaId })
                     .done(function (data) {
                         if (data && data.length > 0) {
+                            console.log("Loading existing seats:", data);
                             canvas.clear();
                             data.forEach(function (seat) {
                                 // Create rectangle
@@ -82,9 +83,9 @@
 
                                 // Group the rectangle and text, and set position
                                 var seatGroup = new fabric.Group([rect, text], {
-                                    left: seat.x,  // Use seat's X-coordinate
-                                    top: seat.y,   // Use seat's Y-coordinate
-                                    selectable: true, // Allow selection
+                                    left: seat.x,
+                                    top: seat.y,
+                                    selectable: true,
                                     originX: 'center',
                                     originY: 'center'
                                 });
@@ -118,25 +119,24 @@
                             var rect = new fabric.Rect({
                                 width: 50,
                                 height: 50,
-                                left: nextX + c * (50 + 30),
-                                top: nextY,
                                 fill: '#666',
-                                scaleY: 0.5,
                                 originX: 'center',
                                 originY: 'center'
                             });
 
                             var text = new fabric.Text(name, {
                                 fontSize: 14,
-                                left: nextX + c * (50 + 30),
-                                top: nextY,
                                 fill: '#fff',
                                 originX: 'center',
                                 originY: 'center'
                             });
 
                             var seatGroup = new fabric.Group([rect, text], {
-                                selectable: true
+                                left: nextX + c * (50 + 30),
+                                top: nextY,
+                                selectable: true,
+                                originX: 'center',
+                                originY: 'center'
                             });
 
                             canvas.add(seatGroup);
@@ -177,19 +177,33 @@
             });
 
             $("#save").click(function() {
-                const seats = canvas.getObjects().map(obj => ({
-                    Name: obj.item(1).text, // Get the name from the second item (text)
-                    X: obj.left,            // Get the x-coordinate of the seat group
-                    Y: obj.top,             // Get the y-coordinate of the seat group
-                    Available: true,
-                    SubAreaId: subAreaId
-                }));
+                // Get all objects from the canvas
+                const seatGroups = canvas.getObjects();
+                const seatsToSave = [];
 
+                // Loop through each seat group and extract coordinates
+                seatGroups.forEach(seatGroup => {
+                    // Extract needed values 
+                    const seatName = seatGroup.item(1).text;
+                    const x = seatGroup.left;
+                    const y = seatGroup.top;
+
+                    // Add to the list to save
+                    seatsToSave.push({
+                        Name: seatName,
+                        left: x,
+                        top: y
+                    });
+                });
+
+                console.log("Saving seats with positions:", seatsToSave);
+
+                // Send the data to the server
                 $.ajax({
                     url: `/Seat/CreateTableMap?subAreaId=${subAreaId}`,
                     type: "POST",
                     contentType: "application/json",
-                    data: JSON.stringify(seats),
+                    data: JSON.stringify(seatsToSave),
                     success: function(response) {
                         alert("Seats saved successfully!");
                     },
