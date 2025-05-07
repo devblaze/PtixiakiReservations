@@ -8,9 +8,18 @@ using System.Threading.Tasks;
 
 namespace PtixiakiReservations.Seeders;
 
-public class DatabaseSeeder
+public class DataSeeder
 {
-    public static void SeedData(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
+    public static async Task SeedTestDataAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IServiceProvider serviceProvider)
+    {
+        // Call basic data seeding first
+        BasicDataSeed(context, userManager, roleManager);
+    
+        // Then call the test data seeder
+        await TestDataSeeder.SeedTestDataAsync(serviceProvider);
+    }
+    
+    public static void BasicDataSeed(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager)
     {
         context.Database.EnsureCreated();

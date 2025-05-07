@@ -22,22 +22,37 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
     }
 
     [HttpGet]
-    public JsonResult get_data(int? SubAreaId)
+    public JsonResult get_data(int? SubAreaId, int? eventId)
     {
         if (SubAreaId == null) return Json(new { });
 
+        // First get all seats for this subarea
         var seats = context.Seat
             .Where(s => s.SubAreaId == SubAreaId)
-            .Select(s => new
-            {
-                id = s.Id,
-                name = s.Name,
-                x = (float)s.X, // Convert decimal to float for JS compatibility
-                y = (float)s.Y, // Convert decimal to float for JS compatibility
-                available = s.Available
-            }).ToList();
+            .ToList(); // Get the seat entities first
 
-        return Json(seats);
+        // If eventId is provided, get all seat IDs that are already reserved for this event
+        List<int> reservedSeatIds = new List<int>();
+        if (eventId.HasValue)
+        {
+            reservedSeatIds = context.Reservation
+                .Where(r => r.EventId == eventId.Value)
+                .Select(r => r.SeatId)
+                .ToList();
+        }
+
+        // Create a new list of objects with the merged data
+        var seatViewModels = seats.Select(seat => new
+        {
+            id = seat.Id,
+            name = seat.Name,
+            x = (float)seat.X,
+            y = (float)seat.Y,
+            available = seat.Available &&
+                        !reservedSeatIds.Contains(seat.Id) // Check both the seat's availability and if it's reserved
+        }).ToList();
+
+        return Json(seatViewModels);
     }
 
     public async Task<IActionResult> ListOfMySeats(int? subAreaId)
@@ -83,12 +98,25 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
         return View("CreateSeatMap");
     }
 
-    // POST: Table/Create
+// POST: Table/Create
     [HttpPost]
     public async Task<IActionResult> CreateTableMap([FromBody] JsonSeatModel[] seats, int? subAreaId)
     {
-        if (ModelState.IsValid)
+        if (ModelState.IsValid && subAreaId.HasValue)
         {
+            // Check if there are existing seats for this subarea
+            var existingSeats = await context.Seat
+                .Where(s => s.SubAreaId == subAreaId.Value)
+                .ToListAsync();
+
+            // If this is an edit operation (existing seats found), remove them all first
+            if (existingSeats.Any())
+            {
+                context.Seat.RemoveRange(existingSeats);
+                await context.SaveChangesAsync();
+            }
+
+            // Now add the new seats
             foreach (var s in seats)
             {
                 Seat seat = new Seat
@@ -96,14 +124,15 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
                     Name = s.Name,
                     X = s.left,
                     Y = s.top,
-                    SubAreaId = (int)subAreaId,
+                    SubAreaId = subAreaId.Value,
                     Available = true
                 };
                 context.Add(seat);
             }
+
+            await context.SaveChangesAsync();
         }
 
-        await context.SaveChangesAsync();
         Response.StatusCode = (int)HttpStatusCode.OK;
         return Json(Response.StatusCode);
     }

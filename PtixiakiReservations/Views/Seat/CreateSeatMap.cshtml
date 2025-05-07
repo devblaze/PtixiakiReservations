@@ -1,12 +1,12 @@
 ﻿@model PtixiakiReservations.Models.Seat
 
 @{
-    ViewData["Title"] = "Create Seat Map";
+ViewData["Title"] = "Create Seat Map";
 }
 @{
-    int subAreaId = (int)ViewData["SubAreaId"];
-    bool existingSeats = (bool)ViewData["HasExistingSeats"];
-    ViewData["Title"] = existingSeats ? "Edit Seat Map" : "Create Seat Map";
+int subAreaId = (int)ViewData["SubAreaId"];
+bool existingSeats = (bool)ViewData["HasExistingSeats"];
+ViewData["Title"] = existingSeats ? "Edit Seat Map" : "Create Seat Map";
 }
 
 <h1 class="text-2xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
@@ -51,154 +51,168 @@
 </div>
 
 @section Scripts {
-    <script>
-        $(document).ready(function () {
-            var canvas = new fabric.Canvas('c');
-            const INITIAL_POSITION_X = 50, INITIAL_POSITION_Y = 50;
-            var subAreaId = @subAreaId;
+<script>
+    $(document).ready(function () {
+        var canvas = new fabric.Canvas('c');
+        const INITIAL_POSITION_X = 50, INITIAL_POSITION_Y = 50;
+        var subAreaId = @subAreaId;
 
-            function loadExistingSeats() {
-                $.getJSON('/Seat/get_data', { SubAreaId: subAreaId })
-                    .done(function (data) {
-                        if (data && data.length > 0) {
-                            canvas.clear();
-                            data.forEach(function (seat) {
-                                // Create rectangle
-                                var rect = new fabric.Rect({
-                                    width: 50,
-                                    height: 50,
-                                    fill: '#666',
-                                    originX: 'center',
-                                    originY: 'center'
-                                });
-
-                                // Create text for the seat name
-                                var text = new fabric.Text(seat.name, {
-                                    fontSize: 14,
-                                    fill: '#fff',
-                                    originX: 'center',
-                                    originY: 'center'
-                                });
-
-                                // Group the rectangle and text, and set position
-                                var seatGroup = new fabric.Group([rect, text], {
-                                    left: seat.x,  // Use seat's X-coordinate
-                                    top: seat.y,   // Use seat's Y-coordinate
-                                    selectable: true, // Allow selection
-                                    originX: 'center',
-                                    originY: 'center'
-                                });
-
-                                canvas.add(seatGroup);
-                            });
-                            canvas.renderAll();
-                        }
-                    })
-                    .fail(function (error) {
-                        console.error("Failed to fetch seats:", error);
-                    });
-            }
-
-            // Load seats if exists
-            if (@existingSeats.ToString().ToLower()) {
-                loadExistingSeats();
-            }
-
-            $("#create").click(function () {
-                var rows = parseInt($("#Row").val());
-                var cols = parseInt($("#Col").val());
-                if (rows > 0 && cols > 0) {
-                    canvas.clear();
-                    var nextX = INITIAL_POSITION_X;
-                    var nextY = INITIAL_POSITION_Y;
-                    for (let r = 0; r < rows; r++) {
-                        nextY = INITIAL_POSITION_Y + r * (50 + 30);
-                        for (let c = 0; c < cols; c++) {
-                            var name = `Row:${r + 1}-Col:${c + 1}`;
+        function loadExistingSeats() {
+            $.getJSON('/Seat/get_data', { SubAreaId: subAreaId })
+                .done(function (data) {
+                    if (data && data.length > 0) {
+                        console.log("Loading existing seats:", data);
+                        canvas.clear();
+                        data.forEach(function (seat) {
+                            // Create rectangle
                             var rect = new fabric.Rect({
                                 width: 50,
                                 height: 50,
-                                left: nextX + c * (50 + 30),
-                                top: nextY,
                                 fill: '#666',
-                                scaleY: 0.5,
                                 originX: 'center',
                                 originY: 'center'
                             });
 
-                            var text = new fabric.Text(name, {
+                            // Create text for the seat name
+                            var text = new fabric.Text(seat.name, {
                                 fontSize: 14,
-                                left: nextX + c * (50 + 30),
-                                top: nextY,
                                 fill: '#fff',
                                 originX: 'center',
                                 originY: 'center'
                             });
 
+                            // Group the rectangle and text, and set position
                             var seatGroup = new fabric.Group([rect, text], {
-                                selectable: true
+                                left: seat.x,
+                                top: seat.y,
+                                selectable: true,
+                                originX: 'center',
+                                originY: 'center'
                             });
 
                             canvas.add(seatGroup);
-                        }
-                    }
-                    canvas.renderAll();
-                }
-            });
-
-            $("#deleteSeat").click(function () {
-                var activeObjects = canvas.getActiveObjects();
-                if (activeObjects.length > 0) {
-                    if (confirm("Are you sure you want to remove the selected seats?")) {
-                        var seatNames = activeObjects.map(obj => obj.item(1).text); // Assuming the second item is text with Seat Name 
-                        $.ajax({
-                            url: '/Seat/DeleteMultipleSeats',
-                            type: 'POST',
-                            contentType: "application/json",
-                            data: JSON.stringify({seatNames: seatNames, subAreaId: subAreaId}),
-                            success: function (response) {
-                                if (response.success) {
-                                    activeObjects.forEach(obj => canvas.remove(obj));
-                                    canvas.discardActiveObject().renderAll();
-                                    alert("Selected seats deleted successfully!");
-                                } else {
-                                    alert("Failed to delete some seats: " + response.message);
-                                }
-                            },
-                            error: function (err) {
-                                console.error(err);
-                                alert("Error occurred while deleting seats.");
-                            }
                         });
+                        canvas.renderAll();
                     }
-                } else {
-                    alert("Please select one or more seats first!");
+                })
+                .fail(function (error) {
+                    console.error("Failed to fetch seats:", error);
+                });
+        }
+
+        // Load seats if exists
+        if (@existingSeats.ToString().ToLower()) {
+            loadExistingSeats();
+        }
+
+        $("#create").click(function () {
+            var rows = parseInt($("#Row").val());
+            var cols = parseInt($("#Col").val());
+            if (rows > 0 && cols > 0) {
+                canvas.clear();
+                var nextX = INITIAL_POSITION_X;
+                var nextY = INITIAL_POSITION_Y;
+                for (let r = 0; r < rows; r++) {
+                    nextY = INITIAL_POSITION_Y + r * (50 + 30);
+                    for (let c = 0; c < cols; c++) {
+                        var name = `Row:${r + 1}-Col:${c + 1}`;
+                        var rect = new fabric.Rect({
+                            width: 50,
+                            height: 50,
+                            fill: '#666',
+                            originX: 'center',
+                            originY: 'center'
+                        });
+
+                        var text = new fabric.Text(name, {
+                            fontSize: 14,
+                            fill: '#fff',
+                            originX: 'center',
+                            originY: 'center'
+                        });
+
+                        var seatGroup = new fabric.Group([rect, text], {
+                            left: nextX + c * (50 + 30),
+                            top: nextY,
+                            selectable: true,
+                            originX: 'center',
+                            originY: 'center'
+                        });
+
+                        canvas.add(seatGroup);
+                    }
                 }
-            });
+                canvas.renderAll();
+            }
+        });
 
-            $("#save").click(function() {
-                const seats = canvas.getObjects().map(obj => ({
-                    Name: obj.item(1).text, // Get the name from the second item (text)
-                    X: obj.left,            // Get the x-coordinate of the seat group
-                    Y: obj.top,             // Get the y-coordinate of the seat group
-                    Available: true,
-                    SubAreaId: subAreaId
-                }));
+        $("#deleteSeat").click(function () {
+            var activeObjects = canvas.getActiveObjects();
+            if (activeObjects.length > 0) {
+                if (confirm("Are you sure you want to remove the selected seats?")) {
+                    var seatNames = activeObjects.map(obj => obj.item(1).text); // Assuming the second item is text with Seat Name 
+                    $.ajax({
+                        url: '/Seat/DeleteMultipleSeats',
+                        type: 'POST',
+                        contentType: "application/json",
+                        data: JSON.stringify({seatNames: seatNames, subAreaId: subAreaId}),
+                        success: function (response) {
+                            if (response.success) {
+                                activeObjects.forEach(obj => canvas.remove(obj));
+                                canvas.discardActiveObject().renderAll();
+                                alert("Selected seats deleted successfully!");
+                            } else {
+                                alert("Failed to delete some seats: " + response.message);
+                            }
+                        },
+                        error: function (err) {
+                            console.error(err);
+                            alert("Error occurred while deleting seats.");
+                        }
+                    });
+                }
+            } else {
+                alert("Please select one or more seats first!");
+            }
+        });
 
-                $.ajax({
-                    url: `/Seat/CreateTableMap?subAreaId=${subAreaId}`,
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify(seats),
-                    success: function(response) {
-                        alert("Seats saved successfully!");
-                    },
-                    error: function(error) {
-                        console.error(error);
-                        alert("Error occurred while saving seats.");
-                    }
+        $("#save").click(function() {
+            // Get all objects from the canvas
+            const seatGroups = canvas.getObjects();
+            const seatsToSave = [];
+
+            // Loop through each seat group and extract coordinates
+            seatGroups.forEach(seatGroup => {
+                // Extract needed values 
+                const seatName = seatGroup.item(1).text;
+                const x = seatGroup.left;
+                const y = seatGroup.top;
+
+                // Add to the list to save
+                seatsToSave.push({
+                    Name: seatName,
+                    left: x,
+                    top: y
                 });
             });
+
+            console.log("Saving seats with positions:", seatsToSave);
+
+            // Send the data to the server
+            $.ajax({
+                url: `/Seat/CreateTableMap?subAreaId=${subAreaId}`,
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(seatsToSave),
+                success: function(response) {
+                    alert("Seats saved successfully!");
+                },
+                error: function(error) {
+                    console.error(error);
+                    alert("Error occurred while saving seats.");
+                }
+            });
         });
-    </script>
+    });
+</script>
 }

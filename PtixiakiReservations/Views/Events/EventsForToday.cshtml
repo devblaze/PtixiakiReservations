@@ -1,47 +1,477 @@
 ﻿@model IEnumerable<PtixiakiReservations.Models.Event>
 
 @{
-    ViewData["Title"] = "Events For Today";
+    ViewData["Title"] = "Events";
 }
 
 <div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Events For Today</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Events</h1>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        @foreach (var item in Model)
-        {
-            // var photopath = "~/images/" + (item.Venue.imgUrl ?? "noimage.jpg");
-            <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                @* <img class="w-full h-48 object-cover" src=@photopath asp-append-version="true" alt="Event Venue Image"> *@
-
-                <div class="p-4">
-                    <h3 class="text-xl font-bold text-gray-800">
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </h3>
-                    <p class="text-sm text-gray-600">
-                        @Html.DisplayFor(modelItem => item.StartDateTime) – @Html.DisplayFor(modelItem => item.EndTime.TimeOfDay)
-                    </p>
-
-                    <div class="mt-3 text-sm text-gray-700 space-y-1">
-                        <p><span class="font-medium">Venue:</span> @Html.DisplayFor(modelItem => item.Venue.Name)</p>
-                        <p><span class="font-medium">Address:</span> @Html.DisplayFor(modelItem => item.Venue.Address)</p>
-                        <p><span class="font-medium">City:</span> @Html.DisplayFor(modelItem => item.Venue.City.Name)</p>
-                        <p><span class="font-medium">Postal Code:</span> @Html.DisplayFor(modelItem => item.Venue.PostalCode)</p>
-                        <p><span class="font-medium">Phone:</span> @Html.DisplayFor(modelItem => item.Venue.Phone)</p>
-                    </div>
-
-                    <div class="mt-4 flex justify-between items-center">
-                        <a asp-action="Details" asp-controller="Venue" asp-route-id="@item.VenueId"
-                           class="text-sm text-blue-500 hover:underline">
-                            Details
-                        </a>
-                        <a asp-controller="Reservation" asp-action="Create" asp-route-VenueId="@item.VenueId" asp-route-EventId="@item.Id"
-                           class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600">
-                            Reservation
-                        </a>
-                    </div>
-                </div>
+    <!-- Debug Panel - Can be removed in production -->
+    <div class="bg-gray-100 p-4 mb-6 rounded-lg">
+        <h3 class="font-medium mb-2">Debug Information</h3>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+                <strong>Today Events:</strong> <span id="debug-today-count">Loading...</span>
             </div>
-        }
+            <div>
+                <strong>Upcoming Events:</strong> <span id="debug-upcoming-count">Loading...</span>
+            </div>
+            <div>
+                <strong>Past Events:</strong> <span id="debug-past-count">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-8">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="relative w-full sm:w-96">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                </div>
+                <input type="search" id="event-search"
+                       class="block w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Search by event name or city..."/>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Filter Tabs -->
+    <div class="mb-8">
+        <div class="flex justify-center space-x-1 border-b border-gray-200">
+            <button id="filter-today"
+                    class="filter-tab-active py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                Today
+            </button>
+            <button id="filter-upcoming"
+                    class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                Upcoming
+            </button>
+            <button id="filter-past" class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                Past
+            </button>
+            <button id="filter-all" class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
+                All Events
+            </button>
+        </div>
+    </div>
+
+    <!-- Events Count Display -->
+    <div id="events-count" class="text-center mb-6 text-gray-600">
+        Showing <span id="filtered-count">0</span> events
+    </div>
+
+    <!-- Events Grid -->
+    <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Event cards will be loaded here dynamically -->
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <p class="mt-2 text-gray-600">Loading events...</p>
+    </div>
+
+    <!-- No Results Message -->
+    <div id="no-results" class="hidden text-center py-12">
+        <div class="text-gray-500">
+            <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-xl font-semibold">No events found</p>
+            <p class="mt-2">Try adjusting your search or filter</p>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="mt-8 flex justify-center space-x-2 hidden">
+        <button id="prev-page" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+        </button>
+        <div id="page-numbers" class="flex space-x-2">
+            <!-- Page numbers will be added here -->
+        </div>
+        <button id="next-page" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            Next
+        </button>
     </div>
 </div>
+
+@functions {
+    public string GetEventTimeClass(DateTime eventDate)
+    {
+        DateTime today = DateTime.Today;
+
+        if (eventDate.Date == today)
+        {
+            return "event-today";
+        }
+        else if (eventDate.Date > today)
+        {
+            return "event-upcoming";
+        }
+        else
+        {
+            return "event-past";
+        }
+    }
+}
+
+<style>
+    .filter-tab {
+        color: #718096;
+        background-color: transparent;
+        transition: all 0.2s;
+    }
+
+    .filter-tab:hover {
+        color: #4299e1;
+    }
+
+    .filter-tab-active {
+        color: #4299e1;
+        background-color: white;
+        border-bottom: 2px solid #4299e1;
+    }
+
+    /* Event card base style */
+    .event-card {
+        opacity: 1;
+        transition: all 0.3s ease-in-out;
+        border-left: 4px solid #e2e8f0; /* Default border */
+    }
+
+    /* Today events - green accent */
+    .event-today {
+        background-color: #f0fff4; /* Light green background */
+        border-left-color: #48bb78; /* Green accent border */
+    }
+
+    /* Upcoming events - blue accent */
+    .event-upcoming {
+        background-color: #ebf8ff; /* Light blue background */
+        border-left-color: #4299e1; /* Blue accent border */
+    }
+
+    /* Past events - gray accent */
+    .event-past {
+        background-color: #f7fafc; /* Light gray background */
+        border-left-color: #a0aec0; /* Gray accent border */
+        opacity: 0.85; /* Slightly faded to indicate past events */
+    }
+
+    .event-hidden {
+        display: none;
+    }
+
+    /* Highlight matching text in search results */
+    .highlight-match {
+        background-color: rgba(66, 153, 225, 0.2);
+        padding: 0 2px;
+        border-radius: 2px;
+    }
+
+    /* Pagination active page */
+    .page-active {
+        background-color: #4299e1;
+        color: white;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let currentTimeFilter = 'filter-today';
+            let searchTerm = '';
+            let currentPage = 1;
+            let totalPages = 1;
+            let pageSize = 12;
+            let cityFilter = '';
+
+            // Initialize by loading today's events
+            loadEvents();
+
+            // Filter tabs functionality
+            $('.filter-tab, .filter-tab-active').click(function() {
+                // Update active tab
+                $('.filter-tab-active').removeClass('filter-tab-active').addClass('filter-tab');
+                $(this).removeClass('filter-tab').addClass('filter-tab-active');
+
+                // Update current filter
+                currentTimeFilter = $(this).attr('id');
+                currentPage = 1; // Reset to first page
+
+                // Load events for this filter
+                loadEvents();
+            });
+
+            // Search input functionality with debounce
+            let searchTimeout;
+            $('#event-search').on('input', function () {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function () {
+                    searchTerm = $('#event-search').val().toLowerCase().trim();
+                    currentPage = 1; // Reset to first page when search changes
+                    loadEvents();
+                }, 300); // 300ms debounce delay
+            });
+
+            // Pagination handlers - FIXED: Prevent default behavior
+            $('#prev-page').click(function(e) {
+                e.preventDefault(); // Prevent form submission
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadEvents();
+                }
+            });
+
+            $('#next-page').click(function(e) {
+                e.preventDefault(); // Prevent form submission
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadEvents();
+                }
+            });
+
+            // Function to load events from the server based on current filter
+            function loadEvents() {
+                // Show loading indicator
+                $('#events-container').addClass('hidden');
+                $('#loading-indicator').removeClass('hidden');
+                $('#no-results').addClass('hidden');
+                $('#pagination').addClass('hidden');
+
+                // Determine which endpoint to call based on filter
+                let endpoint;
+                switch(currentTimeFilter) {
+                    case 'filter-today':
+                        endpoint = '/Events/GetTodayEvents';
+                        break;
+                    case 'filter-upcoming':
+                        endpoint = '/Events/GetUpcomingEvents';
+                        break;
+                    case 'filter-past':
+                        endpoint = '/Events/GetPastEvents';
+                        break;
+                    case 'filter-all':
+                        endpoint = '/Events/GetAllEvents';
+                        break;
+                    default:
+                        endpoint = '/Events/GetTodayEvents';
+                }
+
+                // Build query parameters
+                let params = {
+                    page: currentPage,
+                    pageSize: pageSize
+                };
+
+                if (searchTerm) {
+                    params.city = searchTerm; // Using city as search term for simplicity
+                }
+
+                // Log the request to help debug
+                console.log(`Loading events from ${endpoint}, page ${currentPage}/${totalPages}`);
+
+                // Make AJAX request
+                $.getJSON(endpoint, params)
+                    .done(function(data) {
+                        // Log the response to help debug
+                        console.log('API response:', data);
+
+                        // Update page data
+                        totalPages = data.totalPages;
+                        currentPage = data.currentPage;
+
+                        // Clear existing content
+                        $('#events-container').empty();
+
+                        // Hide loading indicator
+                        $('#loading-indicator').addClass('hidden');
+
+                        // Update the events count
+                        $('#filtered-count').text(data.totalCount);
+
+                        // Show no results message if needed
+                        if (data.events.length === 0) {
+                            $('#no-results').removeClass('hidden');
+                            return;
+                        }
+
+                        // Build event cards
+                        data.events.forEach(function(event) {
+                            const eventTimeClass = getEventTimeClass(new Date(event.startDateTime));
+                            const card = buildEventCard(event, eventTimeClass);
+                            $('#events-container').append(card);
+                        });
+
+                        // Show events container
+                        $('#events-container').removeClass('hidden');
+
+                        // Update pagination
+                        updatePagination(data.currentPage, data.totalPages);
+
+                        // Update debug counts
+                        updateDebugCounts();
+                    })
+                    .fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error loading events:', errorThrown);
+                        $('#loading-indicator').addClass('hidden');
+                        $('#no-results').removeClass('hidden').find('p.text-xl').text('Error loading events');
+                    });
+            }
+
+            // Helper function to build an event card
+            function buildEventCard(event, timeClass) {
+                // Format dates
+                const startDate = new Date(event.startDateTime);
+                const endDate = new Date(event.endTime);
+                const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const formattedStartTime = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                const formattedEndTime = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                let badgeClass = '';
+                let badgeText = '';
+
+                if (timeClass === 'event-today') {
+                    badgeClass = 'bg-green-500';
+                    badgeText = 'Today';
+                } else if (timeClass === 'event-upcoming') {
+                    badgeClass = 'bg-blue-500';
+                    badgeText = 'Upcoming';
+                } else {
+                    badgeClass = 'bg-gray-500';
+                    badgeText = 'Past';
+                }
+
+                return `
+                    <div class="event-card ${timeClass} shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
+                         data-event-name="${event.name.toLowerCase()}"
+                         data-event-city="${event.venue.city.name.toLowerCase()}">
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <div class="text-xs inline-flex items-center">
+                                    <span class="${badgeClass} text-white px-2 py-1 rounded font-medium">${badgeText}</span>
+                                    <span class="ml-2 text-gray-500">${formattedStartDate}</span>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-gray-800">${event.name}</h3>
+                            <p class="text-sm text-gray-600">${formattedStartDate} ${formattedStartTime} – ${formattedEndTime}</p>
+                            
+                            <div class="mt-3 text-sm text-gray-700 space-y-1">
+                                <p><span class="font-medium">Venue:</span> ${event.venue.name}</p>
+                                <p><span class="font-medium">Address:</span> ${event.venue.address}</p>
+                                <p><span class="font-medium">City:</span> ${event.venue.city.name}</p>
+                                <p><span class="font-medium">Postal Code:</span> ${event.venue.postalCode}</p>
+                                <p><span class="font-medium">Phone:</span> ${event.venue.phone}</p>
+                            </div>
+                            
+                            <div class="mt-4 flex justify-between items-center">
+                                <a href="/Venue/Details/${event.venueId}" class="text-sm text-blue-500 hover:underline">Details</a>
+                                <a href="/Reservation/SelectSeats?EventId=${event.id}&VenueId=${event.venueId}" 
+                                   class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600 transition-colors">
+                                   Reservation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Function to update pagination controls
+            function updatePagination(currentPage, totalPages) {
+                if (totalPages <= 1) {
+                    $('#pagination').addClass('hidden');
+                    return;
+                }
+
+                // Update buttons state
+                $('#prev-page').prop('disabled', currentPage === 1);
+                $('#next-page').prop('disabled', currentPage === totalPages);
+
+                // Build page numbers
+                const $pageNumbers = $('#page-numbers');
+                $pageNumbers.empty();
+
+                // Determine which page numbers to show
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, startPage + 4);
+
+                // Adjust if we're near the end
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+
+                // Add first page button if not included
+                if (startPage > 1) {
+                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded" data-page="1">1</button>`);
+                    if (startPage > 2) {
+                        $pageNumbers.append(`<span class="px-1 py-1">...</span>`);
+                    }
+                }
+
+                // Add page numbers
+                for (let i = startPage; i <= endPage; i++) {
+                    const activeClass = i === currentPage ? 'page-active' : '';
+                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded ${activeClass}" data-page="${i}">${i}</button>`);
+                }
+
+                // Add last page button if not included
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        $pageNumbers.append(`<span class="px-1 py-1">...</span>`);
+                    }
+                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded" data-page="${totalPages}">${totalPages}</button>`);
+                }
+
+                // Add click handlers for page buttons - FIXED: Add preventDefault
+                $pageNumbers.on('click', '.page-button', function(e) {
+                    e.preventDefault(); // Prevent form submission
+                    currentPage = parseInt($(this).data('page'));
+                    loadEvents();
+                });
+
+                // Show pagination
+                $('#pagination').removeClass('hidden');
+            }
+
+            // Helper function to determine time class
+            function getEventTimeClass(eventDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const eventDateOnly = new Date(eventDate);
+                eventDateOnly.setHours(0, 0, 0, 0);
+
+                if (eventDateOnly.getTime() === today.getTime()) {
+                    return "event-today";
+                } else if (eventDateOnly > today) {
+                    return "event-upcoming";
+                } else {
+                    return "event-past";
+                }
+            }
+
+            // Function to update debug counts
+            function updateDebugCounts() {
+                // Make parallel requests to get counts for each category
+                $.when(
+                    $.getJSON('/Events/GetTodayEvents', { page: 1, pageSize: 1 }),
+                    $.getJSON('/Events/GetUpcomingEvents', { page: 1, pageSize: 1 }),
+                    $.getJSON('/Events/GetPastEvents', { page: 1, pageSize: 1 })
+                ).then(function(todayData, upcomingData, pastData) {
+                    $('#debug-today-count').text(todayData[0].totalCount);
+                    $('#debug-upcoming-count').text(upcomingData[0].totalCount);
+                    $('#debug-past-count').text(pastData[0].totalCount);
+                });
+            }
+        });
+    </script>
+}

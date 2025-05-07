@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
 using PtixiakiReservations.Models.ViewModels;
@@ -18,7 +20,8 @@ public class EventsController(
     ApplicationDbContext context,
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
-    IElasticSearch elasticSearchService)
+    IElasticSearch elasticSearchService,
+    ILogger<EventsController> logger)
     : Controller
 {
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
@@ -29,17 +32,206 @@ public class EventsController(
         return View();
     }
 
-    public async Task<IActionResult> EventsForToday(string city)
+// New API endpoint to get today's events
+    [HttpGet]
+    public async Task<IActionResult> GetTodayEvents(string city, int page = 1, int pageSize = 12)
     {
+        logger.LogInformation("Getting today's events. City filter: {City}", city ?? "None");
+
         var today = DateTime.Today;
-        
-        var eventsForToday = await context.Event
+
+        var eventsQuery = context.Event
             .Include(e => e.Venue)
             .ThenInclude(v => v.City)
             .Where(e => e.StartDateTime.Date == today)
+            .OrderBy(e => e.StartDateTime);
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        return View(eventsForToday);
+        logger.LogInformation("Found {Count} today events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
+// New API endpoint to get upcoming events
+    [HttpGet]
+    public async Task<IActionResult> GetUpcomingEvents(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Getting upcoming events. City filter: {City}", city ?? "None");
+
+        var today = DateTime.Today;
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .Where(e => e.StartDateTime.Date > today)
+            .OrderBy(e => e.StartDateTime);
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} upcoming events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
+// New API endpoint to get past events
+    [HttpGet]
+    public async Task<IActionResult> GetPastEvents(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Getting past events. City filter: {City}", city ?? "None");
+
+        var today = DateTime.Today;
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .Where(e => e.StartDateTime.Date < today)
+            .OrderByDescending(e => e.StartDateTime); // Show most recent past events first
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} past events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
+// New API endpoint to get all events
+    [HttpGet]
+    public async Task<IActionResult> GetAllEvents(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Getting all events. City filter: {City}", city ?? "None");
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .OrderBy(e => e.StartDateTime);
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} total events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+    
+    public string GetEventTimeClass(DateTime eventDate)
+    {
+        DateTime today = DateTime.Today;
+
+        if (eventDate.Date == today)
+        {
+            return "event-today";
+        }
+        else if (eventDate.Date > today)
+        {
+            return "event-upcoming";
+        }
+        else
+        {
+            return "event-past";
+        }
+    }
+
+    public async Task<IActionResult> EventsForToday(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Fetching events for today and future. City filter: {City}", city ?? "None");
+
+        var today = DateTime.Today;
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .Where(e => e.StartDateTime.Date >= today.AddDays(-30) &&
+                        e.StartDateTime.Date <= today.AddDays(60))
+            .OrderBy(e => e.StartDateTime);
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var eventsList = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // Add debug info to see event dates
+        var todayEvents = eventsList.Count(e => e.StartDateTime.Date == today);
+        var upcomingEvents = eventsList.Count(e => e.StartDateTime.Date > today);
+        var pastEvents = eventsList.Count(e => e.StartDateTime.Date < today);
+
+        logger.LogInformation(
+            "Found {Count} events. Distribution: Today: {TodayCount}, Upcoming: {UpcomingCount}, Past: {PastCount}",
+            eventsList.Count,
+            todayEvents,
+            upcomingEvents,
+            pastEvents);
+
+        return View(eventsList);
     }
 
     // GET: Events/Details/5
@@ -51,9 +243,9 @@ public class EventsController(
             .Include(r => r.FamilyEvent)
             .Include(r => r.Venue)
             .FirstOrDefaultAsync(m => m.Id == id);
-        
+
         if (@event is null) return NotFound();
-        
+
         return View(@event);
     }
 
@@ -105,10 +297,10 @@ public class EventsController(
 
         // Pass the venues to the view via ViewBag
         ViewBag.VenueList = venues;
-        
+
         var eventTypes = context.EventType.ToList();
         ViewBag.EventTypeList = new SelectList(eventTypes, "Id", "Name");
-        
+
         return View(new Event());
     }
 
@@ -130,9 +322,9 @@ public class EventsController(
 
             return View(newEvent); // Return the form with validation errors
         }
-        
-        newEvent.FamilyEventId ??= 1; 
-        
+
+        newEvent.FamilyEventId ??= 1;
+
         context.Event.Add(newEvent);
         await context.SaveChangesAsync();
 
@@ -245,5 +437,93 @@ public class EventsController(
     {
         var results = await elasticSearchService.SearchAsync<Event>(query, "events");
         return View(results);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> IndexAllEventsToElastic()
+    {
+        try
+        {
+            // Load all events with necessary includes
+            var events = await context.Event
+                .Include(e => e.Venue)
+                .Include(e => e.EventType)
+                .ToListAsync();
+
+            // Create the index if it doesn't exist
+            await elasticSearchService.CreateIndexIfNotExistsAsync("events");
+
+            // Index events in batches
+            const int batchSize = 50;
+            var successCount = 0;
+
+            for (int i = 0; i < events.Count; i += batchSize)
+            {
+                var batch = events.Skip(i).Take(batchSize).ToList();
+                var result = await elasticSearchService.AddOrUpdateBulkAsync(batch, "events");
+
+                if (result)
+                {
+                    successCount += batch.Count;
+                }
+            }
+
+            return Ok($"Successfully indexed {successCount} of {events.Count} events to Elasticsearch.");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Error indexing events: {ex.Message}");
+        }
+    }
+    
+    [HttpGet("test-elasticsearch")]
+    [AllowAnonymous] // Allow access without authentication for testing
+    public async Task<IActionResult> TestElasticsearch()
+    {
+        try
+        {
+            // Test 1: Check if we can create an index
+            var indexName = "test-index";
+            var createResult = await elasticSearchService.CreateIndexIfNotExistsAsync(indexName);
+
+            if (!createResult)
+            {
+                return BadRequest("Failed to create Elasticsearch index");
+            }
+
+            // Test 2: Index a simple document
+            var testEvent = new Event
+            {
+                Id = 999,
+                Name = "Test Event " + DateTime.Now.Ticks,
+                StartDateTime = DateTime.Now,
+                EndTime = DateTime.Now.AddHours(1),
+                EventTypeId = 1,
+                VenueId = 1
+            };
+
+            var indexResult = await elasticSearchService.AddOrUpdateAsync(testEvent, indexName);
+
+            if (!indexResult)
+            {
+                return BadRequest("Failed to index test document");
+            }
+
+            // Test 3: Search for the document
+            var searchResults = await elasticSearchService.SearchAsync<Event>("Test Event", indexName);
+
+            return Ok(new
+            {
+                message = "Elasticsearch is working!",
+                indexCreated = createResult,
+                documentIndexed = indexResult,
+                searchResults = searchResults.Select(e => new { e.Id, e.Name, e.StartDateTime })
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error testing Elasticsearch");
+            return BadRequest($"Elasticsearch test failed: {ex.Message}");
+        }
     }
 }
