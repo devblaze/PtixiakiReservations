@@ -33,6 +33,11 @@
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                             Home
                         </a>
+                        
+                        <a href="@Url.Action("Index", "Reservation")"
+                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                            Reservations
+                        </a>
 
                         <a href="@Url.Action("CreateEvent", "Events")"
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
@@ -49,13 +54,6 @@
                             Create Venue
                         </a>
 
-                        <!-- Reservations -->
-                        <a href="@Url.Action("Index", "Reservation")"
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            Reservations
-                        </a>
-
-                        <!-- Sub Areas -->
                         <a href="@Url.Action("Index", "SubAreas")"
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                             Sub Areas
@@ -96,15 +94,15 @@
                 <a href="@Url.Action("Index", "Home")"
                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
 
-                <a href="@Url.Action("Index", "Venue")"
-                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Venue</a>
-
                 <a href="@Url.Action("Index", "Events")"
                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Events</a>
 
                 <a href="@Url.Action("Index", "Reservation")"
                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Reservations</a>
-
+                
+                <a href="@Url.Action("Index", "Venue")"
+                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Venue</a>
+                
                 <a href="@Url.Action("Index", "SubAreas")"
                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Sub
                     Areas</a>

@@ -7,6 +7,22 @@
 <div class="container mx-auto p-6">
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Events</h1>
 
+    <!-- Debug Panel - Can be removed in production -->
+    <div class="bg-gray-100 p-4 mb-6 rounded-lg">
+        <h3 class="font-medium mb-2">Debug Information</h3>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+                <strong>Today Events:</strong> <span id="debug-today-count">Loading...</span>
+            </div>
+            <div>
+                <strong>Upcoming Events:</strong> <span id="debug-upcoming-count">Loading...</span>
+            </div>
+            <div>
+                <strong>Past Events:</strong> <span id="debug-past-count">Loading...</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Search Bar -->
     <div class="mb-8">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -47,72 +63,18 @@
 
     <!-- Events Count Display -->
     <div id="events-count" class="text-center mb-6 text-gray-600">
-        Showing <span id="filtered-count">@Model.Count()</span> events
+        Showing <span id="filtered-count">0</span> events
     </div>
 
     <!-- Events Grid -->
     <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        @foreach (var item in Model)
-        {
-            string eventTimeClass = GetEventTimeClass(item.StartDateTime);
+        <!-- Event cards will be loaded here dynamically -->
+    </div>
 
-            <div
-                class="event-card @eventTimeClass shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
-                data-event-name="@item.Name.ToLower()"
-                data-event-city="@item.Venue.City.Name.ToLower()">
-                <div class="p-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <div class="text-xs inline-flex items-center">
-                            @if (eventTimeClass == "event-today")
-                            {
-                                <span class="bg-green-500 text-white px-2 py-1 rounded font-medium">Today</span>
-                            }
-                            else if (eventTimeClass == "event-upcoming")
-                            {
-                                <span class="bg-blue-500 text-white px-2 py-1 rounded font-medium">Upcoming</span>
-                            }
-                            else
-                            {
-                                <span class="bg-gray-500 text-white px-2 py-1 rounded font-medium">Past</span>
-                            }
-                            <span class="ml-2 text-gray-500">@item.StartDateTime.ToString("MMM d, yyyy")</span>
-                        </div>
-                    </div>
-
-                    <h3 class="text-xl font-bold text-gray-800">
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </h3>
-                    <p class="text-sm text-gray-600">
-                        @item.StartDateTime.ToString("MMM d, yyyy h:mm tt") – @item.EndTime.ToString("h:mm tt")
-                    </p>
-
-                    <div class="mt-3 text-sm text-gray-700 space-y-1">
-                        <p><span class="font-medium">Venue:</span> @Html.DisplayFor(modelItem => item.Venue.Name)</p>
-                        <p><span class="font-medium">Address:</span> @Html.DisplayFor(modelItem => item.Venue.Address)
-                        </p>
-                        <p><span class="font-medium">City:</span> @Html.DisplayFor(modelItem => item.Venue.City.Name)
-                        </p>
-                        <p>
-                            <span
-                                class="font-medium">Postal Code:</span> @Html.DisplayFor(modelItem => item.Venue.PostalCode)
-                        </p>
-                        <p><span class="font-medium">Phone:</span> @Html.DisplayFor(modelItem => item.Venue.Phone)</p>
-                    </div>
-
-                    <div class="mt-4 flex justify-between items-center">
-                        <a asp-action="Details" asp-controller="Venue" asp-route-id="@item.VenueId"
-                           class="text-sm text-blue-500 hover:underline">
-                            Details
-                        </a>
-                        <a asp-controller="Reservation" asp-action="SelectSeats" asp-route-EventId="@item.Id"
-                           asp-route-VenueId="@item.VenueId"
-                           class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600 transition-colors">
-                            Reservation
-                        </a>
-                    </div>
-                </div>
-            </div>
-        }
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <p class="mt-2 text-gray-600">Loading events...</p>
     </div>
 
     <!-- No Results Message -->
@@ -126,10 +88,22 @@
             <p class="mt-2">Try adjusting your search or filter</p>
         </div>
     </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="mt-8 flex justify-center space-x-2 hidden">
+        <button id="prev-page" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+        </button>
+        <div id="page-numbers" class="flex space-x-2">
+            <!-- Page numbers will be added here -->
+        </div>
+        <button id="next-page" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            Next
+        </button>
+    </div>
 </div>
 
 @functions {
-
     public string GetEventTimeClass(DateTime eventDate)
     {
         DateTime today = DateTime.Today;
@@ -147,7 +121,6 @@
             return "event-past";
         }
     }
-
 }
 
 <style>
@@ -203,6 +176,12 @@
         padding: 0 2px;
         border-radius: 2px;
     }
+
+    /* Pagination active page */
+    .page-active {
+        background-color: #4299e1;
+        color: white;
+    }
 </style>
 
 @section Scripts {
@@ -210,16 +189,26 @@
         $(document).ready(function () {
             let currentTimeFilter = 'filter-today';
             let searchTerm = '';
+            let currentPage = 1;
+            let totalPages = 1;
+            let pageSize = 10;
+            let cityFilter = '';
+
+            // Initialize by loading today's events
+            loadEvents();
 
             // Filter tabs functionality
-            $('.filter-tab, .filter-tab-active').click(function () {
+            $('.filter-tab, .filter-tab-active').click(function() {
                 // Update active tab
                 $('.filter-tab-active').removeClass('filter-tab-active').addClass('filter-tab');
                 $(this).removeClass('filter-tab').addClass('filter-tab-active');
 
-                // Filter events based on the selected tab
+                // Update current filter
                 currentTimeFilter = $(this).attr('id');
-                applyFilters();
+                currentPage = 1; // Reset to first page
+
+                // Load events for this filter
+                loadEvents();
             });
 
             // Search input functionality with debounce
@@ -228,68 +217,260 @@
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(function () {
                     searchTerm = $('#event-search').val().toLowerCase().trim();
-                    applyFilters();
+                    currentPage = 1; // Reset to first page when search changes
+                    loadEvents();
                 }, 300); // 300ms debounce delay
             });
 
-            // Initial filter (Today)
-            applyFilters();
+            // Pagination handlers - FIXED: Prevent default behavior
+            $('#prev-page').click(function(e) {
+                e.preventDefault(); // Prevent form submission
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadEvents();
+                }
+            });
 
-            function applyFilters() {
-                let visibleCount = 0;
+            $('#next-page').click(function(e) {
+                e.preventDefault(); // Prevent form submission
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadEvents();
+                }
+            });
 
-                // Reset all cards to hidden
-                $('.event-card').addClass('event-hidden');
+            // Function to load events from the server based on current filter
+            function loadEvents() {
+                // Show loading indicator
+                $('#events-container').addClass('hidden');
+                $('#loading-indicator').removeClass('hidden');
+                $('#no-results').addClass('hidden');
+                $('#pagination').addClass('hidden');
 
-                // First filter by time
-                let timeFilteredCards;
-                switch (currentTimeFilter) {
+                // Determine which endpoint to call based on filter
+                let endpoint;
+                switch(currentTimeFilter) {
                     case 'filter-today':
-                        timeFilteredCards = $('.event-today');
-                        console.log('Today events count:', $('.event-today').length);
+                        endpoint = '/Events/GetTodayEvents';
                         break;
                     case 'filter-upcoming':
-                        timeFilteredCards = $('.event-upcoming');
-                        console.log('Upcoming events count:', $('.event-upcoming').length);
+                        endpoint = '/Events/GetUpcomingEvents';
                         break;
                     case 'filter-past':
-                        timeFilteredCards = $('.event-past');
-                        console.log('Past events count:', $('.event-past').length);
+                        endpoint = '/Events/GetPastEvents';
                         break;
                     case 'filter-all':
-                        timeFilteredCards = $('.event-card');
-                        console.log('All events count:', $('.event-card').length);
+                        endpoint = '/Events/GetAllEvents';
                         break;
+                    default:
+                        endpoint = '/Events/GetTodayEvents';
                 }
 
-                // Then apply search filter if there's a search term
+                // Build query parameters
+                let params = {
+                    page: currentPage,
+                    pageSize: pageSize
+                };
+
                 if (searchTerm) {
-                    timeFilteredCards.each(function () {
-                        const eventName = $(this).data('event-name');
-                        const eventCity = $(this).data('event-city');
+                    params.city = searchTerm; // Using city as search term for simplicity
+                }
 
-                        if (eventName.includes(searchTerm) || eventCity.includes(searchTerm)) {
-                            $(this).removeClass('event-hidden');
-                            visibleCount++;
+                // Log the request to help debug
+                console.log(`Loading events from ${endpoint}, page ${currentPage}/${totalPages}`);
+
+                // Make AJAX request
+                $.getJSON(endpoint, params)
+                    .done(function(data) {
+                        // Log the response to help debug
+                        console.log('API response:', data);
+
+                        // Update page data
+                        totalPages = data.totalPages;
+                        currentPage = data.currentPage;
+
+                        // Clear existing content
+                        $('#events-container').empty();
+
+                        // Hide loading indicator
+                        $('#loading-indicator').addClass('hidden');
+
+                        // Update the events count
+                        $('#filtered-count').text(data.totalCount);
+
+                        // Show no results message if needed
+                        if (data.events.length === 0) {
+                            $('#no-results').removeClass('hidden');
+                            return;
                         }
+
+                        // Build event cards
+                        data.events.forEach(function(event) {
+                            const eventTimeClass = getEventTimeClass(new Date(event.startDateTime));
+                            const card = buildEventCard(event, eventTimeClass);
+                            $('#events-container').append(card);
+                        });
+
+                        // Show events container
+                        $('#events-container').removeClass('hidden');
+
+                        // Update pagination
+                        updatePagination(data.currentPage, data.totalPages);
+
+                        // Update debug counts
+                        updateDebugCounts();
+                    })
+                    .fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error loading events:', errorThrown);
+                        $('#loading-indicator').addClass('hidden');
+                        $('#no-results').removeClass('hidden').find('p.text-xl').text('Error loading events');
                     });
+            }
+
+            // Helper function to build an event card
+            function buildEventCard(event, timeClass) {
+                // Format dates
+                const startDate = new Date(event.startDateTime);
+                const endDate = new Date(event.endTime);
+                const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const formattedStartTime = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                const formattedEndTime = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                let badgeClass = '';
+                let badgeText = '';
+
+                if (timeClass === 'event-today') {
+                    badgeClass = 'bg-green-500';
+                    badgeText = 'Today';
+                } else if (timeClass === 'event-upcoming') {
+                    badgeClass = 'bg-blue-500';
+                    badgeText = 'Upcoming';
                 } else {
-                    // If no search term, show all time-filtered cards
-                    timeFilteredCards.removeClass('event-hidden');
-                    visibleCount = timeFilteredCards.length;
+                    badgeClass = 'bg-gray-500';
+                    badgeText = 'Past';
                 }
 
-                // Update count
-                $('#filtered-count').text(visibleCount);
+                return `
+                    <div class="event-card ${timeClass} shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
+                         data-event-name="${event.name.toLowerCase()}"
+                         data-event-city="${event.venue.city.name.toLowerCase()}">
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <div class="text-xs inline-flex items-center">
+                                    <span class="${badgeClass} text-white px-2 py-1 rounded font-medium">${badgeText}</span>
+                                    <span class="ml-2 text-gray-500">${formattedStartDate}</span>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-gray-800">${event.name}</h3>
+                            <p class="text-sm text-gray-600">${formattedStartDate} ${formattedStartTime} – ${formattedEndTime}</p>
+                            
+                            <div class="mt-3 text-sm text-gray-700 space-y-1">
+                                <p><span class="font-medium">Venue:</span> ${event.venue.name}</p>
+                                <p><span class="font-medium">Address:</span> ${event.venue.address}</p>
+                                <p><span class="font-medium">City:</span> ${event.venue.city.name}</p>
+                                <p><span class="font-medium">Postal Code:</span> ${event.venue.postalCode}</p>
+                                <p><span class="font-medium">Phone:</span> ${event.venue.phone}</p>
+                            </div>
+                            
+                            <div class="mt-4 flex justify-between items-center">
+                                <a href="/Venue/Details/${event.venueId}" class="text-sm text-blue-500 hover:underline">Details</a>
+                                <a href="/Reservation/SelectSeats?EventId=${event.id}&VenueId=${event.venueId}" 
+                                   class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600 transition-colors">
+                                   Reservation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
-                // Show/hide no results message
-                if (visibleCount === 0) {
-                    $('#no-results').removeClass('hidden');
-                    $('#events-container').addClass('hidden');
-                } else {
-                    $('#no-results').addClass('hidden');
-                    $('#events-container').removeClass('hidden');
+            // Function to update pagination controls
+            function updatePagination(currentPage, totalPages) {
+                if (totalPages <= 1) {
+                    $('#pagination').addClass('hidden');
+                    return;
                 }
+
+                // Update buttons state
+                $('#prev-page').prop('disabled', currentPage === 1);
+                $('#next-page').prop('disabled', currentPage === totalPages);
+
+                // Build page numbers
+                const $pageNumbers = $('#page-numbers');
+                $pageNumbers.empty();
+
+                // Determine which page numbers to show
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, startPage + 4);
+
+                // Adjust if we're near the end
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+
+                // Add first page button if not included
+                if (startPage > 1) {
+                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded" data-page="1">1</button>`);
+                    if (startPage > 2) {
+                        $pageNumbers.append(`<span class="px-1 py-1">...</span>`);
+                    }
+                }
+
+                // Add page numbers
+                for (let i = startPage; i <= endPage; i++) {
+                    const activeClass = i === currentPage ? 'page-active' : '';
+                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded ${activeClass}" data-page="${i}">${i}</button>`);
+                }
+
+                // Add last page button if not included
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        $pageNumbers.append(`<span class="px-1 py-1">...</span>`);
+                    }
+                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded" data-page="${totalPages}">${totalPages}</button>`);
+                }
+
+                // Add click handlers for page buttons - FIXED: Add preventDefault
+                $pageNumbers.on('click', '.page-button', function(e) {
+                    e.preventDefault(); // Prevent form submission
+                    currentPage = parseInt($(this).data('page'));
+                    loadEvents();
+                });
+
+                // Show pagination
+                $('#pagination').removeClass('hidden');
+            }
+
+            // Helper function to determine time class
+            function getEventTimeClass(eventDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const eventDateOnly = new Date(eventDate);
+                eventDateOnly.setHours(0, 0, 0, 0);
+
+                if (eventDateOnly.getTime() === today.getTime()) {
+                    return "event-today";
+                } else if (eventDateOnly > today) {
+                    return "event-upcoming";
+                } else {
+                    return "event-past";
+                }
+            }
+
+            // Function to update debug counts
+            function updateDebugCounts() {
+                // Make parallel requests to get counts for each category
+                $.when(
+                    $.getJSON('/Events/GetTodayEvents', { page: 1, pageSize: 1 }),
+                    $.getJSON('/Events/GetUpcomingEvents', { page: 1, pageSize: 1 }),
+                    $.getJSON('/Events/GetPastEvents', { page: 1, pageSize: 1 })
+                ).then(function(todayData, upcomingData, pastData) {
+                    $('#debug-today-count').text(todayData[0].totalCount);
+                    $('#debug-upcoming-count').text(upcomingData[0].totalCount);
+                    $('#debug-past-count').text(pastData[0].totalCount);
+                });
             }
         });
     </script>

@@ -312,7 +312,7 @@ public static class TestDataSeeder
         var eventTypes = await context.EventType.ToListAsync();
 
         // Generate 100-200 events
-        var numEvents = _random.Next(1000, 2000);
+        var numEvents = _random.Next(100, 200);
 
         // Generate events for the next 6 months
         var today = DateTime.Now;

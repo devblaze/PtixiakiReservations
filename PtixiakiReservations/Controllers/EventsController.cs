@@ -31,6 +31,151 @@ public class EventsController(
     {
         return View();
     }
+
+// New API endpoint to get today's events
+    [HttpGet]
+    public async Task<IActionResult> GetTodayEvents(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Getting today's events. City filter: {City}", city ?? "None");
+
+        var today = DateTime.Today;
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .Where(e => e.StartDateTime.Date == today)
+            .OrderBy(e => e.StartDateTime);
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} today events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
+// New API endpoint to get upcoming events
+    [HttpGet]
+    public async Task<IActionResult> GetUpcomingEvents(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Getting upcoming events. City filter: {City}", city ?? "None");
+
+        var today = DateTime.Today;
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .Where(e => e.StartDateTime.Date > today)
+            .OrderBy(e => e.StartDateTime);
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} upcoming events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
+// New API endpoint to get past events
+    [HttpGet]
+    public async Task<IActionResult> GetPastEvents(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Getting past events. City filter: {City}", city ?? "None");
+
+        var today = DateTime.Today;
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .Where(e => e.StartDateTime.Date < today)
+            .OrderByDescending(e => e.StartDateTime); // Show most recent past events first
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} past events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
+// New API endpoint to get all events
+    [HttpGet]
+    public async Task<IActionResult> GetAllEvents(string city, int page = 1, int pageSize = 12)
+    {
+        logger.LogInformation("Getting all events. City filter: {City}", city ?? "None");
+
+        var eventsQuery = context.Event
+            .Include(e => e.Venue)
+            .ThenInclude(v => v.City)
+            .OrderBy(e => e.StartDateTime);
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            eventsQuery = (IOrderedQueryable<Event>)eventsQuery
+                .Where(e => e.Venue.City.Name.ToLower() == city.ToLower());
+        }
+
+        var totalCount = await eventsQuery.CountAsync();
+        var events = await eventsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} total events", events.Count);
+
+        return Json(new
+        {
+            events,
+            totalCount,
+            currentPage = page,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
     
     public string GetEventTimeClass(DateTime eventDate)
     {
@@ -50,7 +195,7 @@ public class EventsController(
         }
     }
 
-    public async Task<IActionResult> EventsForToday(string city, int page = 1, int pageSize = 20)
+    public async Task<IActionResult> EventsForToday(string city, int page = 1, int pageSize = 12)
     {
         logger.LogInformation("Fetching events for today and future. City filter: {City}", city ?? "None");
 
@@ -59,7 +204,8 @@ public class EventsController(
         var eventsQuery = context.Event
             .Include(e => e.Venue)
             .ThenInclude(v => v.City)
-            .Where(e => e.StartDateTime.Date >= today.AddDays(-30)) // Include events from the past month
+            .Where(e => e.StartDateTime.Date >= today.AddDays(-30) &&
+                        e.StartDateTime.Date <= today.AddDays(60))
             .OrderBy(e => e.StartDateTime);
 
         if (!string.IsNullOrWhiteSpace(city))
@@ -74,14 +220,16 @@ public class EventsController(
             .ToListAsync();
 
         // Add debug info to see event dates
-        logger.LogInformation("Found {Count} events", eventsList.Count);
-        foreach (var evt in eventsList)
-        {
-            logger.LogDebug("Event: {Name}, Date: {Date}, IsUpcoming: {IsUpcoming}",
-                evt.Name,
-                evt.StartDateTime,
-                evt.StartDateTime.Date > today);
-        }
+        var todayEvents = eventsList.Count(e => e.StartDateTime.Date == today);
+        var upcomingEvents = eventsList.Count(e => e.StartDateTime.Date > today);
+        var pastEvents = eventsList.Count(e => e.StartDateTime.Date < today);
+
+        logger.LogInformation(
+            "Found {Count} events. Distribution: Today: {TodayCount}, Upcoming: {UpcomingCount}, Past: {PastCount}",
+            eventsList.Count,
+            todayEvents,
+            upcomingEvents,
+            pastEvents);
 
         return View(eventsList);
     }

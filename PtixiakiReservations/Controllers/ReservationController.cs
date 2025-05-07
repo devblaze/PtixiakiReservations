@@ -204,25 +204,36 @@ public class ReservationController(
                 return BadRequest("Event not found");
             }
 
-            // Validate the seats exist and are available
+            // Get the selected seats
             var seatIds = request.SeatIds;
             var seats = await context.Seat
-                .Where(s => seatIds.Contains(s.Id) && s.Available)
+                .Where(s => seatIds.Contains(s.Id))
                 .ToListAsync();
 
             if (seats.Count != seatIds.Length)
             {
-                return BadRequest("One or more selected seats are not available");
+                return BadRequest("One or more selected seats do not exist");
             }
 
-            // Check for existing reservations
+            // Check if any of the seats are unavailable (not just for this event, but in general)
+            var unavailableSeats = seats.Where(s => !s.Available).ToList();
+            if (unavailableSeats.Any())
+            {
+                return BadRequest(
+                    $"Seat(s) {string.Join(", ", unavailableSeats.Select(s => s.Name))} are not available");
+            }
+
+            // Check for existing reservations for this event
             var existingReservations = await context.Reservation
                 .Where(r => r.EventId == request.EventId && seatIds.Contains(r.SeatId))
-                .AnyAsync();
+                .ToListAsync();
 
-            if (existingReservations)
+            if (existingReservations.Any())
             {
-                return BadRequest("One or more seats have already been reserved");
+                var reservedSeatIds = existingReservations.Select(r => r.SeatId).ToList();
+                var reservedSeats = seats.Where(s => reservedSeatIds.Contains(s.Id)).Select(s => s.Name);
+                return BadRequest(
+                    $"Seat(s) {string.Join(", ", reservedSeats)} have already been reserved for this event");
             }
 
             // Create reservations

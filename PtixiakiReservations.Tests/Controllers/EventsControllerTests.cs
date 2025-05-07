@@ -38,6 +38,85 @@ public class EventsControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task EventsForToday_Should_Return_Future_Events()
+    {
+        // Arrange
+        // Clear existing data first to ensure a clean test environment
+        _context.Event.RemoveRange(_context.Event);
+        await _context.SaveChangesAsync();
+
+        // Setup test dates
+        var today = DateTime.Today;
+        var tomorrow = today.AddDays(1);
+        var nextWeek = today.AddDays(7);
+        var nextMonth = today.AddDays(30);
+
+        // Add only upcoming events
+        var events = new List<Event>
+        {
+            new Event
+            {
+                Id = 3,
+                Name = "Tomorrow Event",
+                StartDateTime = tomorrow.AddHours(12),
+                EndTime = tomorrow.AddHours(14),
+                VenueId = 1,
+                FamilyEventId = 1,
+                Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 4,
+                Name = "Next Week Event",
+                StartDateTime = nextWeek.AddHours(15),
+                EndTime = nextWeek.AddHours(17),
+                VenueId = 1,
+                FamilyEventId = 1,
+                Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 5,
+                Name = "Next Month Event",
+                StartDateTime = nextMonth.AddHours(10),
+                EndTime = nextMonth.AddHours(12),
+                VenueId = 1,
+                FamilyEventId = 1,
+                Venue = _context.Venue.Find(1)
+            }
+        };
+
+        await _context.Event.AddRangeAsync(events);
+        await _context.SaveChangesAsync();
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.EventsForToday(null);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<List<Event>>(viewResult.Model);
+
+        // Verify all future events are returned
+        Assert.Equal(3, model.Count);
+
+        // Verify all are classified as "upcoming"
+        var upcomingEvents = model.Count(e => controller.GetEventTimeClass(e.StartDateTime) == "event-upcoming");
+        Assert.Equal(3, upcomingEvents);
+
+        // Check event names are in the expected order
+        Assert.Equal("Tomorrow Event", model[0].Name);
+        Assert.Equal("Next Week Event", model[1].Name);
+        Assert.Equal("Next Month Event", model[2].Name);
+    }
+    
+    [Fact]
     public async Task Details_ReturnsViewResult_WhenEventExists()
     {
         // Arrange

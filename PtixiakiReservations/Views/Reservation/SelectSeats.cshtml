@@ -50,8 +50,8 @@
                 selection: false // Disable group selection
             });
 
-            // Fetch seat data
-            $.getJSON(`/Seat/get_data?SubAreaId=${venueId}`, function (data) {
+            // Fetch seat data - updated to include eventId parameter
+            $.getJSON(`/Seat/get_data?SubAreaId=${venueId}&eventId=${eventId}`, function (data) {
                 console.log("Seat data received:", data);
 
                 if (data && data.length) {
@@ -116,6 +116,7 @@
                 }
             });
         });
+
 
         function renderSeats(canvas, seats) {
             // Clear canvas first

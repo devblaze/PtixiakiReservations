@@ -109,12 +109,8 @@ try
         try
         {
             Log.Information("Seeding database...");
-
-            // Basic seed data
-            DatabaseSeeder.SeedData(context, userManager, roleManager);
-
-            // Test data seeding - pass the service provider
-            await DatabaseSeeder.SeedTestDataAsync(context, userManager, roleManager, services);
+            
+            await DataSeeder.SeedTestDataAsync(context, userManager, roleManager, services);
 
             Log.Information("Database seeded successfully");
         }

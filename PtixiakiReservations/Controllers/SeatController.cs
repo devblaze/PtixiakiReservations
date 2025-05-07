@@ -22,22 +22,37 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
     }
 
     [HttpGet]
-    public JsonResult get_data(int? SubAreaId)
+    public JsonResult get_data(int? SubAreaId, int? eventId)
     {
         if (SubAreaId == null) return Json(new { });
 
+        // First get all seats for this subarea
         var seats = context.Seat
             .Where(s => s.SubAreaId == SubAreaId)
-            .Select(s => new
-            {
-                id = s.Id,
-                name = s.Name,
-                x = (float)s.X, // Convert decimal to float for JS compatibility
-                y = (float)s.Y, // Convert decimal to float for JS compatibility
-                available = s.Available
-            }).ToList();
+            .ToList(); // Get the seat entities first
 
-        return Json(seats);
+        // If eventId is provided, get all seat IDs that are already reserved for this event
+        List<int> reservedSeatIds = new List<int>();
+        if (eventId.HasValue)
+        {
+            reservedSeatIds = context.Reservation
+                .Where(r => r.EventId == eventId.Value)
+                .Select(r => r.SeatId)
+                .ToList();
+        }
+
+        // Create a new list of objects with the merged data
+        var seatViewModels = seats.Select(seat => new
+        {
+            id = seat.Id,
+            name = seat.Name,
+            x = (float)seat.X,
+            y = (float)seat.Y,
+            available = seat.Available &&
+                        !reservedSeatIds.Contains(seat.Id) // Check both the seat's availability and if it's reserved
+        }).ToList();
+
+        return Json(seatViewModels);
     }
 
     public async Task<IActionResult> ListOfMySeats(int? subAreaId)
