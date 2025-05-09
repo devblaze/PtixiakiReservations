@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5933586B-9BA8-4A5F-BE4D-012A5CA6A059}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
+		teamcity-services.yml = teamcity-services.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PtixiakiReservations.Tests", "PtixiakiReservations.Tests\PtixiakiReservations.Tests.csproj", "{1D237903-F161-4300-998D-BB282D87892E}"
