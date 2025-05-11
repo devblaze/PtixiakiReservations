@@ -27,7 +27,8 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run Tests
-        run: dotnet test PtixiakiReservations.Tests/PtixiakiReservations.Tests.csproj --no-restore --no-build --verbosity normal
+        run: dotnet test PtixiakiReservations/PtixiakiReservations.Tests/PtixiakiReservations.Tests.csproj --no-restore --no-build --verbosity normal
+
 
 
   docker-check:
