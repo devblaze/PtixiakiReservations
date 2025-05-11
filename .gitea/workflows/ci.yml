@@ -26,8 +26,12 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run Tests
-        run: dotnet test PtixiakiReservations/PtixiakiReservations.Tests/PtixiakiReservations.Tests.csproj --no-restore --no-build --verbosity normal
+      - name: Run All Test Projects
+        run: |
+          for proj in $(find . -name '*.Tests.csproj'); do
+            echo "Testing $proj"
+            dotnet test "$proj" --no-restore --no-build --verbosity normal || exit 1
+          done
 
 
 
