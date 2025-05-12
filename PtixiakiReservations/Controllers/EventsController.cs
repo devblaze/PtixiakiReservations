@@ -176,7 +176,7 @@ public class EventsController(
             totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
         });
     }
-    
+
     public string GetEventTimeClass(DateTime eventDate)
     {
         DateTime today = DateTime.Today;
@@ -432,11 +432,102 @@ public class EventsController(
     }
 
     // Search events
+// Advanced search with date range and event type using Elasticsearch
     [HttpGet]
-    public async Task<IActionResult> SearchEvents(string query)
+    public async Task<IActionResult> SearchEvents(
+        string eventTypeId = null,
+        string startDate = null,
+        string endDate = null,
+        string searchTerm = null,
+        int page = 1,
+        int pageSize = 12)
     {
-        var results = await elasticSearchService.SearchAsync<Event>(query, "events");
-        return View(results);
+        logger.LogInformation(
+            "Performing advanced search with parameters: EventType={EventType}, StartDate={StartDate}, EndDate={EndDate}, SearchTerm={SearchTerm}",
+            eventTypeId,
+            startDate,
+            endDate,
+            searchTerm);
+
+        // Check if at least 2 search criteria are provided
+        int filledFieldsCount = 0;
+        if (!string.IsNullOrEmpty(eventTypeId)) filledFieldsCount++;
+        if (!string.IsNullOrEmpty(startDate)) filledFieldsCount++;
+        if (!string.IsNullOrEmpty(endDate)) filledFieldsCount++;
+        if (!string.IsNullOrEmpty(searchTerm)) filledFieldsCount++;
+
+        if (filledFieldsCount < 2)
+        {
+            return BadRequest("At least 2 search criteria must be provided");
+        }
+
+        try
+        {
+            // Build advanced search query
+            var searchQuery = "";
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchQuery += $" {searchTerm}";
+            }
+
+            if (!string.IsNullOrEmpty(eventTypeId))
+            {
+                searchQuery += $" eventTypeId:{eventTypeId}";
+            }
+
+            if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+            {
+                searchQuery += $" startDateTime:[{startDate} TO {endDate}]";
+            }
+            else if (!string.IsNullOrEmpty(startDate))
+            {
+                searchQuery += $" startDateTime:>={startDate}";
+            }
+            else if (!string.IsNullOrEmpty(endDate))
+            {
+                searchQuery += $" startDateTime:<={endDate}";
+            }
+
+            // Search using Elasticsearch
+            var results = await elasticSearchService.SearchAsync<Event>(searchQuery.Trim(), "events");
+
+            // Convert to list and paginate
+            var resultsList = results.ToList();
+            var pagedResults = resultsList
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Include related data that might be missing from Elasticsearch
+            // This may need adjustment based on your exact Elasticsearch document structure
+            foreach (var evt in pagedResults)
+            {
+                if (evt.Venue == null)
+                {
+                    evt.Venue = await context.Venue
+                        .Include(v => v.City)
+                        .FirstOrDefaultAsync(v => v.Id == evt.VenueId);
+                }
+                else if (evt.Venue.City == null && evt.Venue.CityId > 0)
+                {
+                    evt.Venue.City = await context.City.FindAsync(evt.Venue.CityId);
+                }
+            }
+
+            return Json(new
+            {
+                events = pagedResults,
+                totalCount = resultsList.Count,
+                currentPage = page,
+                totalPages = (int)Math.Ceiling(resultsList.Count / (double)pageSize)
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error performing advanced search");
+            return StatusCode(500, "An error occurred while searching");
+        }
     }
 
     [HttpPost]
@@ -475,7 +566,7 @@ public class EventsController(
             return BadRequest($"Error indexing events: {ex.Message}");
         }
     }
-    
+
     [HttpGet("test-elasticsearch")]
     [AllowAnonymous] // Allow access without authentication for testing
     public async Task<IActionResult> TestElasticsearch()
@@ -525,5 +616,65 @@ public class EventsController(
             logger.LogError(ex, "Error testing Elasticsearch");
             return BadRequest($"Elasticsearch test failed: {ex.Message}");
         }
+    }
+
+    // GET: Events/GenerateEvents/{count}
+    [HttpGet]
+    [Route("Events/GenerateEvents/{count}")]
+    public async Task<IActionResult> GenerateEvents(int count)
+    {
+        if (count <= 0 || count > 100)
+        {
+            return BadRequest("The count must be between 1 and 100.");
+        }
+
+        var now = DateTime.Now;
+        var eventTypes = await context.EventType.ToListAsync();
+        var venues = await context.Venue.ToListAsync();
+
+        if (!eventTypes.Any() || !venues.Any())
+        {
+            return BadRequest("No event types or venues available for event generation.");
+        }
+
+        var random = new Random();
+        var generatedEvents = new List<Event>();
+
+        for (int i = 0; i < count; i++)
+        {
+            // Pick random event type and venue
+            var eventType = eventTypes[random.Next(eventTypes.Count)];
+            var venue = venues[random.Next(venues.Count)];
+
+            // Random date between now and 3 months in the future
+            var daysToAdd = random.Next(1, 90);
+            var startDate = now.AddDays(daysToAdd);
+
+            // Event duration between 1 and 4 hours
+            var duration = random.Next(1, 5);
+
+            var newEvent = new Event
+            {
+                Name = $"Generated Event {i + 1}",
+                StartDateTime = startDate,
+                EndTime = startDate.AddHours(duration),
+                EventTypeId = eventType.Id,
+                VenueId = venue.Id
+            };
+
+            context.Event.Add(newEvent);
+            generatedEvents.Add(newEvent);
+        }
+
+        await context.SaveChangesAsync();
+
+        logger.LogInformation("Generated {Count} new events", count);
+
+        return Json(new
+        {
+            success = true,
+            message = $"Successfully generated {count} events",
+            events = generatedEvents
+        });
     }
 }

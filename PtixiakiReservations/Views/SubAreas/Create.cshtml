@@ -10,6 +10,16 @@
     <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
 
     <form id="createSubAreaForm">
+        <!-- Venue Dropdown -->
+        <div class="mb-4">
+            <label for="VenueId" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+            <select id="VenueId" name="VenueId" class="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+                <option value="">-- Select Venue --</option>
+                <!-- Venues will be loaded dynamically via JavaScript -->
+            </select>
+            <span id="venueIdError" class="text-red-500 text-xs mt-1 hidden">Please select a venue</span>
+        </div>
+
         <!-- Area Name Input -->
         <div class="mb-4">
             <label asp-for="AreaName" class="block text-sm font-medium text-gray-700 mb-1">Area Name</label>
@@ -40,18 +50,59 @@
 
 @section Scripts {
     <script>
+        // Load venues when the page loads
+        $(document).ready(function() {
+            loadVenues();
+        });
+
+        // Function to load venues for the current user
+        function loadVenues() {
+            fetch('@Url.Action("GetVenuesForUser", "Venue")')
+                .then(response => response.json())
+                .then(venues => {
+                    const venueDropdown = document.getElementById("VenueId");
+
+                    // Clear existing options (except the default)
+                    while (venueDropdown.options.length > 1) {
+                        venueDropdown.remove(1);
+                    }
+
+                    // Add venues to dropdown
+                    venues.forEach(venue => {
+                        const option = document.createElement("option");
+                        option.value = venue.id;
+                        option.textContent = venue.name;
+                        venueDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading venues:", error);
+                });
+        }
+
         document.getElementById("createSubAreaForm").addEventListener("submit", async (e) => {
             e.preventDefault();
 
+            // Get form values
+            const venueId = document.getElementById("VenueId").value;
             const areaName = document.getElementById("AreaName").value;
             const rows = document.getElementById("Rows").value;
             const columns = document.getElementById("Columns").value;
+
+            // Validate venue selection
+            if (!venueId) {
+                document.getElementById("venueIdError").classList.remove("hidden");
+                return;
+            } else {
+                document.getElementById("venueIdError").classList.add("hidden");
+            }
 
             const subAreaData = [
                 {
                     areaName: areaName,
                     rows: parseInt(rows),
-                    columns: parseInt(columns)
+                    columns: parseInt(columns),
+                    venueId: parseInt(venueId)
                 }
             ];
 
@@ -75,6 +126,6 @@
                 alert("An unexpected error occurred.");
                 console.error("Error:", error);
             }
-});
+        });
     </script>
 }

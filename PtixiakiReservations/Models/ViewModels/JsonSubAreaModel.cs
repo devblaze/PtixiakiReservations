@@ -14,5 +14,6 @@ namespace PtixiakiReservations.Models.ViewModels
         public decimal Rotate { get; set; }
         public decimal Width { get; set; }
         public decimal Height { get; set; }
+        public int VenueId { get; set; }
     }
 }

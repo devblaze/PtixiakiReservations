@@ -86,7 +86,7 @@ public class DataSeeder
             var existingUser = await userManager.FindByEmailAsync(user.Email);
             if (existingUser == null)
             {
-                await userManager.CreateAsync(user, "Pass123!"); // Change password here as required
+                await userManager.CreateAsync(user, "Pass123"); // Change password here as required
 
                 // Assign roles as an example
                 if (user.Email.StartsWith("admin"))

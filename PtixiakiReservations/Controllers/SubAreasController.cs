@@ -76,21 +76,49 @@ namespace PtixiakiReservations.Controllers
         // GET: SubAreas/Create
         [Authorize(Roles = "Venue")]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] JsonSubAreaModel[] subareas)
         {
-            // var venue = _context.Venue.SingleOrDefault(v => v.UserId == _usermanager.GetUserId(HttpContext.User));
-            var venue = _context.Venue.Find(2);
-            if (venue is null)
+            if (subareas == null || !subareas.Any())
             {
-                ViewBag.Error = "You need to Create Venue First";
+                ViewBag.Error = "Something went wrong";
                 return View("Error");
             }
-            
-            return View();
+
+            // Get user ID
+            var userId = _usermanager.GetUserId(HttpContext.User);
+
+            foreach (var subarea in subareas)
+            {
+                // Validate that the venue belongs to the current user
+                var venue = await _context.Venue
+                    .FirstOrDefaultAsync(v => v.Id == subarea.VenueId && v.UserId == userId);
+
+                if (venue == null)
+                {
+                    return BadRequest("Invalid venue selection");
+                }
+
+                SubArea newSubArea = new SubArea
+                {
+                    AreaName = subarea.AreaName,
+                    Height = subarea.Height,
+                    Width = subarea.Width,
+                    Rotate = subarea.Rotate,
+                    Top = subarea.Top,
+                    Left = subarea.Left,
+                    VenueId = subarea.VenueId
+                };
+                _context.Add(newSubArea);
+            }
+            await _context.SaveChangesAsync();
+
+            Response.StatusCode = (int)HttpStatusCode.OK;
+            return Json(Response.StatusCode);
         }
-        
+
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]JsonSubAreaModel[] subareas)
+        public async Task<IActionResult> CreateFromVenue([FromBody]JsonSubAreaModel[] subareas)
         {
             if(subareas == null)
             {

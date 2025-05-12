@@ -256,6 +256,19 @@ namespace PtixiakiReservations.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        
+        [HttpGet]
+        [Authorize(Roles = "Venue,Admin")]
+        public IActionResult GetVenuesForUser()
+        {
+            string userId = _userManager.GetUserId(HttpContext.User);
+            var venues = _context.Venue
+                .Where(v => v.UserId == userId)
+                .Select(v => new { id = v.Id, name = v.Name })
+                .ToList();
+    
+            return Json(venues);
+        }
 
         private bool VenueExists(int id)
         {

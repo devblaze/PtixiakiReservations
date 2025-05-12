@@ -109,7 +109,7 @@ try
         try
         {
             Log.Information("Seeding database...");
-            
+
             await DataSeeder.SeedTestDataAsync(context, userManager, roleManager, services);
 
             Log.Information("Database seeded successfully");
@@ -141,7 +141,7 @@ try
 
     app.MapControllerRoute(
         name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}");
+        pattern: "{controller=Events}/{action=EventsForToday}/{id?}");
     app.MapRazorPages();
 
     app.Run();
