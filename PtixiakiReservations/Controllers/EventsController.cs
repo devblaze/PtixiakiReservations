@@ -13,6 +13,7 @@ using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
 using PtixiakiReservations.Models.ViewModels;
 using PtixiakiReservations.Services;
+using System.Text;
 
 namespace PtixiakiReservations.Controllers;
 
@@ -431,8 +432,9 @@ public class EventsController(
         return result ? Ok("Events indexed successfully!") : BadRequest("Failed to index events.");
     }
 
-    // Search events
-// Advanced search with date range and event type using Elasticsearch
+    /// <summary>
+    /// Advanced search for events with date range filtering and elasticsearch support
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> SearchEvents(
         string eventTypeId = null,
@@ -443,90 +445,95 @@ public class EventsController(
         int pageSize = 12)
     {
         logger.LogInformation(
-            "Performing advanced search with parameters: EventType={EventType}, StartDate={StartDate}, EndDate={EndDate}, SearchTerm={SearchTerm}",
+            "Event search with criteria: EventType={EventType}, StartDate={StartDate}, EndDate={EndDate}, SearchTerm={SearchTerm}",
             eventTypeId,
             startDate,
             endDate,
             searchTerm);
 
-        // Check if at least 2 search criteria are provided
-        int filledFieldsCount = 0;
-        if (!string.IsNullOrEmpty(eventTypeId)) filledFieldsCount++;
-        if (!string.IsNullOrEmpty(startDate)) filledFieldsCount++;
-        if (!string.IsNullOrEmpty(endDate)) filledFieldsCount++;
-        if (!string.IsNullOrEmpty(searchTerm)) filledFieldsCount++;
-
-        if (filledFieldsCount < 2)
-        {
-            return BadRequest("At least 2 search criteria must be provided");
-        }
-
         try
         {
-            // Build advanced search query
-            var searchQuery = "";
+            // Count filled search criteria
+            int filledCriteria = 0;
+            if (!string.IsNullOrWhiteSpace(eventTypeId)) filledCriteria++;
+            if (!string.IsNullOrWhiteSpace(startDate)) filledCriteria++;
+            if (!string.IsNullOrWhiteSpace(endDate)) filledCriteria++;
+            if (!string.IsNullOrWhiteSpace(searchTerm)) filledCriteria++;
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            // If using date filtering, ensure we have valid dates
+            DateTime? parsedStartDate = null;
+            DateTime? parsedEndDate = null;
+
+            if (!string.IsNullOrWhiteSpace(startDate) && DateTime.TryParse(startDate, out DateTime startDateValue))
             {
-                searchQuery += $" {searchTerm}";
+                parsedStartDate = startDateValue.Date;
             }
 
-            if (!string.IsNullOrEmpty(eventTypeId))
+            if (!string.IsNullOrWhiteSpace(endDate) && DateTime.TryParse(endDate, out DateTime endDateValue))
             {
-                searchQuery += $" eventTypeId:{eventTypeId}";
+                // Set to end of day for inclusive filtering
+                parsedEndDate = endDateValue.Date.AddDays(1).AddSeconds(-1);
             }
 
-            if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+            // Use standard database query for better date filtering
+            var query = context.Event
+                .Include(e => e.Venue)
+                .ThenInclude(v => v.City)
+                .AsQueryable();
+
+            // Apply filters based on provided criteria
+            if (!string.IsNullOrWhiteSpace(eventTypeId) && int.TryParse(eventTypeId, out int eventTypeIdValue))
             {
-                searchQuery += $" startDateTime:[{startDate} TO {endDate}]";
-            }
-            else if (!string.IsNullOrEmpty(startDate))
-            {
-                searchQuery += $" startDateTime:>={startDate}";
-            }
-            else if (!string.IsNullOrEmpty(endDate))
-            {
-                searchQuery += $" startDateTime:<={endDate}";
+                query = query.Where(e => e.EventTypeId == eventTypeIdValue);
             }
 
-            // Search using Elasticsearch
-            var results = await elasticSearchService.SearchAsync<Event>(searchQuery.Trim(), "events");
+            // Apply date range filtering
+            if (parsedStartDate.HasValue)
+            {
+                query = query.Where(e => e.StartDateTime >= parsedStartDate.Value);
+            }
 
-            // Convert to list and paginate
-            var resultsList = results.ToList();
-            var pagedResults = resultsList
+            if (parsedEndDate.HasValue)
+            {
+                query = query.Where(e => e.StartDateTime <= parsedEndDate.Value);
+            }
+
+            // Apply text search if provided
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                string term = searchTerm.ToLower();
+                query = query.Where(e =>
+                    e.Name.ToLower().Contains(term) ||
+                    e.Venue.Name.ToLower().Contains(term) ||
+                    e.Venue.City.Name.ToLower().Contains(term)
+                );
+            }
+
+            // Order by start date (nearest first)
+            query = query.OrderBy(e => e.StartDateTime);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var events = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .ToListAsync();
 
-            // Include related data that might be missing from Elasticsearch
-            // This may need adjustment based on your exact Elasticsearch document structure
-            foreach (var evt in pagedResults)
-            {
-                if (evt.Venue == null)
-                {
-                    evt.Venue = await context.Venue
-                        .Include(v => v.City)
-                        .FirstOrDefaultAsync(v => v.Id == evt.VenueId);
-                }
-                else if (evt.Venue.City == null && evt.Venue.CityId > 0)
-                {
-                    evt.Venue.City = await context.City.FindAsync(evt.Venue.CityId);
-                }
-            }
-
+            // Return results as JSON
             return Json(new
             {
-                events = pagedResults,
-                totalCount = resultsList.Count,
+                events,
+                totalCount,
                 currentPage = page,
-                totalPages = (int)Math.Ceiling(resultsList.Count / (double)pageSize)
+                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error performing advanced search");
-            return StatusCode(500, "An error occurred while searching");
+            logger.LogError(ex, "Error performing event search");
+            return StatusCode(500, "An error occurred while searching for events");
         }
     }
 

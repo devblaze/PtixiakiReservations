@@ -5,60 +5,40 @@
 }
 
 <div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Events</h1>
-
-    <!-- Advanced Search Panel -->
+    <!-- Search Panel -->
     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-700">Advanced Search</h3>
-            <button id="toggle-search" class="text-blue-500 hover:text-blue-700">
-                <span id="toggle-icon">+</span> <span id="toggle-text">Show</span>
-            </button>
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Event Search</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <!-- Event Type Dropdown -->
+            <div>
+                <label for="event-type" class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                <select id="event-type" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- Select Event Type --</option>
+                    <!-- Will be populated via AJAX -->
+                </select>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="date-range" class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                <div class="relative">
+                    <input type="text" id="date-range" placeholder="Select date range" 
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <button id="reset-date" type="button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div id="advanced-search-form" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <!-- Event Type Dropdown -->
-                <div>
-                    <label for="event-type" class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
-                    <select id="event-type" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">-- Select Event Type --</option>
-                        <!-- Will be populated via AJAX -->
-                    </select>
-                </div>
-
-                <!-- Start Date -->
-                <div>
-                    <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                    <input type="date" id="start-date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
-                <!-- End Date -->
-                <div>
-                    <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                    <input type="date" id="end-date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-            </div>
-
-            <!-- Search Term -->
-            <div class="mb-4">
-                <label for="search-term" class="block text-sm font-medium text-gray-700 mb-1">Event Name or Location</label>
-                <input type="text" id="search-term" placeholder="Enter event name, venue, or city" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-            </div>
-
-            <div class="flex justify-between items-center">
-                <p id="search-validation-message" class="text-red-500 text-sm hidden">Please fill at least 2 fields to search</p>
-                <button id="advanced-search-button" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Search
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Regular Search Bar (simplified) -->
-    <div class="mb-8">
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="relative w-full sm:w-96">
+        <!-- Search Term -->
+        <div class="mb-4">
+            <label for="search-term" class="block text-sm font-medium text-gray-700 mb-1">Event Name or Location</label>
+            <div class="relative">
+                <input type="text" id="search-term" placeholder="Enter event name, venue, or city"
+                       class="w-full border border-gray-300 rounded-md pl-10 px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                          viewBox="0 0 20 20">
@@ -66,29 +46,14 @@
                               d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                     </svg>
                 </div>
-                <input type="search" id="event-search"
-                       class="block w-full p-3 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500"
-                       placeholder="Quick search by event name or city..."/>
             </div>
         </div>
-    </div>
 
-    <!-- Time Filter Tabs -->
-    <div class="mb-8">
-        <div class="flex justify-center space-x-1 border-b border-gray-200">
-            <button id="filter-today"
-                    class="filter-tab-active py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
-                Today
-            </button>
-            <button id="filter-upcoming"
-                    class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
-                Upcoming
-            </button>
-            <button id="filter-past" class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
-                Past
-            </button>
-            <button id="filter-all" class="filter-tab py-3 px-6 font-medium text-md rounded-t-lg focus:outline-none">
-                All Events
+        <div class="flex justify-between items-center">
+            <p id="search-validation-message" class="text-red-500 text-sm hidden">Please fill at least 2 fields to search</p>
+            <button id="search-button" disabled
+                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                Search
             </button>
         </div>
     </div>
@@ -117,7 +82,7 @@
                       d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <p class="text-xl font-semibold">No events found</p>
-            <p class="mt-2">Try adjusting your search or filter</p>
+            <p class="mt-2">Try adjusting your search criteria</p>
         </div>
     </div>
 
@@ -135,43 +100,7 @@
     </div>
 </div>
 
-@functions {
-    public string GetEventTimeClass(DateTime eventDate)
-    {
-        DateTime today = DateTime.Today;
-
-        if (eventDate.Date == today)
-        {
-            return "event-today";
-        }
-        else if (eventDate.Date > today)
-        {
-            return "event-upcoming";
-        }
-        else
-        {
-            return "event-past";
-        }
-    }
-}
-
 <style>
-    .filter-tab {
-        color: #718096;
-        background-color: transparent;
-        transition: all 0.2s;
-    }
-
-    .filter-tab:hover {
-        color: #4299e1;
-    }
-
-    .filter-tab-active {
-        color: #4299e1;
-        background-color: white;
-        border-bottom: 2px solid #4299e1;
-    }
-
     /* Event card base style */
     .event-card {
         opacity: 1;
@@ -198,17 +127,6 @@
         opacity: 0.85; /* Slightly faded to indicate past events */
     }
 
-    .event-hidden {
-        display: none;
-    }
-
-    /* Highlight matching text in search results */
-    .highlight-match {
-        background-color: rgba(66, 153, 225, 0.2);
-        padding: 0 2px;
-        border-radius: 2px;
-    }
-
     /* Pagination active page */
     .page-active {
         background-color: #4299e1;
@@ -219,139 +137,47 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            let currentTimeFilter = 'filter-today';
-            let searchTerm = '';
             let currentPage = 1;
             let totalPages = 1;
             let pageSize = 12;
-            let cityFilter = '';
-            let isAdvancedSearch = false;
-            let advancedSearchParams = {};
+            let searchParams = {};
+            let dateRangePicker;
 
-            // Advanced search toggle
-            $('#toggle-search').click(function() {
-                $('#advanced-search-form').toggleClass('hidden');
-                const isVisible = !$('#advanced-search-form').hasClass('hidden');
-                $('#toggle-icon').text(isVisible ? '-' : '+');
-                $('#toggle-text').text(isVisible ? 'Hide' : 'Show');
+            // Initialize Flatpickr date range picker
+            dateRangePicker = flatpickr("#date-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y",
+                conjunction: " to ",
+                minDate: "today",
+                defaultDate: [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))],
+                onChange: function(selectedDates) {
+                    // Validate search when dates are selected
+                    validateSearch();
+                }
+            });
+
+            // Reset date button
+            $('#reset-date').click(function() {
+                dateRangePicker.clear();
+                validateSearch();
             });
 
             // Load event types for the dropdown
             loadEventTypes();
 
-            // Initialize by loading today's events
-            loadEvents();
-
-// Advanced search validation and button functionality
-            function validateAdvancedSearch() {
-                const eventType = $('#event-type').val();
-                const startDate = $('#start-date').val();
-                const endDate = $('#end-date').val();
-                const searchTerm = $('#search-term').val();
-
-                // Count filled fields
-                let filledFields = 0;
-                if (eventType) filledFields++;
-                if (startDate) filledFields++;
-                if (endDate) filledFields++;
-                if (searchTerm) filledFields++;
-
-                // Enable button only if at least 2 fields are filled
-                const isValid = filledFields >= 2;
-                $('#advanced-search-button').prop('disabled', !isValid);
-
-                // Show/hide validation message
-                if (isValid) {
-                    $('#search-validation-message').addClass('hidden');
-                } else {
-                    $('#search-validation-message').removeClass('hidden');
-                }
-
-                return isValid;
+            // Initialize with search for today/tomorrow events
+            validateSearch();
+            if ($('#search-button').prop('disabled') === false) {
+                performSearch();
             }
 
-// Monitor inputs for validation
-            $('#event-type, #start-date, #end-date, #search-term').on('change input', validateAdvancedSearch);
-
-// Advanced search button click
-            $('#advanced-search-button').click(function() {
-                if (!validateAdvancedSearch()) return;
-
-                // Prepare advanced search parameters
-                advancedSearchParams = {
-                    eventTypeId: $('#event-type').val(),
-                    startDate: $('#start-date').val(),
-                    endDate: $('#end-date').val(),
-                    searchTerm: $('#search-term').val(),
-                    page: 1,
-                    pageSize: pageSize
-                };
-
-                // Set flag to use advanced search
-                isAdvancedSearch = true;
-                currentPage = 1;
-
-                // Show loading indicator
-                $('#events-container').addClass('hidden');
-                $('#loading-indicator').removeClass('hidden');
-                $('#no-results').addClass('hidden');
-                $('#pagination').addClass('hidden');
-
-                // Execute search
-                $.getJSON('/Events/SearchEvents', advancedSearchParams)
-                    .done(function(data) {
-                        // Log the response
-                        console.log('API response:', data);
-
-                        // Update page data
-                        totalPages = data.totalPages;
-                        currentPage = data.currentPage;
-
-                        // Clear existing content
-                        $('#events-container').empty();
-
-                        // Hide loading indicator
-                        $('#loading-indicator').addClass('hidden');
-
-                        // Update the events count
-                        $('#filtered-count').text(data.totalCount);
-
-                        // Show no results message if needed
-                        if (data.events.length === 0) {
-                            $('#no-results').removeClass('hidden');
-                            return;
-                        }
-
-                        // Build event cards
-                        data.events.forEach(function(event) {
-                            const eventTimeClass = getEventTimeClass(new Date(event.startDateTime));
-                            const card = buildEventCard(event, eventTimeClass);
-                            $('#events-container').append(card);
-                        });
-
-                        // Show events container
-                        $('#events-container').removeClass('hidden');
-
-                        // Update pagination
-                        updatePagination(data.currentPage, data.totalPages);
-                    })
-                    .fail(function(jqXHR, textStatus, errorThrown) {
-                        console.error('Error performing advanced search:', errorThrown);
-                        $('#loading-indicator').addClass('hidden');
-                        $('#no-results').removeClass('hidden').find('p.text-xl').text('Error searching events');
-
-                        if (jqXHR.status === 400) {
-                            $('#search-validation-message').removeClass('hidden').text(jqXHR.responseText);
-                        }
-                    });
-            });
-
-            // Load event types for dropdown
+            // Event types loader
             function loadEventTypes() {
                 $.getJSON('/Events/GetEventTypes')
                     .done(function(data) {
                         const dropdown = $('#event-type');
-                        // Add options to dropdown
                         $.each(data, function(i, item) {
                             dropdown.append($('<option>', {
                                 value: item.id,
@@ -364,109 +190,96 @@
                     });
             }
 
-            // Filter tabs functionality
-            $('.filter-tab, .filter-tab-active').click(function() {
-                // Reset advanced search when switching tabs
-                isAdvancedSearch = false;
+            // Validate search fields and enable/disable search button
+            function validateSearch() {
+                const eventType = $('#event-type').val();
+                const dateRange = $('#date-range').val();
+                const searchTerm = $('#search-term').val();
 
-                // Update active tab
-                $('.filter-tab-active').removeClass('filter-tab-active').addClass('filter-tab');
-                $(this).removeClass('filter-tab').addClass('filter-tab-active');
+                // Count filled fields
+                let filledFields = 0;
+                if (eventType) filledFields++;
+                if (dateRange) filledFields++;
+                if (searchTerm) filledFields++;
 
-                // Update current filter
-                currentTimeFilter = $(this).attr('id');
-                currentPage = 1; // Reset to first page
+                // Enable button only if at least 2 fields are filled
+                const isValid = filledFields >= 2;
+                $('#search-button').prop('disabled', !isValid);
 
-                // Load events for this filter
-                loadEvents();
-            });
+                // Show/hide validation message
+                $('#search-validation-message').toggleClass('hidden', isValid);
 
-            // Search input functionality with debounce
-            let searchTimeout;
-            $('#event-search').on('input', function () {
-                // Reset advanced search when using quick search
-                isAdvancedSearch = false;
+                return isValid;
+            }
 
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function () {
-                    searchTerm = $('#event-search').val().toLowerCase().trim();
-                    currentPage = 1; // Reset to first page when search changes
-                    loadEvents();
-                }, 300); // 300ms debounce delay
+            // Monitor all search inputs for validation
+            $('#event-type, #date-range, #search-term').on('change input', validateSearch);
+
+            // Search button click handler
+            $('#search-button').click(function() {
+                if (!validateSearch()) return;
+                currentPage = 1;
+                performSearch();
             });
 
             // Pagination handlers
-            $('#prev-page').click(function(e) {
-                e.preventDefault();
+            $('#prev-page').click(function() {
                 if (currentPage > 1) {
                     currentPage--;
-                    loadEvents();
+                    performSearch();
                 }
             });
 
-            $('#next-page').click(function(e) {
-                e.preventDefault();
+            $('#next-page').click(function() {
                 if (currentPage < totalPages) {
                     currentPage++;
-                    loadEvents();
+                    performSearch();
                 }
             });
 
-            // Function to load events from the server based on current filter
-            function loadEvents() {
-                // Show loading indicator
+            // Event delegation for pagination numbers
+            $('#page-numbers').on('click', '.page-button', function(e) {
+                e.preventDefault();
+                currentPage = parseInt($(this).data('page'));
+                performSearch();
+            });
+
+            function performSearch() {
+                // Show loading state
                 $('#events-container').addClass('hidden');
                 $('#loading-indicator').removeClass('hidden');
                 $('#no-results').addClass('hidden');
                 $('#pagination').addClass('hidden');
 
-                let endpoint, params;
+                // Get selected dates from flatpickr
+                let startDate = null;
+                let endDate = null;
 
-                if (isAdvancedSearch) {
-                    // Use Elasticsearch endpoint for advanced search
-                    endpoint = '/Events/SearchEvents';
-                    params = {
-                        ...advancedSearchParams,
-                        page: currentPage,
-                        pageSize: pageSize
-                    };
-                } else {
-                    // Use standard filtering endpoints
-                    switch(currentTimeFilter) {
-                        case 'filter-today':
-                            endpoint = '/Events/GetTodayEvents';
-                            break;
-                        case 'filter-upcoming':
-                            endpoint = '/Events/GetUpcomingEvents';
-                            break;
-                        case 'filter-past':
-                            endpoint = '/Events/GetPastEvents';
-                            break;
-                        case 'filter-all':
-                            endpoint = '/Events/GetAllEvents';
-                            break;
-                        default:
-                            endpoint = '/Events/GetTodayEvents';
-                    }
-
-                    params = {
-                        page: currentPage,
-                        pageSize: pageSize
-                    };
-
-                    if (searchTerm) {
-                        params.city = searchTerm; // Using city as search term for simplicity
-                    }
+                if (dateRangePicker.selectedDates.length > 0) {
+                    startDate = dateRangePicker.selectedDates[0].toISOString().split('T')[0];
+                    endDate = dateRangePicker.selectedDates.length > 1
+                        ? dateRangePicker.selectedDates[1].toISOString().split('T')[0]
+                        : startDate;
                 }
 
-                // Log the request
-                console.log(`Loading events from ${endpoint}`, params);
+                // Prepare search parameters
+                searchParams = {
+                    eventTypeId: $('#event-type').val(),
+                    startDate: startDate,
+                    endDate: endDate,
+                    searchTerm: $('#search-term').val(),
+                    page: currentPage,
+                    pageSize: pageSize
+                };
 
-                // Make AJAX request
-                $.getJSON(endpoint, params)
+                // Log search parameters for debugging
+                console.log('Search parameters:', searchParams);
+
+                // Make search request
+                $.getJSON('/Events/SearchEvents', searchParams)
                     .done(function(data) {
-                        // Log the response
-                        console.log('API response:', data);
+                        // Rest of your existing search results handling code...
+                        // Unchanged from your original implementation
 
                         // Update page data
                         totalPages = data.totalPages;
@@ -479,10 +292,10 @@
                         $('#loading-indicator').addClass('hidden');
 
                         // Update the events count
-                        $('#filtered-count').text(data.totalCount);
+                        $('#filtered-count').text(data.totalCount || 0);
 
                         // Show no results message if needed
-                        if (data.events.length === 0) {
+                        if (!data.events || data.events.length === 0) {
                             $('#no-results').removeClass('hidden');
                             return;
                         }
@@ -498,16 +311,20 @@
                         $('#events-container').removeClass('hidden');
 
                         // Update pagination
-                        updatePagination(data.currentPage, data.totalPages);
+                        updatePagination();
                     })
                     .fail(function(jqXHR, textStatus, errorThrown) {
-                        console.error('Error loading events:', errorThrown);
+                        console.error('Error performing search:', errorThrown);
                         $('#loading-indicator').addClass('hidden');
-                        $('#no-results').removeClass('hidden').find('p.text-xl').text('Error loading events');
+                        $('#no-results').removeClass('hidden').find('p.text-xl').text('Error searching events');
+
+                        if (jqXHR.status === 400) {
+                            $('#search-validation-message').removeClass('hidden').text(jqXHR.responseText);
+                        }
                     });
             }
 
-            // Build event card for display
+            // Helper function to build event card HTML
             function buildEventCard(event, timeClass) {
                 // Format dates
                 const startDate = new Date(event.startDateTime);
@@ -516,6 +333,7 @@
                 const formattedStartTime = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                 const formattedEndTime = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
+                // Determine badge style based on event time
                 let badgeClass = '';
                 let badgeText = '';
 
@@ -533,19 +351,16 @@
                 // Create the reservation button or message based on event timing
                 let reservationElement = '';
                 if (timeClass === 'event-past') {
-                    // For past events, show a disabled message instead of reservation button
                     reservationElement = `<span class="text-sm text-gray-500 italic">Reservations closed</span>`;
                 } else {
-                    // For current and future events, show the reservation button
                     reservationElement = `<a href="/Reservation/SelectSeats?EventId=${event.id}&VenueId=${event.venueId}" 
-                                   class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600 transition-colors">
-                                   Reservation
-                                </a>`;
+                                     class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600 transition-colors">
+                                     Reservation
+                                  </a>`;
                 }
 
-                return `<div class="event-card ${timeClass} shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
-                             data-event-name="${event.name.toLowerCase()}"
-                             data-event-city="${event.venue.city.name.toLowerCase()}">
+                // Build and return the card HTML
+                return `<div class="event-card ${timeClass} shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
                             <div class="p-4">
                                 <div class="flex justify-between items-center mb-3">
                                     <div class="text-xs inline-flex items-center">
@@ -570,12 +385,11 @@
                                     ${reservationElement}
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
             }
 
-            // Function to update pagination controls
-            function updatePagination(currentPage, totalPages) {
+            // Update pagination controls
+            function updatePagination() {
                 if (totalPages <= 1) {
                     $('#pagination').addClass('hidden');
                     return;
@@ -620,18 +434,11 @@
                     $pageNumbers.append(`<button class="page-button px-3 py-1 rounded" data-page="${totalPages}">${totalPages}</button>`);
                 }
 
-                // Add click handlers for page buttons
-                $pageNumbers.off('click', '.page-button').on('click', '.page-button', function(e) {
-                    e.preventDefault();
-                    currentPage = parseInt($(this).data('page'));
-                    loadEvents();
-                });
-
                 // Show pagination
                 $('#pagination').removeClass('hidden');
             }
 
-            // Helper function to determine time class
+            // Helper function to determine time class based on event date
             function getEventTimeClass(eventDate) {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
