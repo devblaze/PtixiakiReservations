@@ -26,12 +26,8 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run All Test Projects
-        run: |
-          for proj in $(find . -name '*.Tests.csproj'); do
-            echo "Testing $proj"
-            dotnet test "$proj" --no-restore --no-build --verbosity normal || exit 1
-          done
+      - name: Run Tests
+        run: dotnet test --configuration Release --no-restore --no-build --verbosity normal
 
   docker-check:
     runs-on: ubuntu-latest
@@ -63,7 +59,6 @@ jobs:
   docker-publish:
     runs-on: ubuntu-latest
     needs: docker-check
-    # Only run this job for pushes to main, not for pull requests
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code

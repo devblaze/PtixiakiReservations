@@ -2,7 +2,7 @@
 
 services:
   ptixiakireservations:
-    image: yourdockerhub/ptixiakireservations:latest
+    image: devblaze/ptixiakireservations:latest
     container_name: ptixiaki-app
     restart: unless-stopped
     depends_on:
