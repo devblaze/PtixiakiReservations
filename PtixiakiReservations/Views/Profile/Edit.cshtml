@@ -1,0 +1,56 @@
+﻿@model PtixiakiReservations.Models.ViewModels.ProfileEditViewModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+    <div class="p-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Edit Your Profile</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update your personal information</p>
+    </div>
+
+    <form asp-action="Edit" method="post" class="p-6">
+        <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
+
+        <div class="grid grid-cols-1 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="FirstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
+                    <input asp-for="FirstName" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm text-gray-800 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                    <span asp-validation-for="FirstName" class="text-xs text-red-500"></span>
+                </div>
+
+                <div>
+                    <label asp-for="LastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
+                    <input asp-for="LastName" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm text-gray-800 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                    <span asp-validation-for="LastName" class="text-xs text-red-500"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="PhoneNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                <input asp-for="PhoneNumber" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm text-gray-800 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                <span asp-validation-for="PhoneNumber" class="text-xs text-red-500"></span>
+            </div>
+
+            <div>
+                <label asp-for="Email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input asp-for="Email" readonly disabled class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 rounded-md shadow-sm text-gray-800 dark:text-gray-300 cursor-not-allowed" />
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">To change your email, please visit the account settings page.</p>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4">
+                <a href="@Url.Action("Index", "Profile")" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancel
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

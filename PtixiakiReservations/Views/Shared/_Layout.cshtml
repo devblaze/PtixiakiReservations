@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col dark:bg-gray-900 dark:text-gray-100"
-      x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+      x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', profileOpen: false, mobileMenuOpen: false }" :class="{ 'dark': darkMode }">
 <header class="bg-white border-b shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <nav class="bg-gray-800">
         <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
@@ -31,53 +31,133 @@
                 <!-- Menu -->
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
+                        @{
+                            // Get user roles for menu permissions
+                            var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+                            var userRoles = currentUser != null ? await UserManager.GetRolesAsync(currentUser) : new List<string>();
+                            var isVenueManager = userRoles.Contains("Venue");
+                            var isAdmin = userRoles.Contains("Admin");
+                        }
+
+                        <!-- Home link - visible to all users -->
                         <a href="@Url.Action("EventsForToday", "Events")"
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                             Home
                         </a>
-                        
-                        <a href="@Url.Action("Index", "Reservation")"
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            Reservations
-                        </a>
 
-                        <a href="@Url.Action("CreateEvent", "Events")"
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            Create Event
-                        </a>
-                        
-                        <a href="@Url.Action("Index", "Venue")"
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            View Venues
-                        </a>
-                        
-                        <a href="@Url.Action("Create", "Venue")"
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            Create Venue
-                        </a>
-
-                        <a href="@Url.Action("Index", "SubAreas")"
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            Sub Areas
-                        </a>
-                        
-                        <!-- Admin Panel: shown only if user has "Admin" role -->
-                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                        <!-- Reservations link - visible to all logged-in users -->
+                        @if (SignInManager.IsSignedIn(User))
                         {
-                            <a href="@Url.Action("Index", "Admin")"
-                               class="text-red-400 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                Admin Panel
+                            <a href="@Url.Action("Index", "Reservation")"
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Reservations
+                            </a>
+                        }
+
+                        <!-- Venue manager links - only visible to venue managers -->
+                        @if (isVenueManager || isAdmin)
+                        {
+                            <a href="@Url.Action("CreateEvent", "Events")"
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Create Event
+                            </a>
+
+                            <a href="@Url.Action("Index", "Venue")"
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                View Venues
+                            </a>
+
+                            <a href="@Url.Action("Create", "Venue")"
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Create Venue
+                            </a>
+
+                            <a href="@Url.Action("Index", "SubAreas")"
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Sub Areas
                             </a>
                         }
                     </div>
                 </div>
 
+                <!-- User Profile Section -->
+                <div class="ml-3 relative">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <div>
+                            <button x-on:click="profileOpen = !profileOpen" class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                <span class="sr-only">Open user menu</span>
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-white">
+                                        @(User.Identity?.Name?[0].ToString().ToUpper())
+                                    </div>
+                                    <span class="text-white ml-2">@User.Identity?.Name</span>
+                                    <svg class="ml-1 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div x-show="profileOpen"
+                             x-on:click.outside="profileOpen = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                             role="menu"
+                             aria-orientation="vertical"
+                             aria-labelledby="user-menu-button"
+                             tabindex="-1">
+
+                            <!-- User Info Section -->
+                            <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-600">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">@User.Identity?.Name</p>
+
+                                <!-- User Role -->
+                                @{
+                                    var user = await UserManager.GetUserAsync(User);
+                                    var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
+                                }
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    @(roles.Any() ? string.Join(", ", roles) : "User")
+                                </p>
+                            </div>
+
+                            <!-- Menu Links -->
+                            <a href="@Url.Action("Index", "Profile")" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">Your Profile</a>
+                            <a href="@Url.Action("Index", "Settings")" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">Settings</a>
+
+                            <!-- Admin Panel Link - Only visible to admins -->
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a href="@Url.Action("Index", "Admin")" class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">Admin Panel</a>
+                            }
+
+                            <!-- Logout Form -->
+                            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Logout</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="space-x-2">
+                            <a asp-area="Identity" asp-page="/Account/Login" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Login</a>
+                            <a asp-area="Identity" asp-page="/Account/Register" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Register</a>
+                        </div>
+                    }
+                </div>
 
                 <!-- Mobile menu toggle button -->
                 <div class="-mr-2 flex md:hidden">
                     <button type="button"
                             class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
-                            aria-controls="mobile-menu" aria-expanded="false">
+                            aria-controls="mobile-menu" aria-expanded="false"
+                            x-on:click="mobileMenuOpen = !mobileMenuOpen">
                         <span class="sr-only">Open main menu</span>
                         <!-- Icon: Hamburger menu -->
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -91,27 +171,81 @@
         </div>
 
         <!-- Mobile menu -->
-        <div class="md:hidden" id="mobile-menu">
+        <div class="md:hidden" id="mobile-menu" x-show="mobileMenuOpen">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="@Url.Action("Index", "Home")"
+                @{
+                    // Get user roles for mobile menu
+                    var mobileCurrentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+                    var mobileUserRoles = mobileCurrentUser != null ? await UserManager.GetRolesAsync(mobileCurrentUser) : new List<string>();
+                    var isMobileVenueManager = mobileUserRoles.Contains("Venue");
+                    var isMobileAdmin = mobileUserRoles.Contains("Admin");
+                }
+
+                <!-- Home link - visible to all users -->
+                <a href="@Url.Action("EventsForToday", "Events")"
                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
 
-                <a href="@Url.Action("Index", "Events")"
-                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Events</a>
+                <!-- Reservations link - visible to all logged-in users -->
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a href="@Url.Action("Index", "Reservation")"
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Reservations</a>
+                }
 
-                <a href="@Url.Action("Index", "Reservation")"
-                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Reservations</a>
-                
-                <a href="@Url.Action("Index", "Venue")"
-                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Venue</a>
-                
-                <a href="@Url.Action("Index", "SubAreas")"
-                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Sub
-                    Areas</a>
+                <!-- Venue manager links - only visible to venue managers -->
+                @if (isMobileVenueManager || isMobileAdmin)
+                {
+                    <a href="@Url.Action("CreateEvent", "Events")"
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Create Event</a>
 
-                <a href="@Url.Action("Index", "Seat")"
-                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Seats</a>
+                    <a href="@Url.Action("Index", "Venue")"
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">View Venues</a>
+
+                    <a href="@Url.Action("Create", "Venue")"
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Create Venue</a>
+
+                    <a href="@Url.Action("Index", "SubAreas")"
+                       class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Sub Areas</a>
+                }
+
+                <!-- Admin Panel link - only visible to admin users -->
+                @if (isMobileAdmin)
+                {
+                    <a href="@Url.Action("Index", "Admin")"
+                       class="text-red-400 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Admin Panel</a>
+                }
             </div>
+
+            <!-- Mobile profile section -->
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="pt-4 pb-3 border-t border-gray-700">
+                    <div class="flex items-center px-5">
+                        <div class="flex-shrink-0">
+                            <div class="h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center text-white">
+                                @(User.Identity?.Name?[0].ToString().ToUpper())
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <div class="text-base font-medium leading-none text-white">@User.Identity?.Name</div>
+                            @{
+                                var mobileUser = await UserManager.GetUserAsync(User);
+                                var mobileRoles = mobileUser != null ? await UserManager.GetRolesAsync(mobileUser) : new List<string>();
+                            }
+                            <div class="text-sm font-medium leading-none text-gray-400">
+                                @(mobileRoles.Any() ? string.Join(", ", mobileRoles) : "User")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 px-2 space-y-1">
+                        <a href="@Url.Action("Index", "Profile")" class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Your Profile</a>
+                        <a href="@Url.Action("Index", "Settings")" class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Settings</a>
+                        <form id="mobile-logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                            <button type="submit" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Logout</button>
+                        </form>
+                    </div>
+                </div>
+            }
         </div>
     </nav>
 </header>
@@ -127,30 +261,4 @@
     </div>
 </footer>
 </body>
-<script>
-    document.getElementById('admin-dropdown-button').addEventListener('click', function () {
-        const menu = document.getElementById('admin-dropdown-menu');
-        menu.classList.toggle('hidden');
-    });
-
-    document.getElementById('venue-dropdown-button').addEventListener('click', function () {
-        const menu = document.getElementById('venue-dropdown-menu');
-        menu.classList.toggle('hidden');
-    });
-
-    // Optional: Close dropdown menu when clicking outside it
-    document.addEventListener('click', function (event) {
-        const button = document.getElementById('admin-dropdown-button');
-        const menu = document.getElementById('admin-dropdown-menu');
-        const venueButton = document.getElementById('admin-dropdown-button');
-        const venueMenu = document.getElementById('admin-dropdown-menu');
-
-        if (!button.contains(event.target) && !menu.contains(event.target)) {
-            menu.classList.add('hidden');
-        }
-        if (!venueButton.contains(event.target) && !venueMenu.contains(event.target)) {
-            menu.classList.add('hidden');
-        }
-    });
-</script>
 </html>

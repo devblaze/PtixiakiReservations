@@ -112,6 +112,9 @@ try
 
             await DataSeeder.SeedTestDataAsync(context, userManager, roleManager, services);
 
+            // Seed test users for role testing
+            await TestUserSeeder.SeedTestUsersAsync(userManager, roleManager);
+
             Log.Information("Database seeded successfully");
         }
         catch (Exception ex)

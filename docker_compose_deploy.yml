@@ -1,0 +1,94 @@
+﻿version: '3.8'
+
+services:
+  ptixiakireservations:
+    image: yourdockerhub/ptixiakireservations:latest
+    container_name: ptixiaki-app
+    restart: unless-stopped
+    depends_on:
+      - mssql
+      - elasticsearch
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=ReservationProject;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
+      - ElasticSettings__Uri=http://elasticsearch:9200
+      - ElasticSettings__DefaultIndex=events
+      - TZ=Europe/Athens
+    ports:
+      - "8080:80"
+    networks:
+      - reservations
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql-server
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SQL_PASSWORD}
+      - MSSQL_PID=Express
+    volumes:
+      - mssql-data:/var/opt/mssql
+    ports:
+      - "1433:1433"
+    networks:
+      - reservations
+      
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    restart: unless-stopped
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    networks:
+      - reservations
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - reservations
+        
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300  # Check for updates every 5 minutes
+      - WATCHTOWER_INCLUDE_STOPPED=false
+      - WATCHTOWER_LABEL_ENABLE=true
+      - TZ=Europe/Athens
+    networks:
+      - reservations
+    command: --label-enable --cleanup
+        
+networks:
+  reservations:
+    driver: bridge
+    
+volumes:
+  mssql-data:
+  elasticsearch-data:
