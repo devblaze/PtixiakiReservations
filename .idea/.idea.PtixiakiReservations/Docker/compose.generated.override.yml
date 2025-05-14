@@ -18,5 +18,5 @@ services:
     volumes:
     - "D:\\Rider Projects\\PtixiakiReservations\\PtixiakiReservations:/app:rw"
     - "D:\\Rider Projects\\PtixiakiReservations:/src:rw"
-    - "C:\\Users\\nikos\\.nuget\\packages:/home/app/.nuget/packages"
+    - "C:\\Users\\nikos\\.nuget\\packages:/root/.nuget/packages"
     working_dir: "/app"
