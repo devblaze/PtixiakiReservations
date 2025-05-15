@@ -6,35 +6,19 @@ services:
     container_name: ptixiaki-app
     restart: unless-stopped
     depends_on:
-      - mssql
       - elasticsearch
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=mssql;Database=ReservationProject;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
+      - ConnectionStrings__DefaultConnection=Server=192.168.4.204;Database=ReservationProject;User Id=sa;Password=Blaze2310;TrustServerCertificate=True;MultipleActiveResultSets=true
       - ElasticSettings__Uri=http://elasticsearch:9200
       - ElasticSettings__DefaultIndex=events
       - TZ=Europe/Athens
     ports:
-      - "8080:80"
+      - "8080:8080"
     networks:
       - reservations
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-      
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql-server
-    restart: unless-stopped
-    environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${SQL_PASSWORD}
-      - MSSQL_PID=Express
-    volumes:
-      - mssql-data:/var/opt/mssql
-    ports:
-      - "1433:1433"
-    networks:
-      - reservations
       
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0

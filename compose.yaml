@@ -4,11 +4,15 @@
     build:
       context: .
       dockerfile: PtixiakiReservations/Dockerfile
+    volumes:
+      # Mount local nuget packages to container
+      - ${USERPROFILE}/.nuget/packages:/home/app/.nuget/packages:ro  # Windows
+      # - $HOME/.nuget/packages:/home/app/.nuget/packages:ro  # macOS/Linux (uncomment as needed)
     ports:
       - "8080:8080"
     networks:
       - reservations
-      
+  
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
     container_name: elasticsearch
@@ -35,10 +39,10 @@
       - ELASTICSEARCH_URL=http://elasticsearch:9200
     networks:
       - reservations
-        
+
 networks:
   reservations:
     driver: bridge
-    
+
 volumes:
   elasticsearch-data:
