@@ -64,17 +64,7 @@
 
                             <a href="@Url.Action("Index", "Venue")"
                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                View Venues
-                            </a>
-
-                            <a href="@Url.Action("Create", "Venue")"
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                Create Venue
-                            </a>
-
-                            <a href="@Url.Action("Index", "SubAreas")"
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                Sub Areas
+                                Venues
                             </a>
                         }
                     </div>
@@ -138,7 +128,7 @@
                             }
 
                             <!-- Logout Form -->
-                            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Events", new { area = "" })">
                                 <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Logout</button>
                             </form>
                         </div>
@@ -200,12 +190,6 @@
 
                     <a href="@Url.Action("Index", "Venue")"
                        class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">View Venues</a>
-
-                    <a href="@Url.Action("Create", "Venue")"
-                       class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Create Venue</a>
-
-                    <a href="@Url.Action("Index", "SubAreas")"
-                       class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Sub Areas</a>
                 }
 
                 <!-- Admin Panel link - only visible to admin users -->
@@ -240,7 +224,7 @@
                     <div class="mt-3 px-2 space-y-1">
                         <a href="@Url.Action("Index", "Profile")" class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Your Profile</a>
                         @* <a href="@Url.Action("Index", "Settings")" class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Settings</a> *@
-                        <form id="mobile-logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <form id="mobile-logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Events", new { area = "" })">
                             <button type="submit" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Logout</button>
                         </form>
                     </div>

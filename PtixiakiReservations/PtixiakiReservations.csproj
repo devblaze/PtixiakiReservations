@@ -44,7 +44,6 @@
 
   <ItemGroup>
     <Folder Include="Models\Requests\" />
-    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
 
@@ -52,6 +51,12 @@
     <Content Include="..\.dockerignore">
       <Link>.dockerignore</Link>
     </Content>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="wwwroot\images\image.jpg" />
+    <None Include="wwwroot\images\image.png" />
   </ItemGroup>
 
 </Project>

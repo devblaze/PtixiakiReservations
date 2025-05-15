@@ -235,6 +235,30 @@ namespace PtixiakiReservations.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: SubAreas/VenueSubAreas/5
+        public async Task<IActionResult> VenueSubAreas(int venueId)
+        {
+            if (venueId == 0)
+            {
+                return NotFound();
+            }
+
+            var venue = await _context.Venue.FindAsync(venueId);
+            if (venue == null)
+            {
+                return NotFound();
+            }
+
+            var subAreas = await _context.SubArea
+                .Where(sa => sa.VenueId == venueId)
+                .ToListAsync();
+
+            ViewBag.VenueName = venue.Name;
+            ViewBag.VenueId = venueId;
+
+            return View(subAreas);
+        }
+
         private bool SubAreaExists(int id)
         {
             return _context.SubArea.Any(e => e.Id == id);

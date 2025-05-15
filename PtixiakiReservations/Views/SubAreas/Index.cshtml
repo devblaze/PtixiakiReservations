@@ -1,60 +1,305 @@
 ﻿@model IEnumerable<PtixiakiReservations.Models.SubArea>
+@using System.Linq
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Sub Areas";
     var subAreas = ViewBag.SubAreas;
+
+    // Manual counting of sub areas with seats
+    int subAreasWithSeats = 0;
+    if (subAreas != null)
+    {
+        foreach (var item in subAreas)
+        {
+            if (item.HasSeats)
+            {
+                subAreasWithSeats++;
+            }
+        }
+    }
 }
 
-<div class="container mx-auto mt-10 px-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-5">All my Sub Areas</h1>
+<div class="bg-gradient-to-r from-purple-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header Section -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-8 md:flex md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-white">
+                        Sub Areas Management
+                    </h1>
+                    <p class="mt-2 text-indigo-100 max-w-3xl">
+                        Create and manage different sections within your venues
+                    </p>
+                </div>
 
-    <p class="mb-4">
-        <a asp-action="Create"
-           class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition duration-200">
-            Create New
-        </a>
-    </p>
+                <div class="mt-4 md:mt-0">
+                    <a asp-action="Create"
+                       class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create New Area
+                    </a>
+                </div>
+            </div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full border-collapse border border-gray-300 rounded-lg shadow-md">
-            <thead class="bg-gray-200">
-            <tr class="text-left">
-                <th class="px-4 py-3">Area Name</th>
-                <th class="px-4 py-3">Description</th>
-                <th class="px-4 py-3">Actions</th>
-            </tr>
-            </thead>
+            <!-- Stats Section (Optional) -->
+            <div class="bg-white px-6 py-4 border-b border-gray-200">
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-md bg-purple-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-500">Total Areas</p>
+                            <p class="text-lg font-semibold text-gray-900">@(subAreas != null ? subAreas.Count : 0)</p>
+                        </div>
+                    </div>
 
-            <tbody class="bg-white divide-y divide-gray-200">
-            @foreach (var item in subAreas)
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-500">With Seat Maps</p>
+                            <p class="text-lg font-semibold text-gray-900">@subAreasWithSeats</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="mb-6 flex justify-end">
+            <div class="inline-flex rounded-md shadow-sm" role="group">
+                <button type="button" id="cardViewBtn" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-lg border border-indigo-600 hover:bg-indigo-700 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    Cards
+                </button>
+                <button type="button" id="tableViewBtn" class="px-4 py-2 text-sm font-medium text-indigo-600 bg-white rounded-r-lg border border-indigo-600 hover:bg-indigo-50 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Table
+                </button>
+            </div>
+        </div>
+
+        <!-- Card View -->
+        <div id="cardView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            @if (subAreas != null && subAreas.Any())
             {
-                <tr class="hover:bg-gray-100 transition duration-150">
-                    <td class="px-4 py-3">@item.AreaName</td>
-                    <td class="px-4 py-3">@item.Desc</td>
-                    <td class="px-4 py-3">
-                        <a asp-action="Edit" asp-route-id="@item.Id"
-                           class="text-blue-500 hover:text-blue-700 mr-2 transition duration-200">
-                            Edit
-                        </a>
-                        |
-                        <a asp-controller="Seat" asp-action="Create" asp-route-subAreaId="@item.Id"
-                           class="@(item.HasSeats ? "text-indigo-500 hover:text-indigo-700" : "text-green-500 hover:text-green-700") ml-2 transition duration-200">
-                            @(item.HasSeats ? "Edit Seat Map" : "Create Seat Map")
-                        </a>
-                        |
-                        <a asp-controller="Seat" asp-action="ListOfMySeats" asp-route-subAreaId="@item.Id"
-                           class="text-purple-500 hover:text-purple-700 ml-2 transition duration-200">
-                            List Of My Seats
-                        </a>
-                        |
-                        <a asp-action="Delete" asp-route-id="@item.Id"
-                           class="text-red-500 hover:text-red-700 ml-2 transition duration-200">
-                            Delete
-                        </a>
-                    </td>
-                </tr>
+                @foreach (var item in subAreas)
+                {
+                    var photopath = "~/images/" + (item.ImgUrl ?? "noimage.jpg");
+
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-200 group">
+                        <!-- Image Section -->
+                        <div class="relative h-40 w-full overflow-hidden bg-gray-100">
+                            <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                 src="@photopath" asp-append-version="true" alt="@item.AreaName" onerror="this.src='/images/noimage.jpg'; this.onerror='';" />
+
+                            <!-- Seat Status Badge -->
+                            <div class="absolute top-0 right-0 mt-3 mr-3 @(item.HasSeats ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800") text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                                @(item.HasSeats ? "Has Seat Map" : "No Seat Map")
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="p-5">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                                @item.AreaName
+                            </h3>
+
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                                @item.Desc
+                            </p>
+
+                            <!-- Actions -->
+                            <div class="pt-4 border-t border-gray-100 flex flex-wrap gap-2">
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit
+                                </a>
+
+                                <a asp-controller="Seat" asp-action="Create" asp-route-subAreaId="@item.Id"
+                                   class="inline-flex items-center px-3 py-1.5 rounded-md @(item.HasSeats ? "bg-indigo-50 text-indigo-600" : "bg-green-50 text-green-600") text-sm font-medium hover:bg-opacity-80 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    @(item.HasSeats ? "Edit Seat Map" : "Create Seat Map")
+                                </a>
+
+                                <a asp-controller="Seat" asp-action="ListOfMySeats" asp-route-subAreaId="@item.Id"
+                                   class="inline-flex items-center px-3 py-1.5 rounded-md bg-purple-50 text-purple-600 text-sm font-medium hover:bg-purple-100 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                    </svg>
+                                    Seats List
+                                </a>
+
+                                <a asp-action="Delete" asp-route-id="@item.Id"
+                                   class="inline-flex items-center px-3 py-1.5 rounded-md bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
             }
-            </tbody>
-        </table>
+            else
+            {
+                <!-- Empty State -->
+                <div class="col-span-full bg-white rounded-lg shadow-md p-10 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">No Sub Areas Found</h3>
+                    <p class="mt-2 text-sm text-gray-500">
+                        You haven't created any sub areas yet. Get started by creating your first area.
+                    </p>
+                    <div class="mt-6">
+                        <a asp-action="Create"
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Create First Sub Area
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Table View -->
+        <div id="tableView" class="hidden mb-8">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seat Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        @if (subAreas != null && subAreas.Any())
+                        {
+                            @foreach (var item in subAreas)
+                            {
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-full object-cover"
+                                                     src="~/images/@(item.ImgUrl ?? "noimage.jpg")"
+                                                     alt="@item.AreaName"
+                                                     onerror="this.src='/images/noimage.jpg'; this.onerror='';" />
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">@item.AreaName</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900 line-clamp-2">@item.Desc</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full @(item.HasSeats ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800")">
+                                                @(item.HasSeats ? "Has Seat Map" : "No Seat Map")
+                                            </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-3">
+                                            <a asp-action="Edit" asp-route-id="@item.Id"
+                                               class="text-blue-600 hover:text-blue-900">Edit</a>
+                                            <a asp-controller="Seat" asp-action="Create" asp-route-subAreaId="@item.Id"
+                                               class="@(item.HasSeats ? "text-indigo-600 hover:text-indigo-900" : "text-green-600 hover:text-green-900")">
+                                                @(item.HasSeats ? "Edit Seat Map" : "Create Seat Map")
+                                            </a>
+                                            <a asp-controller="Seat" asp-action="ListOfMySeats" asp-route-subAreaId="@item.Id"
+                                               class="text-purple-600 hover:text-purple-900">Seats List</a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id"
+                                               class="text-red-600 hover:text-red-900">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">
+                                    No sub areas found. <a asp-action="Create" class="text-indigo-600 hover:text-indigo-900">Create one now</a>.
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardViewBtn = document.getElementById('cardViewBtn');
+            const tableViewBtn = document.getElementById('tableViewBtn');
+            const cardView = document.getElementById('cardView');
+            const tableView = document.getElementById('tableView');
+
+            // Set default view from localStorage or use card view
+            const currentView = localStorage.getItem('subAreaViewPreference') || 'card';
+
+            function setView(view) {
+                if (view === 'table') {
+                    cardView.classList.add('hidden');
+                    tableView.classList.remove('hidden');
+                    cardViewBtn.classList.remove('bg-indigo-600', 'text-white');
+                    cardViewBtn.classList.add('bg-white', 'text-indigo-600');
+                    tableViewBtn.classList.remove('bg-white', 'text-indigo-600');
+                    tableViewBtn.classList.add('bg-indigo-600', 'text-white');
+                    localStorage.setItem('subAreaViewPreference', 'table');
+                } else {
+                    tableView.classList.add('hidden');
+                    cardView.classList.remove('hidden');
+                    tableViewBtn.classList.remove('bg-indigo-600', 'text-white');
+                    tableViewBtn.classList.add('bg-white', 'text-indigo-600');
+                    cardViewBtn.classList.remove('bg-white', 'text-indigo-600');
+                    cardViewBtn.classList.add('bg-indigo-600', 'text-white');
+                    localStorage.setItem('subAreaViewPreference', 'card');
+                }
+            }
+
+            // Initialize view
+            setView(currentView);
+
+            cardViewBtn.addEventListener('click', function() {
+                setView('card');
+            });
+
+            tableViewBtn.addEventListener('click', function() {
+                setView('table');
+            });
+        });
+    </script>
+}

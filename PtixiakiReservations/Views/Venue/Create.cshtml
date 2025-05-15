@@ -1,70 +1,153 @@
 ﻿@model PtixiakiReservations.Models.ViewModels.VenueViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Venue";
 }
-<br/>
-<h4 class="text-lg font-semibold mb-4 text-gray-600">Create Venue</h4>
-<hr class="mb-6 border-t-2 border-gray-200" />
 
-<div class="flex justify-center">
-    <div class="w-full max-w-lg">
-        <form asp-action="Create" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm mb-4"></div>
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Page Header -->
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                    Create New Venue
+                </span>
+            </h1>
+            <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl">
+                Add a new venue to your collection
+            </p>
+        </div>
 
-            <!-- Name Field -->
-            <div class="mb-4">
-                <label asp-for="Name" class="block text-gray-700 text-sm font-bold mb-2"></label>
-                <input asp-for="Name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
-                <span asp-validation-for="Name" class="text-red-500 text-xs italic"></span>
+        <!-- Form Card -->
+        <div class="bg-white shadow-xl rounded-xl overflow-hidden">
+            <!-- Form Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <h2 class="text-lg font-medium text-white">Venue Information</h2>
+                <p class="text-blue-100 text-sm">Fill in the details below</p>
             </div>
 
-            <!-- Address Field -->
-            <div class="mb-4">
-                <label asp-for="Address" class="block text-gray-700 text-sm font-bold mb-2"></label>
-                <input asp-for="Address" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
-                <span asp-validation-for="Address" class="text-red-500 text-xs italic"></span>
-            </div>
+            <form asp-action="Create" enctype="multipart/form-data" class="px-6 py-6 space-y-6">
+                <div asp-validation-summary="ModelOnly" class="mb-4 p-4 rounded-md bg-red-50 text-red-600 text-sm border border-red-200"></div>
 
-            <!-- City Field -->
-            <div class="mb-4">
-                <label asp-for="City" class="block text-gray-700 text-sm font-bold mb-2"></label>
-                <select asp-for="CityId" class="block appearance-none w-full bg-white border border-gray-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" asp-items="@(new SelectList(@ViewBag.ListOfCity, "Id", "Name"))"></select>
-                <span asp-validation-for="City" class="text-red-500 text-xs italic"></span>
-            </div>
-
-            <!-- Postal Code Field -->
-            <div class="mb-4">
-                <label asp-for="PostalCode" class="block text-gray-700 text-sm font-bold mb-2"></label>
-                <input asp-for="PostalCode" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
-                <span asp-validation-for="PostalCode" class="text-red-500 text-xs italic"></span>
-            </div>
-
-            <!-- Phone Field -->
-            <div class="mb-4">
-                <label asp-for="Phone" class="block text-gray-700 text-sm font-bold mb-2"></label>
-                <input asp-for="Phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-blue-500" />
-                <span asp-validation-for="Phone" class="text-red-500 text-xs italic"></span>
-            </div>
-
-            <!-- Photo Upload -->
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Photo</label>
-                <div class="relative">
-                    <input asp-for="Photo" type="file" class="block w-full text-gray-900 border border-gray-300 rounded cursor-pointer focus:outline-none focus:ring focus:border-blue-500" />
+                <!-- Name Field -->
+                <div>
+                    <label asp-for="Name" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                        <input asp-for="Name" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300 py-3" placeholder="Enter venue name" />
+                    </div>
+                    <span asp-validation-for="Name" class="mt-1 text-sm text-red-600"></span>
                 </div>
-            </div>
 
-            <!-- Submit Button -->
-            <div class="flex items-center justify-between">
-                <input type="submit" value="Create" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring focus:border-blue-300" />
-            </div>
-        </form>
+                <!-- Address Field -->
+                <div>
+                    <label asp-for="Address" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <input asp-for="Address" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300 py-3" placeholder="Street address" />
+                    </div>
+                    <span asp-validation-for="Address" class="mt-1 text-sm text-red-600"></span>
+                </div>
+
+                <!-- Two-column layout for City and Postal Code -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- City Field -->
+                    <div>
+                        <label asp-for="City" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                </svg>
+                            </div>
+                            <select asp-for="CityId" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300 py-3"
+                                    asp-items="@(new SelectList(@ViewBag.ListOfCity, "Id", "Name"))" aria-label="Select city">
+                            </select>
+                        </div>
+                        <span asp-validation-for="City" class="mt-1 text-sm text-red-600"></span>
+                    </div>
+
+                    <!-- Postal Code Field -->
+                    <div>
+                        <label asp-for="PostalCode" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <input asp-for="PostalCode" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300 py-3" placeholder="Postal code" />
+                        </div>
+                        <span asp-validation-for="PostalCode" class="mt-1 text-sm text-red-600"></span>
+                    </div>
+                </div>
+
+                <!-- Phone Field -->
+                <div>
+                    <label asp-for="Phone" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                        </div>
+                        <input asp-for="Phone" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300 py-3" placeholder="Contact phone number" />
+                    </div>
+                    <span asp-validation-for="Phone" class="mt-1 text-sm text-red-600"></span>
+                </div>
+
+                <!-- Photo Upload with Preview -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Venue Image</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-300 transition-colors">
+                        <div class="space-y-1 text-center">
+                            <div class="mx-auto h-24 w-24 mb-3 text-gray-400" id="imagePreviewContainer">
+                                <svg class="h-full w-full" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <img id="imagePreview" class="h-full w-full object-cover hidden rounded-md" alt="" />
+                            </div>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="Photo" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                    <span>Upload an image</span>
+                                    <input asp-for="Photo" type="file" class="sr-only" id="Photo" accept="image/*" />
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                PNG, JPG, GIF up to 10MB
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-5 border-t border-gray-200 flex justify-between items-center">
+                    <a asp-action="Index" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to List
+                    </a>
+                    <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create Venue
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-<div class="mt-4">
-    <a asp-action="Index" class="text-blue-500 hover:underline">Back to List</a>
 </div>
 
 @section Scripts {
@@ -72,11 +155,73 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('.custom-file-input')?.addEventListener('change', (event) => {
-                const fileName = event.target.value.split("\\").pop();
-                const label = event.target.nextElementSibling;
-                if (label) label.innerHTML = fileName;
+            const fileInput = document.getElementById('Photo');
+            const imagePreview = document.getElementById('imagePreview');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                        imagePreviewContainer.querySelector('svg')?.classList.add('hidden');
+                    }
+
+                    reader.readAsDataURL(file);
+                }
             });
+
+            // Drag and drop functionality
+            const dropArea = imagePreviewContainer.closest('div.border-dashed');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropArea.classList.add('border-indigo-500', 'bg-indigo-50');
+            }
+
+            function unhighlight() {
+                dropArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+            }
+
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+
+                if (file && file.type.startsWith('image/')) {
+                    fileInput.files = dt.files;
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                        imagePreviewContainer.querySelector('svg')?.classList.add('hidden');
+                    }
+
+                    reader.readAsDataURL(file);
+                }
+            }
         });
     </script>
 }
