@@ -654,7 +654,7 @@ public class EventsController(
             var venue = venues[random.Next(venues.Count)];
 
             // Random date between now and 3 months in the future
-            var daysToAdd = random.Next(1, 90);
+            var daysToAdd = random.Next(1, 5);
             var startDate = now.AddDays(daysToAdd);
 
             // Event duration between 1 and 4 hours

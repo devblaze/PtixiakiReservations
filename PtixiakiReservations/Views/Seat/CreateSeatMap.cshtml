@@ -1,156 +1,459 @@
 ﻿@model PtixiakiReservations.Models.Seat
 
 @{
-ViewData["Title"] = "Create Seat Map";
+    ViewData["Title"] = "Create Seat Map";
 }
 @{
-int subAreaId = (int)ViewData["SubAreaId"];
-bool existingSeats = (bool)ViewData["HasExistingSeats"];
-ViewData["Title"] = existingSeats ? "Edit Seat Map" : "Create Seat Map";
+    int subAreaId = (int)ViewData["SubAreaId"];
+    bool existingSeats = (bool)ViewData["HasExistingSeats"];
+    ViewData["Title"] = existingSeats ? "Edit Seat Map" : "Create Seat Map";
+    var subAreaName = ViewData["SubAreaName"] as string ?? "Sub Area";
 }
 
-<h1 class="text-2xl font-bold text-gray-800 mb-6">@ViewData["Title"]</h1>
-
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-    <!-- Form Section -->
-    <div class="sm:col-span-1 bg-white shadow-md rounded-md p-6 space-y-4">
-        <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
-
-        <div class="form-group mb-4">
-            <label for="Row" class="block text-sm font-medium text-gray-700 mb-2">Create Rows</label>
-            <input type="number" value="0"
-                   class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500"
-                   id="Row"/>
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white">@ViewData["Title"]</h1>
+                        <p class="mt-2 text-indigo-100 max-w-3xl">
+                            Design and manage the seating layout for <span class="font-semibold">@subAreaName</span>
+                        </p>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <a href="@Url.Action("Index", "SubAreas")"
+                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Back to Areas
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group mb-4">
-            <label for="Col" class="block text-sm font-medium text-gray-700 mb-2">Create Columns</label>
-            <input type="number" value="0"
-                   class="form-control border rounded-md p-2 w-full focus:ring-blue-500 focus:border-blue-500"
-                   id="Col"/>
-        </div>
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Left Panel: Controls -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Configuration Card -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-indigo-600 py-4 px-5 text-white">
+                        <h2 class="text-lg font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
+                            Seat Configuration
+                        </h2>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
-        <!-- Buttons -->
-        <div class="flex space-x-3">
-            <button type="button" id="create" class="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
-                Create
-            </button>
-            <button type="button" id="save" class="btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
-                Save
-            </button>
-            <button type="button" id="deleteSeat"
-                    class="btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Delete Seat
-            </button>
-        </div>
-    </div>
+                        <div>
+                            <label for="Row" class="block text-sm font-medium text-gray-700 mb-1">Rows</label>
+                            <div class="flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </span>
+                                <input type="number" id="Row" value="0" min="0" max="20"
+                                       class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300" />
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Number of horizontal rows</p>
+                        </div>
 
-    <!-- Canvas Section -->
-    <div class="sm:col-span-2 flex items-center justify-center">
-        <canvas id="c" width="600" height="600" class="border border-gray-300 rounded-md shadow-md"></canvas>
+                        <div>
+                            <label for="Col" class="block text-sm font-medium text-gray-700 mb-1">Columns</label>
+                            <div class="flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </span>
+                                <input type="number" id="Col" value="0" min="0" max="20"
+                                       class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300" />
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Number of vertical columns</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Card -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-indigo-600 py-4 px-5 text-white">
+                        <h2 class="text-lg font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                            </svg>
+                            Actions
+                        </h2>
+                    </div>
+                    <div class="p-5 space-y-3">
+                        <button type="button" id="create"
+                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Create Seat Grid
+                        </button>
+
+                        <button type="button" id="save"
+                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Save Seat Map
+                        </button>
+
+                        <button type="button" id="deleteSeat"
+                                class="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete Selected
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Help Card -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-indigo-600 py-4 px-5 text-white">
+                        <h2 class="text-lg font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Instructions
+                        </h2>
+                    </div>
+                    <div class="p-5">
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Enter the number of rows and columns</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Click "Create Seat Grid" to generate seats</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Drag seats to arrange them</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Click seats to select (hold Shift for multiple)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Click "Save" when finished arranging</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Canvas -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-indigo-600 py-4 px-5 text-white">
+                        <h2 class="text-lg font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                            Seat Map Designer
+                        </h2>
+                    </div>
+                    <div class="p-5">
+                        <div class="relative bg-gray-50 p-4 border border-gray-200 rounded-lg">
+                            <!-- Canvas for seats -->
+                            <canvas id="c" width="600" height="600" class="w-full border border-gray-300 rounded-md shadow-inner bg-white"></canvas>
+
+                            <!-- Status messages overlay -->
+                            <div id="statusOverlay" class="absolute bottom-4 left-4 right-4 hidden">
+                                <div class="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-md rounded-md px-4 py-2 flex items-center">
+                                    <svg id="loadingIcon" class="animate-spin h-5 w-5 mr-3 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span id="statusMessage" class="text-sm font-medium text-gray-800">Processing...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zoom Controls (optional extra) -->
+                        <div class="flex justify-center mt-4">
+                            <div class="inline-flex items-center bg-gray-100 rounded-md p-1">
+                                <button id="zoomOut" class="p-2 hover:bg-gray-200 rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                    </svg>
+                                </button>
+                                <span class="mx-2 text-sm text-gray-600">Zoom</span>
+                                <button id="zoomIn" class="p-2 hover:bg-gray-200 rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </button>
+                                <button id="resetZoom" class="ml-2 p-2 hover:bg-gray-200 rounded-md text-xs text-gray-600">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
-<script>
-    $(document).ready(function () {
-        var canvas = new fabric.Canvas('c');
-        const INITIAL_POSITION_X = 50, INITIAL_POSITION_Y = 50;
-        var subAreaId = @subAreaId;
+    <!-- Include fabric.js for canvas manipulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
-        function loadExistingSeats() {
-            $.getJSON('/Seat/get_data', { SubAreaId: subAreaId })
-                .done(function (data) {
-                    if (data && data.length > 0) {
-                        console.log("Loading existing seats:", data);
-                        canvas.clear();
-                        data.forEach(function (seat) {
-                            // Create rectangle
-                            var rect = new fabric.Rect({
-                                width: 50,
-                                height: 50,
-                                fill: '#666',
-                                originX: 'center',
-                                originY: 'center'
+    <script>
+        $(document).ready(function () {
+            // Status display functions
+            function showStatus(message, isError = false, isSuccess = false) {
+                const overlay = document.getElementById('statusOverlay');
+                const statusMessage = document.getElementById('statusMessage');
+                const loadingIcon = document.getElementById('loadingIcon');
+
+                statusMessage.textContent = message;
+                overlay.classList.remove('hidden');
+
+                if (isError) {
+                    statusMessage.classList.add('text-red-600');
+                    loadingIcon.classList.add('text-red-600');
+                    loadingIcon.classList.remove('text-indigo-600', 'text-green-600', 'animate-spin');
+                } else if (isSuccess) {
+                    statusMessage.classList.add('text-green-600');
+                    loadingIcon.classList.add('text-green-600');
+                    loadingIcon.classList.remove('text-indigo-600', 'text-red-600', 'animate-spin');
+                } else {
+                    statusMessage.classList.remove('text-red-600', 'text-green-600');
+                    statusMessage.classList.add('text-gray-800');
+                    loadingIcon.classList.add('text-indigo-600', 'animate-spin');
+                    loadingIcon.classList.remove('text-red-600', 'text-green-600');
+                }
+
+                if (isError || isSuccess) {
+                    setTimeout(() => {
+                        overlay.classList.add('hidden');
+                    }, 3000);
+                }
+            }
+
+            function hideStatus() {
+                const overlay = document.getElementById('statusOverlay');
+                overlay.classList.add('hidden');
+            }
+
+            // Initialize canvas
+            var canvas = new fabric.Canvas('c');
+            canvas.setWidth(document.getElementById('c').parentElement.clientWidth - 30);
+            canvas.setHeight(600);
+
+            // Seat map functionality
+            const INITIAL_POSITION_X = 50, INITIAL_POSITION_Y = 50;
+            var subAreaId = @subAreaId;
+            var zoomLevel = 1;
+
+            // Zoom Controls
+            document.getElementById('zoomIn').addEventListener('click', function() {
+                zoomLevel *= 1.1;
+                canvas.setZoom(zoomLevel);
+                canvas.renderAll();
+            });
+
+            document.getElementById('zoomOut').addEventListener('click', function() {
+                zoomLevel *= 0.9;
+                canvas.setZoom(zoomLevel);
+                canvas.renderAll();
+            });
+
+            document.getElementById('resetZoom').addEventListener('click', function() {
+                zoomLevel = 1;
+                canvas.setZoom(zoomLevel);
+                canvas.renderAll();
+            });
+// Load existing seats
+            function loadExistingSeats() {
+                showStatus("Loading existing seats...");
+
+                $.getJSON('/Seat/get_data', { SubAreaId: subAreaId })
+                    .done(function (data) {
+                        if (data && data.length > 0) {
+                            console.log("Loading existing seats:", data);
+                            canvas.clear();
+
+                            data.forEach(function (seat) {
+                                // Create rectangle with rounded corners
+                                var rect = new fabric.Rect({
+                                    width: 50,
+                                    height: 50,
+                                    fill: '#5b21b6', // Indigo color
+                                    originX: 'center',
+                                    originY: 'center',
+                                    rx: 6, // Rounded corners
+                                    ry: 6  // Rounded corners
+                                });
+
+                                // Create text for the seat name
+                                var text = new fabric.Text(seat.name, {
+                                    fontSize: 14,
+                                    fill: '#fff',
+                                    originX: 'center',
+                                    originY: 'center',
+                                    fontFamily: 'Arial',
+                                    fontWeight: 'bold'
+                                });
+
+                                // Group the rectangle and text, and set position
+                                var seatGroup = new fabric.Group([rect, text], {
+                                    left: seat.x,
+                                    top: seat.y,
+                                    selectable: true,
+                                    originX: 'center',
+                                    originY: 'center',
+                                    hasControls: true,
+                                    hasBorders: true,
+                                    lockRotation: true,
+                                    borderColor: '#6366f1',
+                                    cornerColor: '#6366f1',
+                                    cornerSize: 8,
+                                    transparentCorners: false
+                                });
+
+                                canvas.add(seatGroup);
                             });
+                            canvas.renderAll();
 
-                            // Create text for the seat name
-                            var text = new fabric.Text(seat.name, {
-                                fontSize: 14,
-                                fill: '#fff',
-                                originX: 'center',
-                                originY: 'center'
-                            });
+                            showStatus(`Loaded ${data.length} seats successfully`, false, true);
+                        } else {
+                            showStatus("No existing seats found. You can create a new seat map.", false, true);
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error("Failed to fetch seats:", error);
+                        showStatus("Error loading seats. Please try again.", true);
+                    });
+            }
 
-                            // Group the rectangle and text, and set position
-                            var seatGroup = new fabric.Group([rect, text], {
-                                left: seat.x,
-                                top: seat.y,
-                                selectable: true,
-                                originX: 'center',
-                                originY: 'center'
-                            });
+            // Load seats if they exist
+            if (@existingSeats.ToString().ToLower()) {
+                loadExistingSeats();
+            } else {
+                showStatus("No existing seats. Create a new seat map.", false, true);
+            }
 
-                            canvas.add(seatGroup);
-                        });
-                        canvas.renderAll();
+            // Create new seats
+            $("#create").click(function () {
+                var rows = parseInt($("#Row").val());
+                var cols = parseInt($("#Col").val());
+
+                if (rows <= 0 || cols <= 0) {
+                    showStatus("Please enter valid number of rows and columns (minimum 1)", true);
+                    return;
+                }
+
+                if (rows * cols > 100) {
+                    if (!confirm(`You're about to create ${rows * cols} seats. This may affect performance. Continue?`)) {
+                        return;
                     }
-                })
-                .fail(function (error) {
-                    console.error("Failed to fetch seats:", error);
-                });
-        }
+                }
 
-        // Load seats if exists
-        if (@existingSeats.ToString().ToLower()) {
-            loadExistingSeats();
-        }
+                showStatus(`Creating ${rows * cols} seats...`);
 
-        $("#create").click(function () {
-            var rows = parseInt($("#Row").val());
-            var cols = parseInt($("#Col").val());
-            if (rows > 0 && cols > 0) {
+                // Clear canvas and create new seat grid
                 canvas.clear();
                 var nextX = INITIAL_POSITION_X;
                 var nextY = INITIAL_POSITION_Y;
+
                 for (let r = 0; r < rows; r++) {
-                    nextY = INITIAL_POSITION_Y + r * (50 + 30);
+                    nextY = INITIAL_POSITION_Y + r * (50 + 20); // Height + gap
                     for (let c = 0; c < cols; c++) {
+                        // Create seat name
                         var name = `Row:${r + 1}-Col:${c + 1}`;
+
+                        // Create rectangle with rounded corners and shadow
                         var rect = new fabric.Rect({
                             width: 50,
                             height: 50,
-                            fill: '#666',
+                            fill: '#5b21b6', // Indigo color
                             originX: 'center',
-                            originY: 'center'
+                            originY: 'center',
+                            rx: 6, // Rounded corners
+                            ry: 6, // Rounded corners
+                            shadow: new fabric.Shadow({
+                                color: 'rgba(0,0,0,0.3)',
+                                blur: 5,
+                                offsetX: 0,
+                                offsetY: 2
+                            })
                         });
 
+                        // Create text for the seat name
                         var text = new fabric.Text(name, {
                             fontSize: 14,
                             fill: '#fff',
                             originX: 'center',
-                            originY: 'center'
+                            originY: 'center',
+                            fontFamily: 'Arial',
+                            fontWeight: 'bold'
                         });
 
+                        // Group the rectangle and text, and set position
                         var seatGroup = new fabric.Group([rect, text], {
-                            left: nextX + c * (50 + 30),
+                            left: nextX + c * (50 + 20), // Width + gap
                             top: nextY,
                             selectable: true,
                             originX: 'center',
-                            originY: 'center'
+                            originY: 'center',
+                            hasControls: true,
+                            hasBorders: true,
+                            lockRotation: true,
+                            borderColor: '#6366f1',
+                            cornerColor: '#6366f1',
+                            cornerSize: 8,
+                            transparentCorners: false
                         });
 
                         canvas.add(seatGroup);
                     }
                 }
-                canvas.renderAll();
-            }
-        });
 
-        $("#deleteSeat").click(function () {
-            var activeObjects = canvas.getActiveObjects();
-            if (activeObjects.length > 0) {
-                if (confirm("Are you sure you want to remove the selected seats?")) {
-                    var seatNames = activeObjects.map(obj => obj.item(1).text); // Assuming the second item is text with Seat Name 
+                canvas.renderAll();
+                showStatus(`Created ${rows * cols} seats successfully`, false, true);
+            });
+
+            // Delete selected seats
+            $("#deleteSeat").click(function () {
+                var activeObjects = canvas.getActiveObjects();
+
+                if (activeObjects.length === 0) {
+                    showStatus("Please select one or more seats to delete", true);
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to delete ${activeObjects.length} selected seats?`)) {
+                    showStatus(`Deleting ${activeObjects.length} seats...`);
+
+                    var seatNames = activeObjects.map(obj => obj.item(1).text);
+
                     $.ajax({
                         url: '/Seat/DeleteMultipleSeats',
                         type: 'POST',
@@ -160,59 +463,138 @@ ViewData["Title"] = existingSeats ? "Edit Seat Map" : "Create Seat Map";
                             if (response.success) {
                                 activeObjects.forEach(obj => canvas.remove(obj));
                                 canvas.discardActiveObject().renderAll();
-                                alert("Selected seats deleted successfully!");
+                                showStatus(`${activeObjects.length} seats deleted successfully`, false, true);
                             } else {
-                                alert("Failed to delete some seats: " + response.message);
+                                showStatus(`Failed to delete seats: ${response.message}`, true);
                             }
                         },
                         error: function (err) {
                             console.error(err);
-                            alert("Error occurred while deleting seats.");
+                            showStatus("Error occurred while deleting seats", true);
                         }
                     });
                 }
-            } else {
-                alert("Please select one or more seats first!");
-            }
-        });
+            });
 
-        $("#save").click(function() {
-            // Get all objects from the canvas
-            const seatGroups = canvas.getObjects();
-            const seatsToSave = [];
+            // Save seat map
+            $("#save").click(function() {
+                // Get all objects from the canvas
+                const seatGroups = canvas.getObjects();
 
-            // Loop through each seat group and extract coordinates
-            seatGroups.forEach(seatGroup => {
-                // Extract needed values 
-                const seatName = seatGroup.item(1).text;
-                const x = seatGroup.left;
-                const y = seatGroup.top;
+                if (seatGroups.length === 0) {
+                    showStatus("There are no seats to save!", true);
+                    return;
+                }
 
-                // Add to the list to save
-                seatsToSave.push({
-                    Name: seatName,
-                    left: x,
-                    top: y
+                showStatus(`Saving ${seatGroups.length} seats...`);
+
+                const seatsToSave = [];
+
+                // Loop through each seat group and extract coordinates
+                seatGroups.forEach(seatGroup => {
+                    // Extract needed values 
+                    const seatName = seatGroup.item(1).text;
+                    const x = seatGroup.left;
+                    const y = seatGroup.top;
+
+                    // Add to the list to save
+                    seatsToSave.push({
+                        Name: seatName,
+                        left: x,
+                        top: y
+                    });
+                });
+
+                console.log("Saving seats with positions:", seatsToSave);
+
+                // Send the data to the server
+                $.ajax({
+                    url: `/Seat/CreateTableMap?subAreaId=${subAreaId}`,
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(seatsToSave),
+                    success: function(response) {
+                        showStatus(`${seatsToSave.length} seats saved successfully!`, false, true);
+
+                        // Optional: Add a delay before redirecting
+                        setTimeout(function() {
+                            window.location.href = `/SubAreas/Details/${subAreaId}`;
+                        }, 1500);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        showStatus("Error occurred while saving seats", true);
+                    }
                 });
             });
 
-            console.log("Saving seats with positions:", seatsToSave);
+            // Add hover effects to seats
+            canvas.on('mouse:over', function(e) {
+                if (e.target) {
+                    e.target.item(0).set({
+                        fill: '#4338ca', // Darker indigo on hover
+                        stroke: '#c7d2fe', // Light indigo border
+                        strokeWidth: 2
+                    });
+                    canvas.renderAll();
+                }
+            });
 
-            // Send the data to the server
-            $.ajax({
-                url: `/Seat/CreateTableMap?subAreaId=${subAreaId}`,
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(seatsToSave),
-                success: function(response) {
-                    alert("Seats saved successfully!");
-                },
-                error: function(error) {
-                    console.error(error);
-                    alert("Error occurred while saving seats.");
+            canvas.on('mouse:out', function(e) {
+                if (e.target) {
+                    e.target.item(0).set({
+                        fill: '#5b21b6', // Back to original color
+                        stroke: '',
+                        strokeWidth: 0
+                    });
+                    canvas.renderAll();
+                }
+            });
+
+            // Selection indicator
+            canvas.on('selection:created', function() {
+                const count = canvas.getActiveObjects().length;
+                if (count > 0) {
+                    showStatus(`${count} seat${count > 1 ? 's' : ''} selected`);
+                }
+            });
+
+            canvas.on('selection:updated', function() {
+                const count = canvas.getActiveObjects().length;
+                if (count > 0) {
+                    showStatus(`${count} seat${count > 1 ? 's' : ''} selected`);
+                }
+            });
+
+            canvas.on('selection:cleared', function() {
+                hideStatus();
+            });
+
+            // Add keyboard support for multi-selection with shift key
+            var isShiftDown = false;
+
+            document.addEventListener('keydown', function(e) {
+                if (e.shiftKey) {
+                    isShiftDown = true;
+                    canvas.selection = true;
+                }
+            });
+
+            document.addEventListener('keyup', function(e) {
+                if (e.key === 'Shift') {
+                    isShiftDown = false;
+                    canvas.selection = false;
+                }
+            });
+
+            // Make canvas responsive
+            window.addEventListener('resize', function() {
+                const containerWidth = document.getElementById('c').parentElement.clientWidth - 30;
+                if (containerWidth > 0) {
+                    canvas.setWidth(containerWidth);
+                    canvas.renderAll();
                 }
             });
         });
-    });
-</script>
+    </script>
 }

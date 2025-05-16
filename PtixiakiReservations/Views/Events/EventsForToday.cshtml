@@ -4,133 +4,172 @@
     ViewData["Title"] = "Events";
 }
 
-<div class="container mx-auto p-6">
+<div class="container mx-auto px-4 py-8 max-w-7xl">
     <!-- Search Panel -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h3 class="text-lg font-semibold text-gray-700 mb-4">Event Search</h3>
+    <div class="bg-white rounded-xl shadow-lg mb-10 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
+            <h3 class="text-xl font-bold text-white">Find Events</h3>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <!-- Event Type Dropdown -->
-            <div>
-                <label for="event-type" class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
-                <select id="event-type" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">-- Select Event Type --</option>
-                    <!-- Will be populated via AJAX -->
-                </select>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Event Type Dropdown -->
+                <div>
+                    <label for="event-type" class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
+                    <div class="relative">
+                        <select id="event-type" class="w-full appearance-none bg-white border border-gray-300 rounded-lg py-3 px-4 pr-8 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">All Event Types</option>
+                            <!-- Will be populated via AJAX -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Range Picker -->
+                <div class="md:col-span-2">
+                    <label for="date-range" class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                    <div class="relative">
+                        <input type="text" id="date-range" placeholder="Select date range"
+                               class="w-full bg-white border border-gray-300 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <button id="reset-date" type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div class="md:col-span-2">
-                <label for="date-range" class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <!-- Search Term -->
+            <div class="mb-6">
+                <label for="search-term" class="block text-sm font-medium text-gray-700 mb-2">Event Name or Location</label>
                 <div class="relative">
-                    <input type="text" id="date-range" placeholder="Select date range" 
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    <button id="reset-date" type="button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                    </button>
+                    </div>
+                    <input type="text" id="search-term" placeholder="Enter event name, venue, or city"
+                           class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                 </div>
             </div>
-        </div>
 
-        <!-- Search Term -->
-        <div class="mb-4">
-            <label for="search-term" class="block text-sm font-medium text-gray-700 mb-1">Event Name or Location</label>
-            <div class="relative">
-                <input type="text" id="search-term" placeholder="Enter event name, venue, or city"
-                       class="w-full border border-gray-300 rounded-md pl-10 px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                         viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                    </svg>
-                </div>
+            <div class="flex justify-between items-center">
+                <p id="search-validation-message" class="text-red-500 text-sm hidden">Please fill at least 2 fields to search</p>
+                <button id="search-button" disabled
+                        class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Search Events
+                    </span>
+                </button>
             </div>
-        </div>
-
-        <div class="flex justify-between items-center">
-            <p id="search-validation-message" class="text-red-500 text-sm hidden">Please fill at least 2 fields to search</p>
-            <button id="search-button" disabled
-                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                Search
-            </button>
         </div>
     </div>
 
     <!-- Events Count Display -->
-    <div id="events-count" class="text-center mb-6 text-gray-600">
-        Showing <span id="filtered-count">0</span> events
+    <div id="events-count" class="flex items-center justify-between mb-8">
+        <h2 class="text-xl font-semibold text-gray-800">
+            Events <span class="text-blue-600 font-bold">(<span id="filtered-count">0</span>)</span>
+        </h2>
+        <div class="text-sm text-gray-500">
+            Showing results based on your search criteria
+        </div>
     </div>
 
     <!-- Events Grid -->
-    <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         <!-- Event cards will be loaded here dynamically -->
     </div>
 
     <!-- Loading Indicator -->
-    <div id="loading-indicator" class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        <p class="mt-2 text-gray-600">Loading events...</p>
+    <div id="loading-indicator" class="text-center py-16">
+        <div class="inline-block h-12 w-12 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"></div>
+        <p class="mt-4 text-lg font-medium text-gray-600">Loading events...</p>
     </div>
 
     <!-- No Results Message -->
-    <div id="no-results" class="hidden text-center py-12">
-        <div class="text-gray-500">
-            <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    <div id="no-results" class="hidden text-center py-16">
+        <div class="max-w-md mx-auto">
+            <svg class="mx-auto h-16 w-16 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p class="text-xl font-semibold">No events found</p>
-            <p class="mt-2">Try adjusting your search criteria</p>
+            <h3 class="mt-4 text-xl font-medium text-gray-700">No events found</h3>
+            <p class="mt-2 text-gray-500">Try adjusting your search criteria or check back later for new events</p>
+            <button id="reset-search" class="mt-6 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                Reset Search
+            </button>
         </div>
     </div>
 
     <!-- Pagination -->
-    <div id="pagination" class="mt-8 flex justify-center space-x-2 hidden">
-        <button id="prev-page" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+    <div id="pagination" class="mt-12 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 hidden">
+        <button id="prev-page" class="flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
             Previous
         </button>
-        <div id="page-numbers" class="flex space-x-2">
+
+        <div id="page-numbers" class="flex flex-wrap justify-center gap-2">
             <!-- Page numbers will be added here -->
         </div>
-        <button id="next-page" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+
+        <button id="next-page" class="flex items-center px-5 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             Next
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
         </button>
     </div>
 </div>
 
 <style>
-    /* Event card base style */
+    /* Event card styles with transitions and hover effects */
     .event-card {
-        opacity: 1;
-        transition: all 0.3s ease-in-out;
-        border-left: 4px solid #e2e8f0; /* Default border */
+        transition: all 0.3s ease;
+        border-left: 4px solid #e2e8f0;
     }
 
     /* Today events - green accent */
     .event-today {
-        background-color: #f0fff4; /* Light green background */
-        border-left-color: #48bb78; /* Green accent border */
+        background-color: #f0fff4;
+        border-left-color: #10b981;
+    }
+    .event-today:hover {
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05);
     }
 
     /* Upcoming events - blue accent */
     .event-upcoming {
-        background-color: #ebf8ff; /* Light blue background */
-        border-left-color: #4299e1; /* Blue accent border */
+        background-color: #eff6ff;
+        border-left-color: #3b82f6;
+    }
+    .event-upcoming:hover {
+        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
     }
 
     /* Past events - gray accent */
     .event-past {
-        background-color: #f7fafc; /* Light gray background */
-        border-left-color: #a0aec0; /* Gray accent border */
-        opacity: 0.85; /* Slightly faded to indicate past events */
+        background-color: #f8fafc;
+        border-left-color: #94a3b8;
+        opacity: 0.85;
+    }
+    .event-past:hover {
+        box-shadow: 0 10px 15px -3px rgba(148, 163, 184, 0.1), 0 4px 6px -2px rgba(148, 163, 184, 0.05);
     }
 
     /* Pagination active page */
     .page-active {
-        background-color: #4299e1;
+        background-color: #3b82f6;
         color: white;
+        border-color: #3b82f6;
     }
 </style>
 
@@ -143,7 +182,7 @@
             let searchParams = {};
             let dateRangePicker;
 
-            // Initialize Flatpickr date range picker
+            // Initialize Flatpickr date range picker with improved styling
             dateRangePicker = flatpickr("#date-range", {
                 mode: "range",
                 dateFormat: "Y-m-d",
@@ -153,7 +192,6 @@
                 minDate: "today",
                 defaultDate: [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))],
                 onChange: function(selectedDates) {
-                    // Validate search when dates are selected
                     validateSearch();
                 }
             });
@@ -162,6 +200,15 @@
             $('#reset-date').click(function() {
                 dateRangePicker.clear();
                 validateSearch();
+            });
+
+            // Reset search button
+            $('#reset-search').click(function() {
+                $('#event-type').val('');
+                dateRangePicker.clear();
+                $('#search-term').val('');
+                validateSearch();
+                performSearch();
             });
 
             // Load event types for the dropdown
@@ -278,9 +325,6 @@
                 // Make search request
                 $.getJSON('/Events/SearchEvents', searchParams)
                     .done(function(data) {
-                        // Rest of your existing search results handling code...
-                        // Unchanged from your original implementation
-
                         // Update page data
                         totalPages = data.totalPages;
                         currentPage = data.currentPage;
@@ -316,7 +360,7 @@
                     .fail(function(jqXHR, textStatus, errorThrown) {
                         console.error('Error performing search:', errorThrown);
                         $('#loading-indicator').addClass('hidden');
-                        $('#no-results').removeClass('hidden').find('p.text-xl').text('Error searching events');
+                        $('#no-results').removeClass('hidden').find('h3').text('Error searching events');
 
                         if (jqXHR.status === 400) {
                             $('#search-validation-message').removeClass('hidden').text(jqXHR.responseText);
@@ -338,7 +382,7 @@
                 let badgeText = '';
 
                 if (timeClass === 'event-today') {
-                    badgeClass = 'bg-green-500';
+                    badgeClass = 'bg-emerald-500';
                     badgeText = 'Today';
                 } else if (timeClass === 'event-upcoming') {
                     badgeClass = 'bg-blue-500';
@@ -351,37 +395,65 @@
                 // Create the reservation button or message based on event timing
                 let reservationElement = '';
                 if (timeClass === 'event-past') {
-                    reservationElement = `<span class="text-sm text-gray-500 italic">Reservations closed</span>`;
+                    reservationElement = `<span class="text-sm text-gray-500 italic flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Reservations closed
+                                          </span>`;
                 } else {
                     reservationElement = `<a href="/Reservation/SelectSeats?EventId=${event.id}&VenueId=${event.venueId}" 
-                                     class="bg-blue-500 text-white text-sm px-4 py-2 rounded shadow hover:bg-blue-600 transition-colors">
-                                     Reservation
-                                  </a>`;
+                                       class="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transform hover:-translate-y-1 transition-all duration-200">
+                                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                                       </svg>
+                                       Reserve Now
+                                    </a>`;
                 }
 
                 // Build and return the card HTML
-                return `<div class="event-card ${timeClass} shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
-                            <div class="p-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <div class="text-xs inline-flex items-center">
-                                        <span class="${badgeClass} text-white px-2 py-1 rounded font-medium">${badgeText}</span>
-                                        <span class="ml-2 text-gray-500">${formattedStartDate}</span>
+                return `<div class="event-card ${timeClass} rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:-translate-y-2">
+                            <div class="p-5">
+                                <div class="flex justify-between items-start mb-4">
+                                    <span class="${badgeClass} text-white text-xs font-bold px-3 py-1 rounded-full">${badgeText}</span>
+                                    <div class="text-xs text-gray-500 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        ${formattedStartDate}
                                     </div>
                                 </div>
                                 
-                                <h3 class="text-xl font-bold text-gray-800">${event.name}</h3>
-                                <p class="text-sm text-gray-600">${formattedStartDate} ${formattedStartTime} – ${formattedEndTime}</p>
+                                <h3 class="text-xl font-bold text-gray-800 mb-2 line-clamp-2">${event.name}</h3>
                                 
-                                <div class="mt-3 text-sm text-gray-700 space-y-1">
-                                    <p><span class="font-medium">Venue:</span> ${event.venue.name}</p>
-                                    <p><span class="font-medium">Address:</span> ${event.venue.address}</p>
-                                    <p><span class="font-medium">City:</span> ${event.venue.city.name}</p>
-                                    <p><span class="font-medium">Postal Code:</span> ${event.venue.postalCode}</p>
-                                    <p><span class="font-medium">Phone:</span> ${event.venue.phone}</p>
+                                <div class="text-sm text-gray-600 mb-3 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    ${formattedStartTime} – ${formattedEndTime}
                                 </div>
                                 
-                                <div class="mt-4 flex justify-between items-center">
-                                    <a href="/Venue/Details/${event.venueId}" class="text-sm text-blue-500 hover:underline">Details</a>
+                                <div class="bg-gray-50 p-3 rounded-lg mb-4">
+                                    <div class="flex items-start">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <div class="flex-1">
+                                            <h4 class="font-semibold text-gray-700">${event.venue.name}</h4>
+                                            <p class="text-sm text-gray-600">${event.venue.address}, ${event.venue.city.name}</p>
+                                            <p class="text-sm text-gray-500">${event.venue.postalCode} • ${event.venue.phone}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center">
+                                    <a href="/Venue/Details/${event.venueId}" class="text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Venue Details
+                                    </a>
                                     ${reservationElement}
                                 </div>
                             </div>
@@ -414,24 +486,24 @@
 
                 // Add first page button if not included
                 if (startPage > 1) {
-                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded" data-page="1">1</button>`);
+                    $pageNumbers.append(`<button class="page-button w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors" data-page="1">1</button>`);
                     if (startPage > 2) {
-                        $pageNumbers.append(`<span class="px-1 py-1">...</span>`);
+                        $pageNumbers.append(`<span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>`);
                     }
                 }
 
                 // Add page numbers
                 for (let i = startPage; i <= endPage; i++) {
                     const activeClass = i === currentPage ? 'page-active' : '';
-                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded ${activeClass}" data-page="${i}">${i}</button>`);
+                    $pageNumbers.append(`<button class="page-button w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 ${activeClass} hover:bg-gray-50 transition-colors" data-page="${i}">${i}</button>`);
                 }
 
                 // Add last page button if not included
                 if (endPage < totalPages) {
                     if (endPage < totalPages - 1) {
-                        $pageNumbers.append(`<span class="px-1 py-1">...</span>`);
+                        $pageNumbers.append(`<span class="w-10 h-10 flex items-center justify-center text-gray-500">...</span>`);
                     }
-                    $pageNumbers.append(`<button class="page-button px-3 py-1 rounded" data-page="${totalPages}">${totalPages}</button>`);
+                    $pageNumbers.append(`<button class="page-button w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors" data-page="${totalPages}">${totalPages}</button>`);
                 }
 
                 // Show pagination
