@@ -13,14 +13,17 @@
                     <div>
                         <h1 class="text-2xl md:text-3xl font-bold text-white">Edit Sub Area</h1>
                         <p class="mt-2 text-indigo-100 max-w-3xl">
-                            Update details and seating arrangement for <span class="font-semibold">@Model.AreaName</span>
+                            Update details and seating arrangement for <span
+                                class="font-semibold">@Model.AreaName</span>
                         </p>
                     </div>
                     <div class="mt-4 md:mt-0">
                         <a href="@Url.Action("Index")"
                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                             </svg>
                             Back to List
                         </a>
@@ -34,10 +37,13 @@
             <!-- Tabs -->
             <div class="border-b border-gray-200">
                 <nav class="flex -mb-px" aria-label="Tabs">
-                    <button id="tab-details" class="tab-button border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" aria-current="page">
+                    <button id="tab-details"
+                            class="tab-button border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                            aria-current="page">
                         Basic Details
                     </button>
-                    <button id="tab-seats" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-8">
+                    <button id="tab-seats"
+                            class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ml-8">
                         Seat Map
                     </button>
                 </nav>
@@ -49,35 +55,41 @@
                 <div id="details-content" class="tab-content">
                     <form asp-action="Edit" id="editSubAreaForm" class="space-y-6 max-w-xl mx-auto">
                         <div asp-validation-summary="ModelOnly" class="text-red-500"></div>
-                        <input type="hidden" asp-for="Id" />
-                        <input type="hidden" asp-for="VenueId" />
+                        <input type="hidden" asp-for="Id"/>
+                        <input type="hidden" asp-for="VenueId"/>
 
                         <!-- Area Name -->
                         <div>
-                            <label asp-for="AreaName" class="block text-sm font-medium text-gray-700 mb-1">Area Name</label>
+                            <label asp-for="AreaName" class="block text-sm font-medium text-gray-700 mb-1">Area
+                                Name</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                     </svg>
                                 </div>
                                 <input asp-for="AreaName"
-                                       class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                       class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                             </div>
                             <span asp-validation-for="AreaName" class="text-red-500 text-xs mt-1"></span>
                         </div>
 
                         <!-- Description -->
                         <div>
-                            <label asp-for="Desc" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <label asp-for="Desc"
+                                   class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M4 6h16M4 12h16M4 18h7"/>
                                     </svg>
                                 </div>
                                 <input asp-for="Desc"
-                                       class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                       class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                             </div>
                             <span asp-validation-for="Desc" class="text-red-500 text-xs mt-1"></span>
                         </div>
@@ -85,28 +97,34 @@
                         <!-- Dimensions -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label asp-for="Width" class="block text-sm font-medium text-gray-700 mb-1">Width</label>
+                                <label asp-for="Width"
+                                       class="block text-sm font-medium text-gray-700 mb-1">Width</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/>
                                         </svg>
                                     </div>
                                     <input asp-for="Width" type="number" min="0"
-                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                                 </div>
                                 <span asp-validation-for="Width" class="text-red-500 text-xs mt-1"></span>
                             </div>
                             <div>
-                                <label asp-for="Height" class="block text-sm font-medium text-gray-700 mb-1">Height</label>
+                                <label asp-for="Height"
+                                       class="block text-sm font-medium text-gray-700 mb-1">Height</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/>
                                         </svg>
                                     </div>
                                     <input asp-for="Height" type="number" min="0"
-                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                                 </div>
                                 <span asp-validation-for="Height" class="text-red-500 text-xs mt-1"></span>
                             </div>
@@ -115,28 +133,34 @@
                         <!-- Position -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label asp-for="Left" class="block text-sm font-medium text-gray-700 mb-1">Left Position</label>
+                                <label asp-for="Left" class="block text-sm font-medium text-gray-700 mb-1">Left
+                                    Position</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                                         </svg>
                                     </div>
                                     <input asp-for="Left" type="number"
-                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                                 </div>
                                 <span asp-validation-for="Left" class="text-red-500 text-xs mt-1"></span>
                             </div>
                             <div>
-                                <label asp-for="Top" class="block text-sm font-medium text-gray-700 mb-1">Top Position</label>
+                                <label asp-for="Top" class="block text-sm font-medium text-gray-700 mb-1">Top
+                                    Position</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                                         </svg>
                                     </div>
                                     <input asp-for="Top" type="number"
-                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                           class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                                 </div>
                                 <span asp-validation-for="Top" class="text-red-500 text-xs mt-1"></span>
                             </div>
@@ -146,8 +170,10 @@
                         <div class="flex items-center space-x-3 pt-5 border-t border-gray-200">
                             <button type="submit"
                                     class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-md shadow transition duration-200 hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-1" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M5 13l4 4L19 7"/>
                                 </svg>
                                 Save Changes
                             </button>
@@ -165,9 +191,12 @@
                         <!-- Seat Map Controls -->
                         <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
                             <div class="flex items-center mb-4">
-                                <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                <div
+                                    class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                                     </svg>
                                 </div>
                                 <h2 class="ml-3 text-lg font-medium text-gray-800">Seat Map Controls</h2>
@@ -176,28 +205,36 @@
                             <div class="space-y-4">
                                 <!-- Rows and Columns -->
                                 <div>
-                                    <label for="Row" class="block text-sm font-medium text-gray-700 mb-1">Number of Rows</label>
+                                    <label for="Row" class="block text-sm font-medium text-gray-700 mb-1">Number of
+                                        Rows</label>
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M19 9l-7 7-7-7"/>
                                             </svg>
                                         </div>
                                         <input type="number" id="Row" value="0" min="0" max="20"
-                                               class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                               class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label for="Col" class="block text-sm font-medium text-gray-700 mb-1">Number of Columns</label>
+                                    <label for="Col" class="block text-sm font-medium text-gray-700 mb-1">Number of
+                                        Columns</label>
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M9 5l7 7-7 7"/>
                                             </svg>
                                         </div>
                                         <input type="number" id="Col" value="0" min="0" max="20"
-                                               class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                               class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                                     </div>
                                 </div>
 
@@ -205,24 +242,30 @@
                                 <div class="pt-4 space-y-3">
                                     <button type="button" id="create"
                                             class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
+                                             viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M12 4v16m8-8H4"/>
                                         </svg>
                                         Generate Seats
                                     </button>
 
                                     <button type="button" id="save"
                                             class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
+                                             viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                                         </svg>
                                         Save Seat Map
                                     </button>
 
                                     <button type="button" id="deleteSeat"
                                             class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
+                                             viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
                                         Delete Selected Seats
                                     </button>
@@ -231,8 +274,10 @@
                                 <!-- Help Text -->
                                 <div class="mt-4 bg-blue-50 p-3 rounded-md border border-blue-100">
                                     <h4 class="text-sm font-medium text-blue-800 flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                             viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                         Tips
                                     </h4>
@@ -250,20 +295,26 @@
                         <div class="lg:col-span-2 flex flex-col items-center">
                             <!-- Canvas Header -->
                             <div class="w-full bg-gray-50 p-3 rounded-t-lg border border-gray-200 text-center">
-                                <h3 class="text-sm font-medium text-gray-700">Drag seats to reposition | Select seats to delete</h3>
+                                <h3 class="text-sm font-medium text-gray-700">Drag seats to reposition | Select seats to
+                                    delete</h3>
                             </div>
 
                             <!-- Canvas -->
-                            <div class="bg-white border border-gray-200 border-t-0 rounded-b-lg p-4 shadow-md w-full flex justify-center">
-                                <canvas id="c" width="600" height="500" class="border border-gray-300 rounded bg-gray-50 shadow-inner"></canvas>
+                            <div
+                                class="bg-white border border-gray-200 border-t-0 rounded-b-lg p-4 shadow-md w-full flex justify-center">
+                                <canvas id="c" width="600" height="500"
+                                        class="border border-gray-300 rounded bg-gray-50 shadow-inner"></canvas>
                             </div>
 
                             <!-- Progress Message -->
                             <div id="seatMapStatus" class="mt-3 text-sm text-gray-600 hidden">
                                 <span class="inline-flex items-center">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500"
+                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                     <span id="seatMapStatusText">Loading seat map...</span>
                                 </span>
@@ -276,440 +327,256 @@
     </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+// Add this script at the bottom of your Edit.cshtml file
 
-    <!-- Include fabric.js for the canvas manipulation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-    <script>
-        $(document).ready(function () {
-            // Tab switching functionality
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
+        // Initial setup - only show details tab content
+        document.getElementById('details-content').style.display = 'block';
 
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Reset all tabs
-                    tabButtons.forEach(b => {
-                        b.classList.remove('border-indigo-500', 'text-indigo-600');
-                        b.classList.add('border-transparent', 'text-gray-500');
-                    });
+        // Create seat map content div if it doesn't exist
+        let seatMapContent = document.getElementById('seats-content');
+        if (!seatMapContent) {
+            seatMapContent = document.createElement('div');
+            seatMapContent.id = 'seats-content';
+            seatMapContent.className = 'tab-content';
+            seatMapContent.style.display = 'none';
+            document.getElementById('details-content').parentNode.appendChild(seatMapContent);
+        }
 
-                    tabContents.forEach(content => {
-                        content.classList.add('hidden');
-                    });
+        // Add seat map container to the seat map content
+        seatMapContent.innerHTML = `
+        <div class="p-4">
+            <div class="mb-6 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">Seat Map Management</h3>
+                <div class="flex space-x-2">
+                    <button id="save-seats" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                        Save Changes
+                    </button>
+                    <button id="add-seat" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Add Seat
+                    </button>
+                    <button id="remove-seats" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                        Remove Selected
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-gray-100 border border-gray-300 rounded-lg p-4 relative" style="min-height: 400px;">
+                <div id="seat-map" class="relative w-full h-96 overflow-auto">
+                    <!-- Seats will be populated here -->
+                </div>
+            </div>
+        </div>
+    `;
 
-                    // Set active tab
-                    button.classList.remove('border-transparent', 'text-gray-500');
-                    button.classList.add('border-indigo-500', 'text-indigo-600');
-
-                    // Show active content
-                    const contentId = button.id.replace('tab-', '') + '-content';
-                    document.getElementById(contentId).classList.remove('hidden');
-
-                    // Initialize canvas if switching to seat map tab
-                    if (button.id === 'tab-seats' && !window.canvasInitialized) {
-                        initializeCanvas();
-                    }
+        // Tab switching event listeners
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Reset all tabs
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('border-indigo-500', 'text-indigo-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
                 });
-            });
 
-            function initializeCanvas() {
-                window.canvasInitialized = true;
+                // Highlight active tab
+                this.classList.remove('border-transparent', 'text-gray-500');
+                this.classList.add('border-indigo-500', 'text-indigo-600');
 
-                // Show loading status
-                const statusElement = document.getElementById('seatMapStatus');
-                const statusTextElement = document.getElementById('seatMapStatusText');
-                statusElement.classList.remove('hidden');
-                statusTextElement.textContent = 'Initializing seat map...';
-
-                // Initialize the fabric canvas
-                var canvas = new fabric.Canvas('c', {
-                    backgroundColor: '#f9fafb', // Light background color
-                    selection: true, // Enable selection rectangle
-                    preserveObjectStacking: true // Maintain object order
+                // Hide all content
+                tabContents.forEach(content => {
+                    content.style.display = 'none';
                 });
+                document.getElementById('seats-content').style.display = 'none';
 
-                // Set initial positions and spacing
-                const INITIAL_POSITION_X = 50;
-                const INITIAL_POSITION_Y = 50;
-                const SEAT_WIDTH = 50;
-                const SEAT_HEIGHT = 50;
-                const SEAT_SPACING = 20;
-                var subAreaId = @Model.Id;
-
-                // Check if there are existing seats
-                function loadExistingSeats() {
-                    console.log("Attempting to load seats for subAreaId:", subAreaId);
-
-                    $.getJSON('/Seat/get_data', { SubAreaId: subAreaId })
-                        .done(function (data) {
-                            console.log("Response from get_data:", data);
-
-                            if (data && data.length > 0) {
-                                console.log("Loading existing seats:", data);
-                                canvas.clear();
-
-                                data.forEach(function (seat) {
-                                    try {
-                                        // Create rectangle with better styling
-                                        var rect = new fabric.Rect({
-                                            width: SEAT_WIDTH,
-                                            height: SEAT_HEIGHT,
-                                            fill: '#5b21b6', // Indigo color
-                                            originX: 'center',
-                                            originY: 'center',
-                                            rx: 6, // Rounded corners
-                                            ry: 6,  // Rounded corners
-                                            shadow: new fabric.Shadow({
-                                                color: 'rgba(0,0,0,0.2)',
-                                                blur: 5,
-                                                offsetX: 0,
-                                                offsetY: 2
-                                            })
-                                        });
-
-                                        // Create text for the seat name
-                                        var text = new fabric.Text(seat.name, {
-                                            fontSize: 14,
-                                            fill: '#fff',
-                                            originX: 'center',
-                                            originY: 'center',
-                                            fontFamily: 'Arial',
-                                            fontWeight: 'bold'
-                                        });
-
-                                        // Group the rectangle and text, and set position
-                                        var seatGroup = new fabric.Group([rect, text], {
-                                            left: seat.x || (INITIAL_POSITION_X + (seat.col || 0) * (SEAT_WIDTH + SEAT_SPACING)),
-                                            top: seat.y || (INITIAL_POSITION_Y + (seat.row || 0) * (SEAT_HEIGHT + SEAT_SPACING)),
-                                            selectable: true,
-                                            originX: 'center',
-                                            originY: 'center',
-                                            hasControls: true,
-                                            hasBorders: true,
-                                            lockRotation: true,
-                                            borderColor: '#6366f1',
-                                            cornerColor: '#6366f1',
-                                            cornerSize: 8,
-                                            transparentCorners: false
-                                        });
-
-                                        canvas.add(seatGroup);
-                                        console.log("Added seat group:", seatGroup);
-                                    } catch (err) {
-                                        console.error("Error adding seat:", err);
-                                    }
-                                });
-
-                                canvas.renderAll();
-                                console.log("Canvas rendered with seats");
-
-                                // Update status
-                                statusTextElement.textContent = `Loaded ${data.length} seats successfully.`;
-                                setTimeout(() => {
-                                    statusElement.classList.add('hidden');
-                                }, 2000);
-                            } else {
-                                statusTextElement.textContent = 'No existing seats found. You can create a new seat map.';
-                                setTimeout(() => {
-                                    statusElement.classList.add('hidden');
-                                }, 2000);
-                                console.log("No seats found for this subarea");
-                            }
-                        })
-                        .fail(function (error) {
-                            console.error("Failed to fetch seats:", error);
-                            statusTextElement.textContent = 'Error loading seats. Please try again.';
-                            statusElement.classList.add('text-red-500');
-                        });
+                // Show selected content
+                if (this.id === 'tab-details') {
+                    document.getElementById('details-content').style.display = 'block';
+                } else if (this.id === 'tab-seats') {
+                    document.getElementById('seats-content').style.display = 'block';
+                    loadSeats();
                 }
-
-                // Load seats first
-                loadExistingSeats();
-
-                // Create new seat layout
-                $("#create").click(function () {
-                    var rows = parseInt($("#Row").val());
-                    var cols = parseInt($("#Col").val());
-
-                    if (rows <= 0 || cols <= 0) {
-                        alert("Please enter valid number of rows and columns (minimum 1)");
-                        return;
-                    }
-
-                    if (rows * cols > 100) {
-                        if (!confirm(`You're about to create ${rows * cols} seats. This may affect performance. Continue?`)) {
-                            return;
-                        }
-                    }
-
-                    statusElement.classList.remove('hidden', 'text-red-500');
-                    statusElement.classList.add('text-gray-600');
-                    statusTextElement.textContent = 'Generating seat map...';
-
-                    canvas.clear();
-
-                    // Create and add all seat groups
-                    for (let r = 0; r < rows; r++) {
-                        for (let c = 0; c < cols; c++) {
-                            var name = `Row:${r + 1}-Col:${c + 1}`;
-
-                            // Create rectangle with rounded corners and shadow
-                            var rect = new fabric.Rect({
-                                width: SEAT_WIDTH,
-                                height: SEAT_HEIGHT,
-                                fill: '#5b21b6', // Indigo color
-                                originX: 'center',
-                                originY: 'center',
-                                rx: 6, // Rounded corners
-                                ry: 6, // Rounded corners
-                                shadow: new fabric.Shadow({
-                                    color: 'rgba(0,0,0,0.2)',
-                                    blur: 5,
-                                    offsetX: 0,
-                                    offsetY: 2
-                                })
-                            });
-
-                            // Create text for the seat name
-                            var text = new fabric.Text(name, {
-                                fontSize: 14,
-                                fill: '#fff',
-                                originX: 'center',
-                                originY: 'center',
-                                fontFamily: 'Arial',
-                                fontWeight: 'bold'
-                            });
-
-                            // Group the rectangle and text, and set position
-                            var seatGroup = new fabric.Group([rect, text], {
-                                left: INITIAL_POSITION_X + c * (SEAT_WIDTH + SEAT_SPACING),
-                                top: INITIAL_POSITION_Y + r * (SEAT_HEIGHT + SEAT_SPACING),
-                                selectable: true,
-                                originX: 'center',
-                                originY: 'center',
-                                hasControls: true,
-                                hasBorders: true,
-                                lockRotation: true,
-                                borderColor: '#6366f1',
-                                cornerColor: '#6366f1',
-                                cornerSize: 8,
-                                transparentCorners: false
-                            });
-
-                            canvas.add(seatGroup);
-                            console.log("Added new seat:", seatGroup);
-                        }
-                    }
-
-                    canvas.renderAll();
-                    console.log(`Created ${rows * cols} seats`);
-
-                    statusTextElement.textContent = `Created ${rows * cols} seats successfully.`;
-                    setTimeout(() => {
-                        statusElement.classList.add('hidden');
-                    }, 2000);
-                });
-
-                // Delete selected seats
-                $("#deleteSeat").click(function () {
-                    var activeObjects = canvas.getActiveObjects();
-                    if (activeObjects.length > 0) {
-                        statusElement.classList.remove('hidden');
-                        statusTextElement.textContent = 'Preparing to delete selected seats...';
-
-                        if (confirm(`Are you sure you want to remove ${activeObjects.length} selected seats?`)) {
-                            statusTextElement.textContent = 'Deleting seats...';
-
-                            var seatNames = activeObjects.map(obj => obj.item(1).text);
-                            $.ajax({
-                                url: '/Seat/DeleteMultipleSeats',
-                                type: 'POST',
-                                contentType: "application/json",
-                                data: JSON.stringify({seatNames: seatNames, subAreaId: subAreaId}),
-                                success: function (response) {
-                                    if (response.success) {
-                                        activeObjects.forEach(obj => canvas.remove(obj));
-                                        canvas.discardActiveObject().renderAll();
-
-                                        statusElement.classList.remove('text-red-500');
-                                        statusElement.classList.add('text-green-600');
-                                        statusTextElement.textContent = `${activeObjects.length} seats deleted successfully!`;
-
-                                        setTimeout(() => {
-                                            statusElement.classList.add('hidden');
-                                        }, 2000);
-                                    } else {
-                                        statusElement.classList.remove('text-gray-600');
-                                        statusElement.classList.add('text-red-500');
-                                        statusTextElement.textContent = `Error: ${response.message}`;
-                                    }
-                                },
-                                error: function (err) {
-                                    console.error(err);
-                                    statusElement.classList.remove('text-gray-600');
-                                    statusElement.classList.add('text-red-500');
-                                    statusTextElement.textContent = "Error occurred while deleting seats.";
-                                }
-                            });
-                        } else {
-                            statusElement.classList.add('hidden');
-                        }
-                    } else {
-                        statusElement.classList.remove('hidden', 'text-green-600');
-                        statusElement.classList.add('text-amber-600');
-                        statusTextElement.textContent = "Please select one or more seats first!";
-
-                        setTimeout(() => {
-                            statusElement.classList.add('hidden');
-                        }, 2000);
-                    }
-                });
-
-                // Save seat map
-                $("#save").click(function() {
-                    // Get all objects from the canvas
-                    const seatGroups = canvas.getObjects();
-
-                    if (seatGroups.length === 0) {
-                        statusElement.classList.remove('hidden', 'text-green-600');
-                        statusElement.classList.add('text-amber-600');
-                        statusTextElement.textContent = "There are no seats to save!";
-
-                        setTimeout(() => {
-                            statusElement.classList.add('hidden');
-                        }, 2000);
-                        return;
-                    }
-
-                    statusElement.classList.remove('hidden', 'text-red-500', 'text-amber-600');
-                    statusElement.classList.add('text-gray-600');
-                    statusTextElement.textContent = "Saving seat map...";
-
-                    const seatsToSave = [];
-
-                    // Loop through each seat group and extract coordinates
-                    seatGroups.forEach(seatGroup => {
-                        // Extract needed values 
-                        const seatName = seatGroup.item(1).text;
-                        const x = seatGroup.left;
-                        const y = seatGroup.top;
-
-                        // Add to the list to save
-                        seatsToSave.push({
-                            Name: seatName,
-                            left: x,
-                            top: y
-                        });
-                    });
-
-                    // Send the data to the server
-                    $.ajax({
-                        url: `/Seat/CreateTableMap?subAreaId=${subAreaId}`,
-                        type: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify(seatsToSave),
-                        success: function(response) {
-                            statusElement.classList.remove('text-gray-600');
-                            statusElement.classList.add('text-green-600');
-                            statusTextElement.textContent = `${seatsToSave.length} seats saved successfully!`;
-
-                            setTimeout(() => {
-                                statusElement.classList.add('hidden');
-                            }, 2000);
-                        },
-                        error: function(error) {
-                            console.error(error);
-                            statusElement.classList.remove('text-gray-600');
-                            statusElement.classList.add('text-red-500');
-                            statusTextElement.textContent = "Error occurred while saving seats.";
-                        }
-                    });
-                });
-
-                // Add keyboard support for multi-selection with shift key
-                var shiftDown = false;
-                document.addEventListener('keydown', function(e) {
-                    if (e.shiftKey) {
-                        shiftDown = true;
-                        canvas.selection = true;
-                        canvas.discardActiveObject();
-                        canvas.renderAll();
-                    }
-                });
-
-                document.addEventListener('keyup', function(e) {
-                    if (e.key === 'Shift') {
-                        shiftDown = false;
-                        canvas.selection = false;
-                        canvas.renderAll();
-                    }
-                });
-
-                // Add hover effects to seats with better contrast
-                canvas.on('mouse:over', function(e) {
-                    if (e.target) {
-                        e.target.item(0).set({
-                            fill: '#4338ca', // Darker indigo on hover
-                            stroke: '#c7d2fe', // Light indigo border
-                            strokeWidth: 2
-                        });
-                        canvas.renderAll();
-                    }
-                });
-
-                canvas.on('mouse:out', function(e) {
-                    if (e.target) {
-                        e.target.item(0).set({
-                            fill: '#5b21b6', // Back to original color
-                            stroke: '',
-                            strokeWidth: 0
-                        });
-                        canvas.renderAll();
-                    }
-                });
-
-                // Make sure canvas size adjusts if window resizes
-                function resizeCanvas() {
-                    const container = document.querySelector('#c').parentElement;
-                    const containerWidth = container.clientWidth - 30;
-                    if (containerWidth > 0) {
-                        canvas.setWidth(containerWidth);
-                        canvas.renderAll();
-                        console.log("Canvas resized to:", containerWidth);
-                    }
-                }
-
-                // Initial resize
-                setTimeout(resizeCanvas, 100);
-
-                // Resize on window resize
-                window.addEventListener('resize', resizeCanvas);
-
-                // Add debug log to check if fabric is working properly
-                console.log("Fabric.js version:", fabric.version);
-                console.log("Canvas initialized:", canvas);
-            }
-
-            // Initialize form validation
-            const form = document.getElementById('editSubAreaForm');
-            form.addEventListener('submit', function(e) {
-                // You could add custom validation here if needed
-
-                const submitButton = this.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.innerHTML = `
-                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                `;
             });
         });
-    </script>
+
+        // Maintain currently loaded seats
+        let currentSeats = [];
+        let selectedSeats = new Set();
+
+        // Load seats from server
+        function loadSeats() {
+            const subAreaId = @Model.Id;
+
+            fetch(`/Seat/get_data?SubAreaId=${subAreaId}`)
+                .then(response => response.json())
+                .then(data => {
+                    currentSeats = data;
+                    renderSeats();
+                })
+                .catch(error => {
+                    console.error('Error loading seats:', error);
+                });
+        }
+
+        // Render seats on the seat map
+        function renderSeats() {
+            const seatMap = document.getElementById('seat-map');
+            seatMap.innerHTML = '';
+
+            currentSeats.forEach(seat => {
+                const seatElement = document.createElement('div');
+                seatElement.className = 'absolute bg-blue-500 text-white rounded-md flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors';
+                seatElement.style.width = '60px';
+                seatElement.style.height = '60px';
+                seatElement.style.left = `${seat.x}px`;
+                seatElement.style.top = `${seat.y}px`;
+                seatElement.textContent = seat.name;
+                seatElement.dataset.id = seat.id;
+                seatElement.dataset.name = seat.name;
+
+                // Handle selecting seats for deletion
+                seatElement.addEventListener('click', (e) => {
+                    if (selectedSeats.has(seat.name)) {
+                        selectedSeats.delete(seat.name);
+                        seatElement.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        seatElement.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                    } else {
+                        selectedSeats.add(seat.name);
+                        seatElement.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                        seatElement.classList.add('bg-red-500', 'hover:bg-red-600');
+                    }
+                });
+
+                // Make seats draggable
+                seatElement.draggable = true;
+                seatElement.addEventListener('dragstart', (e) => {
+                    const rect = seatElement.getBoundingClientRect();
+                    e.dataTransfer.setData('text/plain', seat.name);
+                    e.dataTransfer.setDragImage(seatElement, 30, 30);
+                    seatElement.classList.add('opacity-50');
+                });
+
+                seatElement.addEventListener('dragend', (e) => {
+                    seatElement.classList.remove('opacity-50');
+                });
+
+                seatMap.appendChild(seatElement);
+            });
+
+            // Make seat map a drop target
+            seatMap.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            seatMap.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const seatName = e.dataTransfer.getData('text/plain');
+                const seatToUpdate = currentSeats.find(s => s.name === seatName);
+
+                // Calculate new position, accounting for scrolling
+                const seatMapRect = seatMap.getBoundingClientRect();
+                const newX = e.clientX - seatMapRect.left + seatMap.scrollLeft;
+                const newY = e.clientY - seatMapRect.top + seatMap.scrollTop;
+
+                // Round to nearest 10px for cleaner positioning
+                seatToUpdate.x = Math.round(newX / 10) * 10;
+                seatToUpdate.y = Math.round(newY / 10) * 10;
+
+                renderSeats();
+            });
+        }
+
+        // Add new seat
+        document.getElementById('add-seat').addEventListener('click', () => {
+            const seatNumber = currentSeats.length + 1;
+            const newSeat = {
+                id: `temp-${Date.now()}`, // Temporary ID until saved
+                name: `Seat ${seatNumber}`,
+                x: 50,
+                y: 50,
+                available: true
+            };
+
+            currentSeats.push(newSeat);
+            renderSeats();
+        });
+
+        // Remove selected seats
+        document.getElementById('remove-seats').addEventListener('click', () => {
+            if (selectedSeats.size === 0) {
+                alert('No seats selected. Click on seats to select them for removal.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to remove ${selectedSeats.size} selected seat(s)?`)) {
+                // Remove from UI immediately
+                currentSeats = currentSeats.filter(seat => !selectedSeats.has(seat.name));
+
+                // If there are existing seats (with IDs), send deletion request to server
+                const seatsToDelete = Array.from(selectedSeats);
+                const subAreaId = @Model.Id;
+
+                fetch('/Seat/DeleteMultipleSeats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        seatNames: seatsToDelete,
+                        subAreaId: subAreaId
+                    })
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            selectedSeats.clear();
+                            renderSeats();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting seats:', error);
+                    });
+
+                renderSeats();
+            }
+        });
+
+        // Save changes
+        document.getElementById('save-seats').addEventListener('click', () => {
+            const subAreaId = @Model.Id;
+
+            // Convert seats to the format expected by the backend
+            const seatsToSave = currentSeats.map(seat => ({
+                name: seat.name,
+                top: seat.y,
+                left: seat.x
+            }));
+
+            fetch(`/Seat/CreateTableMap?subAreaId=${subAreaId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(seatsToSave)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Seats saved successfully!');
+                        // Reload seats to get proper IDs for new seats
+                        loadSeats();
+                    } else {
+                        alert('Error saving seats. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving seats:', error);
+                    alert('Error saving seats. Please try again.');
+                });
+        });
+    });
+</script>
 }
