@@ -14,7 +14,7 @@
                         <h1 class="text-2xl md:text-3xl font-bold text-white">Edit Sub Area</h1>
                         <p class="mt-2 text-indigo-100 max-w-3xl">
                             Update details and seating arrangement for <span
-                                class="font-semibold">@Model.AreaName</span>
+                                                                           class="font-semibold">@Model.AreaName</span>
                         </p>
                     </div>
                     <div class="mt-4 md:mt-0">
@@ -327,109 +327,327 @@
     </div>
 </div>
 
-// Add this script at the bottom of your Edit.cshtml file
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Tab switching functionality
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
+        console.log("DOM is loaded, initializing seat management");
 
-        // Initial setup - only show details tab content
-        document.getElementById('details-content').style.display = 'block';
+        // First, make sure the tabs exist and are properly initialized
+        const tabDetails = document.getElementById('tab-details');
+        const tabSeats = document.getElementById('tab-seats');
+        const detailsContent = document.getElementById('details-content');
 
-        // Create seat map content div if it doesn't exist
-        let seatMapContent = document.getElementById('seats-content');
-        if (!seatMapContent) {
-            seatMapContent = document.createElement('div');
-            seatMapContent.id = 'seats-content';
-            seatMapContent.className = 'tab-content';
-            seatMapContent.style.display = 'none';
-            document.getElementById('details-content').parentNode.appendChild(seatMapContent);
+        // Check if seat content exists or initialize it
+        let seatsContent = document.getElementById('seats-content');
+        if (!seatsContent) {
+            console.log("Creating seats content from scratch");
+            seatsContent = document.createElement('div');
+            seatsContent.id = 'seats-content';
+            seatsContent.className = 'tab-content';
+            seatsContent.style.display = 'none';
+
+            // If there's a parent for the details content, add the seats content there
+            if (detailsContent && detailsContent.parentNode) {
+                detailsContent.parentNode.appendChild(seatsContent);
+            } else {
+                // Fallback to adding after details content
+                const contentContainer = document.querySelector('.p-6');
+                if (contentContainer) {
+                    contentContainer.appendChild(seatsContent);
+                }
+            }
         }
 
-        // Add seat map container to the seat map content
-        seatMapContent.innerHTML = `
-        <div class="p-4">
-            <div class="mb-6 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-800">Seat Map Management</h3>
-                <div class="flex space-x-2">
-                    <button id="save-seats" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-                        Save Changes
-                    </button>
-                    <button id="add-seat" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                        Add Seat
-                    </button>
-                    <button id="remove-seats" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-                        Remove Selected
-                    </button>
-                </div>
-            </div>
-            
-            <div class="bg-gray-100 border border-gray-300 rounded-lg p-4 relative" style="min-height: 400px;">
-                <div id="seat-map" class="relative w-full h-96 overflow-auto">
-                    <!-- Seats will be populated here -->
-                </div>
-            </div>
-        </div>
-    `;
+        // Verify the required elements exist before proceeding
+        if (!tabDetails || !tabSeats || !detailsContent || !seatsContent) {
+            console.error("Critical UI elements not found, cannot initialize seat management");
+            return;
+        }
+
+        console.log("Tab elements found, continuing initialization");
 
         // Tab switching event listeners
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Reset all tabs
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('border-indigo-500', 'text-indigo-600');
-                    btn.classList.add('border-transparent', 'text-gray-500');
-                });
+        tabDetails.addEventListener('click', function() {
+            console.log("Switching to details tab");
+            tabDetails.classList.add('border-indigo-500', 'text-indigo-600');
+            tabDetails.classList.remove('border-transparent', 'text-gray-500');
+            tabSeats.classList.remove('border-indigo-500', 'text-indigo-600');
+            tabSeats.classList.add('border-transparent', 'text-gray-500');
 
-                // Highlight active tab
-                this.classList.remove('border-transparent', 'text-gray-500');
-                this.classList.add('border-indigo-500', 'text-indigo-600');
-
-                // Hide all content
-                tabContents.forEach(content => {
-                    content.style.display = 'none';
-                });
-                document.getElementById('seats-content').style.display = 'none';
-
-                // Show selected content
-                if (this.id === 'tab-details') {
-                    document.getElementById('details-content').style.display = 'block';
-                } else if (this.id === 'tab-seats') {
-                    document.getElementById('seats-content').style.display = 'block';
-                    loadSeats();
-                }
-            });
+            detailsContent.style.display = 'block';
+            seatsContent.style.display = 'none';
         });
 
-        // Maintain currently loaded seats
+        tabSeats.addEventListener('click', function() {
+            console.log("Switching to seats tab");
+            tabSeats.classList.add('border-indigo-500', 'text-indigo-600');
+            tabSeats.classList.remove('border-transparent', 'text-gray-500');
+            tabDetails.classList.remove('border-indigo-500', 'text-indigo-600');
+            tabDetails.classList.add('border-transparent', 'text-gray-500');
+
+            detailsContent.style.display = 'none';
+            seatsContent.style.display = 'block';
+
+            // Initialize seats if needed
+            if (!window.seatsInitialized) {
+                initializeSeats();
+            }
+        });
+
+        // Variables to track state
         let currentSeats = [];
         let selectedSeats = new Set();
+        window.seatsInitialized = false;
+
+        // Initialize the seats UI and functionality
+        function initializeSeats() {
+            console.log("Initializing seats interface");
+
+            // Create the UI elements for seat management
+            seatsContent.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Seat Map Controls -->
+                    <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                        <div class="flex items-center mb-4">
+                            <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                </svg>
+                            </div>
+                            <h2 class="ml-3 text-lg font-medium text-gray-800">Seat Map Controls</h2>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- Action Buttons -->
+                            <div class="pt-4 space-y-3">
+                                <button type="button" id="add-seat" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    Add New Seat
+                                </button>
+                                
+                                <button type="button" id="save-seats" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                                    </svg>
+                                    Save Seat Map
+                                </button>
+                                
+                                <button type="button" id="remove-seats" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Delete Selected Seats
+                                </button>
+                            </div>
+                            
+                            <!-- Help Text -->
+                            <div class="mt-4 bg-blue-50 p-3 rounded-md border border-blue-100">
+                                <h4 class="text-sm font-medium text-blue-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Tips
+                                </h4>
+                                <ul class="text-xs text-blue-700 mt-1 space-y-1 pl-5 list-disc">
+                                    <li>Drag seats to position them</li>
+                                    <li>Click to select seats for deletion</li>
+                                    <li>Remember to save your changes</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Status Message -->
+                            <div id="seat-status" class="mt-4 p-3 bg-gray-100 rounded-md text-gray-700">
+                                Ready to manage seats. Add or modify seats and save when done.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Canvas Container -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-lg border border-gray-200 p-4">
+                            <div class="bg-gray-100 border border-gray-300 rounded-lg p-4 relative" style="min-height: 400px">
+                                <div id="seat-map" class="relative w-full h-96 overflow-auto">
+                                    <!-- Seats will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Now that elements are created, we can add event listeners
+            const subAreaId = document.querySelector('input[name="Id"]').value;
+            console.log("Found subAreaId:", subAreaId);
+
+            const addSeatBtn = document.getElementById('add-seat');
+            const saveSeatBtn = document.getElementById('save-seats');
+            const removeSeatBtn = document.getElementById('remove-seats');
+            const seatMap = document.getElementById('seat-map');
+            const statusBar = document.getElementById('seat-status');
+
+            if (!addSeatBtn || !saveSeatBtn || !removeSeatBtn || !seatMap || !statusBar) {
+                console.error("Could not find required elements for seat management");
+                return;
+            }
+
+            console.log("Seat management elements found, setting up event handlers");
+
+            // Load seats from server
+            loadSeats(subAreaId);
+
+            // Event handlers for buttons
+            addSeatBtn.addEventListener('click', function() {
+                console.log("Adding new seat");
+                const seatNumber = currentSeats.length + 1;
+                const newSeat = {
+                    id: `temp-${Date.now()}`, // Temporary ID until saved
+                    name: `Seat ${seatNumber}`,
+                    x: 50,
+                    y: 50,
+                    available: true
+                };
+
+                currentSeats.push(newSeat);
+                renderSeats();
+                updateStatus(`Added new seat: ${newSeat.name}. Drag to position it.`);
+            });
+
+            removeSeatBtn.addEventListener('click', function() {
+                console.log("Removing selected seats");
+                if (selectedSeats.size === 0) {
+                    updateStatus("No seats selected. Click on seats to select them for removal.", "warning");
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to remove ${selectedSeats.size} selected seat(s)?`)) {
+                    // Remove from UI immediately
+                    currentSeats = currentSeats.filter(seat => !selectedSeats.has(seat.name));
+
+                    // If there are existing seats with IDs, send deletion request to server
+                    const seatsToDelete = Array.from(selectedSeats);
+
+                    fetch('/Seat/DeleteMultipleSeats', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            seatNames: seatsToDelete,
+                            subAreaId: subAreaId
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.success) {
+                                selectedSeats.clear();
+                                updateStatus(`Removed ${seatsToDelete.length} seats successfully.`, "success");
+                            } else {
+                                updateStatus("Error deleting seats: " + (result.message || "Unknown error"), "error");
+                            }
+                            renderSeats();
+                        })
+                        .catch(error => {
+                            console.error('Error deleting seats:', error);
+                            updateStatus("Error communicating with server. Seats removed from view only.", "error");
+                            renderSeats();
+                        });
+                }
+            });
+
+            saveSeatBtn.addEventListener('click', function() {
+                console.log("Saving seat map");
+                if (currentSeats.length === 0) {
+                    updateStatus("No seats to save. Add seats first.", "warning");
+                    return;
+                }
+
+                updateStatus("Saving seats...");
+
+                // Convert seats to the format expected by the backend
+                const seatsToSave = currentSeats.map(seat => ({
+                    Name: seat.name,
+                    left: seat.x,
+                    top: seat.y
+                }));
+
+                fetch(`/Seat/CreateTableMap?subAreaId=${subAreaId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(seatsToSave)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Server returned status ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        updateStatus(`${seatsToSave.length} seats saved successfully!`, "success");
+                        // Reload seats to get proper IDs
+                        loadSeats(subAreaId);
+                    })
+                    .catch(error => {
+                        console.error('Error saving seats:', error);
+                        updateStatus("Error saving seats: " + error.message, "error");
+                    });
+            });
+
+            // Mark as initialized
+            window.seatsInitialized = true;
+        }
 
         // Load seats from server
-        function loadSeats() {
-            const subAreaId = @Model.Id;
+        function loadSeats(subAreaId) {
+            console.log("Loading seats for subArea:", subAreaId);
+            updateStatus("Loading seat map...");
 
             fetch(`/Seat/get_data?SubAreaId=${subAreaId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned status ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    currentSeats = data;
+                    console.log("Loaded seats:", data);
+                    currentSeats = Array.isArray(data) ? data : [];
+                    selectedSeats.clear();
                     renderSeats();
+
+                    if (currentSeats.length > 0) {
+                        updateStatus(`Loaded ${currentSeats.length} seats. Click to select, drag to reposition.`, "success");
+                    } else {
+                        updateStatus("No existing seats found. Add seats using the 'Add New Seat' button.", "info");
+                    }
                 })
                 .catch(error => {
                     console.error('Error loading seats:', error);
+                    updateStatus("Error loading seats: " + error.message, "error");
                 });
         }
 
-        // Render seats on the seat map
+        // Render seats on the map
         function renderSeats() {
+            console.log("Rendering seats:", currentSeats.length);
             const seatMap = document.getElementById('seat-map');
+            if (!seatMap) {
+                console.error("Seat map element not found");
+                return;
+            }
+
+            // Clear the seat map
             seatMap.innerHTML = '';
 
+            // Add each seat
             currentSeats.forEach(seat => {
                 const seatElement = document.createElement('div');
-                seatElement.className = 'absolute bg-blue-500 text-white rounded-md flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors';
+                seatElement.className = 'absolute text-white rounded-md flex items-center justify-center cursor-move shadow-md';
+                seatElement.classList.add(selectedSeats.has(seat.name) ? 'bg-red-500' : 'bg-blue-500');
+                seatElement.classList.add(selectedSeats.has(seat.name) ? 'hover:bg-red-600' : 'hover:bg-blue-600');
+
                 seatElement.style.width = '60px';
                 seatElement.style.height = '60px';
                 seatElement.style.left = `${seat.x}px`;
@@ -438,145 +656,130 @@
                 seatElement.dataset.id = seat.id;
                 seatElement.dataset.name = seat.name;
 
-                // Handle selecting seats for deletion
-                seatElement.addEventListener('click', (e) => {
+                // Handle seat selection
+                seatElement.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
                     if (selectedSeats.has(seat.name)) {
                         selectedSeats.delete(seat.name);
-                        seatElement.classList.remove('bg-red-500', 'hover:bg-red-600');
-                        seatElement.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                        this.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        this.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                        updateStatus(`Deselected: ${seat.name}`);
                     } else {
                         selectedSeats.add(seat.name);
-                        seatElement.classList.remove('bg-blue-500', 'hover:bg-blue-600');
-                        seatElement.classList.add('bg-red-500', 'hover:bg-red-600');
+                        this.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                        this.classList.add('bg-red-500', 'hover:bg-red-600');
+                        updateStatus(`Selected: ${seat.name}`);
                     }
                 });
 
-                // Make seats draggable
-                seatElement.draggable = true;
-                seatElement.addEventListener('dragstart', (e) => {
-                    const rect = seatElement.getBoundingClientRect();
-                    e.dataTransfer.setData('text/plain', seat.name);
-                    e.dataTransfer.setDragImage(seatElement, 30, 30);
-                    seatElement.classList.add('opacity-50');
-                });
+                // Make seat draggable using mouse events for better control
+                let isDragging = false;
+                let dragStartX, dragStartY;
+                let originalX, originalY;
 
-                seatElement.addEventListener('dragend', (e) => {
-                    seatElement.classList.remove('opacity-50');
+                seatElement.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+
+                    // Prepare for potential drag
+                    isDragging = false;
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+                    originalX = seat.x;
+                    originalY = seat.y;
+
+                    const onMouseMove = function(e) {
+                        e.preventDefault();
+
+                        // Detect if we've moved enough to consider it a drag
+                        const dx = Math.abs(e.clientX - dragStartX);
+                        const dy = Math.abs(e.clientY - dragStartY);
+
+                        if (!isDragging && (dx > 5 || dy > 5)) {
+                            isDragging = true;
+                            seatElement.classList.add('opacity-70'); // Visual feedback
+                        }
+
+                        if (isDragging) {
+                            // Calculate movement
+                            const deltaX = e.clientX - dragStartX;
+                            const deltaY = e.clientY - dragStartY;
+
+                            // Update position
+                            seat.x = originalX + deltaX;
+                            seat.y = originalY + deltaY;
+
+                            // Update visual position
+                            seatElement.style.left = `${seat.x}px`;
+                            seatElement.style.top = `${seat.y}px`;
+
+                            updateStatus(`Moving: ${seat.name}`);
+                        }
+                    };
+
+                    const onMouseUp = function() {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+
+                        seatElement.classList.remove('opacity-70');
+
+                        if (isDragging) {
+                            // Snap to grid (optional)
+                            seat.x = Math.round(seat.x / 10) * 10;
+                            seat.y = Math.round(seat.y / 10) * 10;
+
+                            // Update final position
+                            seatElement.style.left = `${seat.x}px`;
+                            seatElement.style.top = `${seat.y}px`;
+
+                            updateStatus(`Repositioned: ${seat.name}`);
+                        }
+                    };
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
                 });
 
                 seatMap.appendChild(seatElement);
             });
-
-            // Make seat map a drop target
-            seatMap.addEventListener('dragover', (e) => {
-                e.preventDefault();
-            });
-
-            seatMap.addEventListener('drop', (e) => {
-                e.preventDefault();
-                const seatName = e.dataTransfer.getData('text/plain');
-                const seatToUpdate = currentSeats.find(s => s.name === seatName);
-
-                // Calculate new position, accounting for scrolling
-                const seatMapRect = seatMap.getBoundingClientRect();
-                const newX = e.clientX - seatMapRect.left + seatMap.scrollLeft;
-                const newY = e.clientY - seatMapRect.top + seatMap.scrollTop;
-
-                // Round to nearest 10px for cleaner positioning
-                seatToUpdate.x = Math.round(newX / 10) * 10;
-                seatToUpdate.y = Math.round(newY / 10) * 10;
-
-                renderSeats();
-            });
         }
 
-        // Add new seat
-        document.getElementById('add-seat').addEventListener('click', () => {
-            const seatNumber = currentSeats.length + 1;
-            const newSeat = {
-                id: `temp-${Date.now()}`, // Temporary ID until saved
-                name: `Seat ${seatNumber}`,
-                x: 50,
-                y: 50,
-                available: true
-            };
+        // Update status message
+        function updateStatus(message, type = "info") {
+            console.log(`Status update (${type}): ${message}`);
+            const statusBar = document.getElementById('seat-status');
+            if (!statusBar) return;
 
-            currentSeats.push(newSeat);
-            renderSeats();
-        });
+            statusBar.textContent = message;
 
-        // Remove selected seats
-        document.getElementById('remove-seats').addEventListener('click', () => {
-            if (selectedSeats.size === 0) {
-                alert('No seats selected. Click on seats to select them for removal.');
-                return;
+            // Reset classes
+            statusBar.className = 'mt-4 p-3 rounded-md';
+
+            // Apply appropriate styling
+            switch (type) {
+                case "success":
+                    statusBar.classList.add('bg-green-100', 'text-green-800');
+                    break;
+                case "error":
+                    statusBar.classList.add('bg-red-100', 'text-red-800');
+                    break;
+                case "warning":
+                    statusBar.classList.add('bg-yellow-100', 'text-yellow-800');
+                    break;
+                case "info":
+                default:
+                    statusBar.classList.add('bg-gray-100', 'text-gray-700');
+                    break;
             }
+        }
 
-            if (confirm(`Are you sure you want to remove ${selectedSeats.size} selected seat(s)?`)) {
-                // Remove from UI immediately
-                currentSeats = currentSeats.filter(seat => !selectedSeats.has(seat.name));
+        // Check URL hash for initial tab
+        if (window.location.hash === '#seats') {
+            document.getElementById('tab-seats').click();
+        }
 
-                // If there are existing seats (with IDs), send deletion request to server
-                const seatsToDelete = Array.from(selectedSeats);
-                const subAreaId = @Model.Id;
-
-                fetch('/Seat/DeleteMultipleSeats', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        seatNames: seatsToDelete,
-                        subAreaId: subAreaId
-                    })
-                })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            selectedSeats.clear();
-                            renderSeats();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting seats:', error);
-                    });
-
-                renderSeats();
-            }
-        });
-
-        // Save changes
-        document.getElementById('save-seats').addEventListener('click', () => {
-            const subAreaId = @Model.Id;
-
-            // Convert seats to the format expected by the backend
-            const seatsToSave = currentSeats.map(seat => ({
-                name: seat.name,
-                top: seat.y,
-                left: seat.x
-            }));
-
-            fetch(`/Seat/CreateTableMap?subAreaId=${subAreaId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(seatsToSave)
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Seats saved successfully!');
-                        // Reload seats to get proper IDs for new seats
-                        loadSeats();
-                    } else {
-                        alert('Error saving seats. Please try again.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error saving seats:', error);
-                    alert('Error saving seats. Please try again.');
-                });
-        });
+        console.log("Seat management initialization complete");
     });
 </script>
 }
