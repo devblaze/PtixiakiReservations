@@ -5,9 +5,8 @@
       context: .
       dockerfile: PtixiakiReservations/Dockerfile
     volumes:
-      # Mount local nuget packages to container
-      - ${USERPROFILE}/.nuget/packages:/home/app/.nuget/packages:ro  # Windows
-      # - $HOME/.nuget/packages:/home/app/.nuget/packages:ro  # macOS/Linux (uncomment as needed)
+      # Dynamic approach using environment variables with fallbacks
+      - ${NUGET_PACKAGES_PATH:-${HOME:-.}/.nuget/packages}:/home/app/.nuget/packages:ro
     ports:
       - "8080:8080"
     networks:
