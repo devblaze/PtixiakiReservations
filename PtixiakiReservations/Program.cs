@@ -95,6 +95,17 @@ try
         options.Filters.Add(new AuthorizeFilter(policy));
     });
 
+    builder.Services.ConfigureApplicationCookie(options =>
+    {
+        options.LoginPath = "/Identity/Account/Login";
+        options.LogoutPath = "/Identity/Account/Logout";
+        options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+        // Set the default return URL after login
+        options.ReturnUrlParameter = "returnUrl";
+        // This is important - it sets where to redirect after login when no returnUrl is specified
+        options.SlidingExpiration = true;
+    });
+
     // Build the app
     var app = builder.Build();
 
