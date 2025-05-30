@@ -19,7 +19,8 @@
       - "com.centurylinklabs.watchtower.enable=true"
       - "com.centurylinklabs.watchtower.depends-on=ptixiakireservations2"
       - "traefik.enable=true"
-      - "traefik.http.routers.app1.rule=Host(`192.168.4.48`)"
+      # Update the rule to accept both hostnames
+      - "traefik.http.routers.app1.rule=Host(`192.168.4.48`) || Host(`care-conscious.gl.at.ply.gg`)"
       - "traefik.http.services.app1.loadbalancer.server.port=8080"
   
   ptixiakireservations2:
@@ -41,7 +42,8 @@
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
       - "traefik.enable=true"
-      - "traefik.http.routers.app2.rule=Host(`192.168.4.48`)"
+      # Update the rule to accept both hostnames
+      - "traefik.http.routers.app2.rule=Host(`192.168.4.48`) || Host(`care-conscious.gl.at.ply.gg`)"
       - "traefik.http.services.app2.loadbalancer.server.port=8080"
   
   traefik:
@@ -52,6 +54,8 @@
       - "80:80"
       # Change this to a different port to avoid conflicts
       - "8090:8080"
+      # Add the Playit port mapping
+      - "36091:36091"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
@@ -59,16 +63,10 @@
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      # Remove this line as it conflicts with the port
-      # - "--entrypoints.dashboard.address=:8080"
+      # Add a new entrypoint for Playit.gg
+      - "--entrypoints.playit.address=:36091"
     networks:
       - reservations
-    # Remove these labels as they're causing conflicts
-    # labels:
-    #  - "traefik.enable=true"
-    #  - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
-    #  - "traefik.http.routers.traefik.service=api@internal"
-    #  - "traefik.http.routers.traefik.entrypoints=dashboard"
   
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0

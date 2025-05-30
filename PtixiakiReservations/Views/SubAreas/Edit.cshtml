@@ -1,4 +1,5 @@
-﻿@model PtixiakiReservations.Models.SubArea
+﻿@using System.Linq
+@model PtixiakiReservations.Models.SubArea
 
 @{
     ViewData["Title"] = "Edit Sub Area";
@@ -18,7 +19,7 @@
                         </p>
                     </div>
                     <div class="mt-4 md:mt-0">
-                        <a href="@Url.Action("Index")"
+                        <a href="@Url.Action("Index", "SubAreas")"
                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
                                  stroke="currentColor">
@@ -530,7 +531,8 @@
                     fetch('/Seat/DeleteMultipleSeats', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                         },
                         body: JSON.stringify({
                             seatNames: seatsToDelete,
@@ -574,7 +576,8 @@
                 fetch(`/Seat/CreateTableMap?subAreaId=${subAreaId}`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                     },
                     body: JSON.stringify(seatsToSave)
                 })
@@ -772,6 +775,16 @@
                     statusBar.classList.add('bg-gray-100', 'text-gray-700');
                     break;
             }
+        }
+
+        // Fix the back button to work correctly
+        const backButton = document.querySelector('a[href="@Url.Action("Index")"]');
+        if (backButton) {
+            backButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Directly navigate to the Index action on SubAreas controller
+                window.location.href = '@Url.Action("Index", "SubAreas")';
+            });
         }
 
         // Check URL hash for initial tab
