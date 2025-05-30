@@ -1,25 +1,75 @@
-﻿version: '3.8'
-
-services:
-  ptixiakireservations:
+﻿services:
+  ptixiakireservations1:
     image: devblaze/ptixiakireservations:latest
-    container_name: ptixiaki-app
+    container_name: ptixiaki-app1
     restart: unless-stopped
     depends_on:
       - elasticsearch
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=192.168.4.204;Database=ReservationProject;User Id=sa;Password=Blaze2310;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - ConnectionStrings__DefaultConnection=Server=192.168.4.246;Database=ReservationProject;User Id=sa;Password=Blaze2310;TrustServerCertificate=True;MultipleActiveResultSets=true
       - ElasticSettings__Uri=http://elasticsearch:9200
       - ElasticSettings__DefaultIndex=events
       - TZ=Europe/Athens
-    ports:
-      - "8080:8080"
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+      - ASPNETCORE_URLS=http://+:8080
     networks:
       - reservations
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-      
+      - "com.centurylinklabs.watchtower.depends-on=ptixiakireservations2"
+      - "traefik.enable=true"
+      - "traefik.http.routers.app1.rule=Host(`192.168.4.48`)"
+      - "traefik.http.services.app1.loadbalancer.server.port=8080"
+  
+  ptixiakireservations2:
+    image: devblaze/ptixiakireservations:latest
+    container_name: ptixiaki-app2
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=192.168.4.246;Database=ReservationProject;User Id=sa;Password=Blaze2310;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - ElasticSettings__Uri=http://elasticsearch:9200
+      - ElasticSettings__DefaultIndex=events
+      - TZ=Europe/Athens
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+      - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - reservations
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.app2.rule=Host(`192.168.4.48`)"
+      - "traefik.http.services.app2.loadbalancer.server.port=8080"
+  
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # Change this to a different port to avoid conflicts
+      - "8090:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      # Remove this line as it conflicts with the port
+      # - "--entrypoints.dashboard.address=:8080"
+    networks:
+      - reservations
+    # Remove these labels as they're causing conflicts
+    # labels:
+    #  - "traefik.enable=true"
+    #  - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+    #  - "traefik.http.routers.traefik.service=api@internal"
+    #  - "traefik.http.routers.traefik.entrypoints=dashboard"
+  
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
     container_name: elasticsearch
@@ -52,7 +102,7 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     networks:
       - reservations
-        
+  
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -61,18 +111,19 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=300  # Check for updates every 5 minutes
+      - WATCHTOWER_POLL_INTERVAL=300
       - WATCHTOWER_INCLUDE_STOPPED=false
       - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_ROLLING_RESTART=true
+      - WATCHTOWER_TIMEOUT=90s
       - TZ=Europe/Athens
     networks:
       - reservations
-    command: --label-enable --cleanup
-        
+    command: --label-enable --cleanup --rolling-restart
+
 networks:
   reservations:
     driver: bridge
-    
+
 volumes:
-  mssql-data:
   elasticsearch-data:

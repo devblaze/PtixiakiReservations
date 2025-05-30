@@ -17,6 +17,7 @@ using System.Text;
 
 namespace PtixiakiReservations.Controllers;
 
+// Remove the global Authorize attribute from the controller
 public class EventsController(
     ApplicationDbContext context,
     UserManager<ApplicationUser> userManager,
@@ -27,14 +28,18 @@ public class EventsController(
 {
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
 
+    // Public methods (no authentication required)
+    
     // GET: Events
+    [AllowAnonymous]
     public IActionResult Index()
     {
         return View();
     }
 
-// New API endpoint to get today's events
+    // New API endpoint to get today's events
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetTodayEvents(string city, int page = 1, int pageSize = 12)
     {
         logger.LogInformation("Getting today's events. City filter: {City}", city ?? "None");
@@ -70,8 +75,9 @@ public class EventsController(
         });
     }
 
-// New API endpoint to get upcoming events
+    // New API endpoint to get upcoming events
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetUpcomingEvents(string city, int page = 1, int pageSize = 12)
     {
         logger.LogInformation("Getting upcoming events. City filter: {City}", city ?? "None");
@@ -107,8 +113,9 @@ public class EventsController(
         });
     }
 
-// New API endpoint to get past events
+    // New API endpoint to get past events
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetPastEvents(string city, int page = 1, int pageSize = 12)
     {
         logger.LogInformation("Getting past events. City filter: {City}", city ?? "None");
@@ -144,8 +151,9 @@ public class EventsController(
         });
     }
 
-// New API endpoint to get all events
+    // New API endpoint to get all events
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAllEvents(string city, int page = 1, int pageSize = 12)
     {
         logger.LogInformation("Getting all events. City filter: {City}", city ?? "None");
@@ -178,6 +186,7 @@ public class EventsController(
         });
     }
 
+    [AllowAnonymous]
     public string GetEventTimeClass(DateTime eventDate)
     {
         DateTime today = DateTime.Today;
@@ -196,6 +205,7 @@ public class EventsController(
         }
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> EventsForToday(string city, int page = 1, int pageSize = 12)
     {
         logger.LogInformation("Fetching events for today and future. City filter: {City}", city ?? "None");
@@ -236,6 +246,7 @@ public class EventsController(
     }
 
     // GET: Events/Details/5
+    [AllowAnonymous]
     public async Task<IActionResult> Details(int? id)
     {
         if (id is null) return NotFound();
@@ -250,7 +261,10 @@ public class EventsController(
         return View(@event);
     }
 
-    // GET: Events/Create      
+    // Methods that require authentication
+    
+    // GET: Events/Create  
+    [Authorize]    
     public JsonResult GetEvents()
     {
         var events = context.Event.Include(e => e.EventType)
@@ -258,6 +272,7 @@ public class EventsController(
         return new JsonResult(events);
     }
 
+    [Authorize]
     public JsonResult GetEvents2(int? venueId)
     {
         var events = context.Event.Where(e => e.Venue.Id == venueId).ToList();
@@ -265,6 +280,7 @@ public class EventsController(
         return new JsonResult(events);
     }
 
+    [AllowAnonymous]
     public JsonResult GetEventTypes()
     {
         var eventsTypes = context.EventType.ToList();
@@ -272,6 +288,7 @@ public class EventsController(
         return new JsonResult(eventsTypes);
     }
 
+    [Authorize]
     public async Task<IActionResult> VenueEvents(int venueId)
     {
         var venue = await context.Venue.FirstOrDefaultAsync(v => v.Id == venueId);
@@ -281,6 +298,7 @@ public class EventsController(
         return View(venue);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> CreateEvent()
     {
@@ -305,6 +323,7 @@ public class EventsController(
         return View(new Event());
     }
 
+    [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateEvent(Event newEvent)
@@ -332,6 +351,7 @@ public class EventsController(
         return RedirectToAction(nameof(EventsForToday));
     }
 
+    [Authorize]
     public bool CorrectDay(JsonEventModel ev, int i, int everyNum)
     {
         bool correctDay = false;
@@ -366,6 +386,7 @@ public class EventsController(
         return correctDay;
     }
 
+    [Authorize]
     public async Task<IActionResult> Delete(int? id, bool dAll)
     {
         if (id == null)
@@ -410,6 +431,7 @@ public class EventsController(
     }
 
     // Index events into Elasticsearch
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> IndexEventsToElastic()
     {
@@ -428,260 +450,6 @@ public class EventsController(
 
         await elasticSearchService.CreateIndexIfNotExistsAsync("events");
         var result = await elasticSearchService.AddOrUpdateBulkAsync(events, "events");
-
-        return result ? Ok("Events indexed successfully!") : BadRequest("Failed to index events.");
-    }
-
-    /// <summary>
-    /// Advanced search for events with date range filtering and elasticsearch support
-    /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> SearchEvents(
-        string eventTypeId = null,
-        string startDate = null,
-        string endDate = null,
-        string searchTerm = null,
-        int page = 1,
-        int pageSize = 12)
-    {
-        logger.LogInformation(
-            "Event search with criteria: EventType={EventType}, StartDate={StartDate}, EndDate={EndDate}, SearchTerm={SearchTerm}",
-            eventTypeId,
-            startDate,
-            endDate,
-            searchTerm);
-
-        try
-        {
-            // Count filled search criteria
-            int filledCriteria = 0;
-            if (!string.IsNullOrWhiteSpace(eventTypeId)) filledCriteria++;
-            if (!string.IsNullOrWhiteSpace(startDate)) filledCriteria++;
-            if (!string.IsNullOrWhiteSpace(endDate)) filledCriteria++;
-            if (!string.IsNullOrWhiteSpace(searchTerm)) filledCriteria++;
-
-            // If using date filtering, ensure we have valid dates
-            DateTime? parsedStartDate = null;
-            DateTime? parsedEndDate = null;
-
-            if (!string.IsNullOrWhiteSpace(startDate) && DateTime.TryParse(startDate, out DateTime startDateValue))
-            {
-                parsedStartDate = startDateValue.Date;
-            }
-
-            if (!string.IsNullOrWhiteSpace(endDate) && DateTime.TryParse(endDate, out DateTime endDateValue))
-            {
-                // Set to end of day for inclusive filtering
-                parsedEndDate = endDateValue.Date.AddDays(1).AddSeconds(-1);
-            }
-
-            // Use standard database query for better date filtering
-            var query = context.Event
-                .Include(e => e.Venue)
-                .ThenInclude(v => v.City)
-                .AsQueryable();
-
-            // Apply filters based on provided criteria
-            if (!string.IsNullOrWhiteSpace(eventTypeId) && int.TryParse(eventTypeId, out int eventTypeIdValue))
-            {
-                query = query.Where(e => e.EventTypeId == eventTypeIdValue);
-            }
-
-            // Apply date range filtering
-            if (parsedStartDate.HasValue)
-            {
-                query = query.Where(e => e.StartDateTime >= parsedStartDate.Value);
-            }
-
-            if (parsedEndDate.HasValue)
-            {
-                query = query.Where(e => e.StartDateTime <= parsedEndDate.Value);
-            }
-
-            // Apply text search if provided
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                string term = searchTerm.ToLower();
-                query = query.Where(e =>
-                    e.Name.ToLower().Contains(term) ||
-                    e.Venue.Name.ToLower().Contains(term) ||
-                    e.Venue.City.Name.ToLower().Contains(term)
-                );
-            }
-
-            // Order by start date (nearest first)
-            query = query.OrderBy(e => e.StartDateTime);
-
-            // Get total count for pagination
-            var totalCount = await query.CountAsync();
-
-            // Apply pagination
-            var events = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            // Return results as JSON
-            return Json(new
-            {
-                events,
-                totalCount,
-                currentPage = page,
-                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
-            });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error performing event search");
-            return StatusCode(500, "An error occurred while searching for events");
-        }
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> IndexAllEventsToElastic()
-    {
-        try
-        {
-            // Load all events with necessary includes
-            var events = await context.Event
-                .Include(e => e.Venue)
-                .Include(e => e.EventType)
-                .ToListAsync();
-
-            // Create the index if it doesn't exist
-            await elasticSearchService.CreateIndexIfNotExistsAsync("events");
-
-            // Index events in batches
-            const int batchSize = 50;
-            var successCount = 0;
-
-            for (int i = 0; i < events.Count; i += batchSize)
-            {
-                var batch = events.Skip(i).Take(batchSize).ToList();
-                var result = await elasticSearchService.AddOrUpdateBulkAsync(batch, "events");
-
-                if (result)
-                {
-                    successCount += batch.Count;
-                }
-            }
-
-            return Ok($"Successfully indexed {successCount} of {events.Count} events to Elasticsearch.");
-        }
-        catch (Exception ex)
-        {
-            return BadRequest($"Error indexing events: {ex.Message}");
-        }
-    }
-
-    [HttpGet("test-elasticsearch")]
-    [AllowAnonymous] // Allow access without authentication for testing
-    public async Task<IActionResult> TestElasticsearch()
-    {
-        try
-        {
-            // Test 1: Check if we can create an index
-            var indexName = "test-index";
-            var createResult = await elasticSearchService.CreateIndexIfNotExistsAsync(indexName);
-
-            if (!createResult)
-            {
-                return BadRequest("Failed to create Elasticsearch index");
-            }
-
-            // Test 2: Index a simple document
-            var testEvent = new Event
-            {
-                Id = 999,
-                Name = "Test Event " + DateTime.Now.Ticks,
-                StartDateTime = DateTime.Now,
-                EndTime = DateTime.Now.AddHours(1),
-                EventTypeId = 1,
-                VenueId = 1
-            };
-
-            var indexResult = await elasticSearchService.AddOrUpdateAsync(testEvent, indexName);
-
-            if (!indexResult)
-            {
-                return BadRequest("Failed to index test document");
-            }
-
-            // Test 3: Search for the document
-            var searchResults = await elasticSearchService.SearchAsync<Event>("Test Event", indexName);
-
-            return Ok(new
-            {
-                message = "Elasticsearch is working!",
-                indexCreated = createResult,
-                documentIndexed = indexResult,
-                searchResults = searchResults.Select(e => new { e.Id, e.Name, e.StartDateTime })
-            });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error testing Elasticsearch");
-            return BadRequest($"Elasticsearch test failed: {ex.Message}");
-        }
-    }
-
-    // GET: Events/GenerateEvents/{count}
-    [HttpGet]
-    [Route("Events/GenerateEvents/{count}")]
-    public async Task<IActionResult> GenerateEvents(int count)
-    {
-        if (count <= 0 || count > 100)
-        {
-            return BadRequest("The count must be between 1 and 100.");
-        }
-
-        var now = DateTime.Now;
-        var eventTypes = await context.EventType.ToListAsync();
-        var venues = await context.Venue.ToListAsync();
-
-        if (!eventTypes.Any() || !venues.Any())
-        {
-            return BadRequest("No event types or venues available for event generation.");
-        }
-
-        var random = new Random();
-        var generatedEvents = new List<Event>();
-
-        for (int i = 0; i < count; i++)
-        {
-            // Pick random event type and venue
-            var eventType = eventTypes[random.Next(eventTypes.Count)];
-            var venue = venues[random.Next(venues.Count)];
-
-            // Random date between now and 3 months in the future
-            var daysToAdd = random.Next(1, 5);
-            var startDate = now.AddDays(daysToAdd);
-
-            // Event duration between 1 and 4 hours
-            var duration = random.Next(1, 5);
-
-            var newEvent = new Event
-            {
-                Name = $"Generated Event {i + 1}",
-                StartDateTime = startDate,
-                EndTime = startDate.AddHours(duration),
-                EventTypeId = eventType.Id,
-                VenueId = venue.Id
-            };
-
-            context.Event.Add(newEvent);
-            generatedEvents.Add(newEvent);
-        }
-
-        await context.SaveChangesAsync();
-
-        logger.LogInformation("Generated {Count} new events", count);
-
-        return Json(new
-        {
-            success = true,
-            message = $"Successfully generated {count} events",
-            events = generatedEvents
-        });
+        return Ok(result);
     }
 }

@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +18,7 @@ using Serilog.Settings.Configuration;
 using Serilog.Sinks.SystemConsole.Themes;
 using Serilog.Sinks.Elasticsearch;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +66,17 @@ try
 
     builder.Services.AddSignalR();
 
+    // Add configuration for forwarded headers
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                                   ForwardedHeaders.XForwardedProto |
+                                   ForwardedHeaders.XForwardedHost;
+        // Additional options to help with proxy
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+
     builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
         {
             options.Stores.MaxLengthForKeys = 128;
@@ -87,13 +99,8 @@ try
     builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection("ElasticSettings"));
     builder.Services.AddSingleton<IElasticSearch, ElasticSearchService>();
 
-    builder.Services.AddMvc(options =>
-    {
-        var policy = new AuthorizationPolicyBuilder()
-            .RequireAuthenticatedUser()
-            .Build();
-        options.Filters.Add(new AuthorizeFilter(policy));
-    });
+    // CHANGE: Remove the global authorization filter and apply it selectively
+    builder.Services.AddMvc();
 
     builder.Services.ConfigureApplicationCookie(options =>
     {
@@ -102,8 +109,10 @@ try
         options.AccessDeniedPath = "/Identity/Account/AccessDenied";
         // Set the default return URL after login
         options.ReturnUrlParameter = "returnUrl";
-        // This is important - it sets where to redirect after login when no returnUrl is specified
         options.SlidingExpiration = true;
+
+        // Add this to fix the redirect issue
+        options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
     });
 
     // Build the app
@@ -134,6 +143,9 @@ try
         }
     }
 
+    // Use forwarded headers - this must come first in the pipeline
+    app.UseForwardedHeaders();
+
     if (app.Environment.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();
@@ -142,10 +154,13 @@ try
     else
     {
         app.UseExceptionHandler("/Home/Error");
-        app.UseHsts();
+        // Don't redirect to HTTPS when behind a proxy
+        // app.UseHsts();
     }
 
-    app.UseHttpsRedirection();
+    // Don't use HTTPS redirection when behind a reverse proxy like Traefik
+    // app.UseHttpsRedirection();
+
     app.UseStaticFiles();
 
     app.UseRouting();
@@ -153,10 +168,23 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
+    // CHANGED: Set the default root route to point directly to EventsForToday
     app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Events}/{action=EventsForToday}/{id?}");
     app.MapRazorPages();
+
+    // Add a redirect from the root to EventsForToday
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path == "/")
+        {
+            context.Response.Redirect("/Events/EventsForToday");
+            return;
+        }
+
+        await next();
+    });
 
     app.Run();
 
