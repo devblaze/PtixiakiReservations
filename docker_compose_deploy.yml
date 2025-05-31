@@ -52,19 +52,40 @@
     restart: unless-stopped
     ports:
       - "80:80"
-      # Change this to a different port to avoid conflicts
       - "8090:8080"
-      # Add the Playit port mapping
       - "36091:36091"
+      - "8091:8091"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-logs:/var/log/traefik
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      # Add a new entrypoint for Playit.gg
       - "--entrypoints.playit.address=:36091"
+      
+      # Access Logs Configuration
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.format=json"
+      - "--accesslog.bufferingsize=100"
+      
+      # Metrics Configuration
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
+      - "--metrics.prometheus.entryPoint=metrics"
+      - "--entrypoints.metrics.address=:8091"
+      
+      # Tracing Configuration
+      - "--tracing=true"
+      - "--tracing.serviceName=traefik"
+      - "--tracing.spanNameLimit=250"
+      - "--tracing.jaeger=true"
+      - "--tracing.jaeger.samplingServerURL=http://jaeger:5778/sampling"
+      - "--tracing.jaeger.localAgentHostPort=jaeger:6831"
+      - "--tracing.jaeger.propagation=jaeger"
     networks:
       - reservations
   
@@ -118,6 +139,18 @@
     networks:
       - reservations
     command: --label-enable --cleanup --rolling-restart
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "5778:5778"    # Sampling configuration service
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - reservations
 
 networks:
   reservations:
