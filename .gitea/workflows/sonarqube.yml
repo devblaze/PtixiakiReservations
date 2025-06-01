@@ -36,5 +36,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
         run: |
           sonar-scanner \
+            -Dsonar.projectKey=PtixiakiReservations \
+            -Dsonar.projectName="Ptixiaki Reservations" \
+            -Dsonar.projectVersion=1.0 \
+            -Dsonar.sources=. \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.login=$SONAR_TOKEN
