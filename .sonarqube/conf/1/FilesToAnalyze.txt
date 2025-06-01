@@ -1,0 +1,5 @@
+﻿/Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/PtixiakiReservations.Tests/Controllers/EventsControllerTests.cs
+/Users/nickantoniadis/.nuget/packages/microsoft.net.test.sdk/17.8.0/build/netcoreapp3.1/Microsoft.NET.Test.Sdk.Program.cs
+/Users/nickantoniadis/.nuget/packages/xunit.runner.visualstudio/2.5.3/build/net6.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll
+/Users/nickantoniadis/.nuget/packages/xunit.runner.visualstudio/2.5.3/build/net6.0/xunit.runner.reporters.netcoreapp10.dll
+/Users/nickantoniadis/.nuget/packages/xunit.runner.visualstudio/2.5.3/build/net6.0/xunit.runner.utility.netcoreapp10.dll
