@@ -17,7 +17,6 @@ using System.Text;
 
 namespace PtixiakiReservations.Controllers;
 
-// Remove the global Authorize attribute from the controller
 public class EventsController(
     ApplicationDbContext context,
     UserManager<ApplicationUser> userManager,
@@ -26,10 +25,6 @@ public class EventsController(
     ILogger<EventsController> logger)
     : Controller
 {
-    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
-
-    // Public methods (no authentication required)
-    
     // GET: Events
     [AllowAnonymous]
     public IActionResult Index()
@@ -245,26 +240,32 @@ public class EventsController(
         return View(eventsList);
     }
 
-    // GET: Events/Details/5
-    [AllowAnonymous]
+// GET: Events/Details/5
     public async Task<IActionResult> Details(int? id)
     {
-        if (id is null) return NotFound();
+        if (id == null)
+        {
+            return NotFound();
+        }
 
-        var @event = await context.Event
-            .Include(r => r.FamilyEvent)
-            .Include(r => r.Venue)
+        var eventDetails = await context.Event
+            .Include(e => e.Venue)
+            .Include(e => e.Venue.City)
+            .Include(e => e.EventType)
             .FirstOrDefaultAsync(m => m.Id == id);
 
-        if (@event is null) return NotFound();
+        if (eventDetails == null)
+        {
+            return NotFound();
+        }
 
-        return View(@event);
+        return View(eventDetails);
     }
 
     // Methods that require authentication
-    
+
     // GET: Events/Create  
-    [Authorize]    
+    [Authorize]
     public JsonResult GetEvents()
     {
         var events = context.Event.Include(e => e.EventType)
@@ -515,6 +516,7 @@ public class EventsController(
         {
             correctDay = true;
         }
+
         return correctDay;
     }
 
@@ -525,6 +527,7 @@ public class EventsController(
         {
             return NotFound();
         }
+
         var ev = await context.Event
             .Include(r => r.FamilyEvent)
             .Include(r => r.Venue)
@@ -534,6 +537,7 @@ public class EventsController(
         {
             return NotFound();
         }
+
         if (dAll == true)
         {
             var familyEvents = context.Event.Include(r => r.FamilyEvent).Include(r => r.EventType)
@@ -543,6 +547,7 @@ public class EventsController(
                 var hasReservations = context.Reservation.Where(r => r.EventId == @event.Id).ToList();
                 context.Reservation.RemoveRange(hasReservations);
             }
+
             context.Event.RemoveRange(familyEvents);
         }
         else
@@ -856,5 +861,84 @@ public class EventsController(
         logger.LogInformation("Found {Count} events for user {UserId}", events.Count, userId);
 
         return Json(events);
+    }
+
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAutocompleteResults(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        {
+            return Json(new List<object>());
+        }
+
+        query = query.ToLower();
+        var results = new List<object>();
+        var maxResults = 5;
+
+        try
+        {
+            // Search for events with matching names
+            var eventResults = await context.Event
+                .Where(e => e.Name.ToLower().Contains(query))
+                .OrderBy(e => e.Name)
+                .Take(maxResults)
+                .Select(e => new
+                {
+                    text = e.Name,
+                    type = "event",
+                    subtext = $"Event on {e.StartDateTime.ToString("MMM d, yyyy")}",
+                    id = e.Id
+                })
+                .ToListAsync();
+
+            results.AddRange(eventResults);
+
+            // If we need more results, search for venues
+            if (results.Count < maxResults)
+            {
+                var remainingSlots = maxResults - results.Count;
+                var venueResults = await context.Venue
+                    .Where(v => v.Name.ToLower().Contains(query))
+                    .OrderBy(v => v.Name)
+                    .Take(remainingSlots)
+                    .Select(v => new
+                    {
+                        text = v.Name,
+                        type = "location",
+                        subtext = v.City != null ? $"Venue in {v.City.Name}" : "Venue",
+                        id = v.Id
+                    })
+                    .ToListAsync();
+
+                results.AddRange(venueResults);
+            }
+
+            // If we still need more results, search for cities
+            if (results.Count < maxResults)
+            {
+                var remainingSlots = maxResults - results.Count;
+                var cityResults = await context.City
+                    .Where(c => c.Name.ToLower().Contains(query))
+                    .OrderBy(c => c.Name)
+                    .Take(remainingSlots)
+                    .Select(c => new
+                    {
+                        text = c.Name,
+                        type = "location",
+                        subtext = "City",
+                        id = c.Id
+                    })
+                    .ToListAsync();
+
+                results.AddRange(cityResults);
+            }
+
+            return Json(results);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching autocomplete results for query: {Query}", query);
+            return Json(new List<object>());
+        }
     }
 }

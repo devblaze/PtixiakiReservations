@@ -354,6 +354,31 @@ public class ReservationController(
         return View("SelectSeats");
     }
 
+    // GET: Reservation/ReserveSeats/5
+    public async Task<IActionResult> ReserveSeats(int? eventId)
+    {
+        if (eventId == null)
+        {
+            return NotFound();
+        }
+
+        var eventDetails = await context.Event
+            .Include(e => e.Venue)
+            .Include(e => e.Venue.City)
+            .Include(e => e.EventType)
+            .FirstOrDefaultAsync(m => m.Id == eventId);
+
+        if (eventDetails == null)
+        {
+            return NotFound();
+        }
+
+        ViewData["EventId"] = eventId;
+        ViewData["VenueId"] = eventDetails.VenueId;
+
+        return View(eventDetails);
+    }
+
     private bool ReservationsExists(int id)
     {
         return context.Reservation.Any(e => e.ID == id);
