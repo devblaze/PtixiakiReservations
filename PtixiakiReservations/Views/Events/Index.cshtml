@@ -1,127 +1,388 @@
-﻿@model IEnumerable<PtixiakiReservations.Models.EventType>
+﻿@model IEnumerable<PtixiakiReservations.Models.Event>
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "My Events";
 }
 
-<div class="container mx-auto p-6">
-    <h2 class="text-2xl font-bold text-gray-800">Index</h2>
-    <div id="calender" class="mt-4 p-4 border border-gray-300 rounded-lg shadow-md"></div>
-
-    <!-- Modal -->
-    <div id="myModal" class="fixed inset-0 z-50 hidden bg-gray-800 bg-opacity-75 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg">
-            <div class="border-b border-gray-200 px-4 py-3">
-                <h4 class="text-lg font-semibold"><span id="eventTitle"></span></h4>
-                <button type="button" class="text-gray-400 hover:text-gray-600 absolute top-4 right-4"
-                        onclick="closeModal('myModal')">
-                    &times;
-                </button>
-            </div>
-            <div class="p-4 text-gray-700">
-                <p id="pDetails"></p>
-            </div>
-            <div class="border-t border-gray-200 px-4 py-3">
-                <button class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-700"
-                        onclick="closeModal('myModal')">
-                    Close
-                </button>
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header with Create Button -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white">My Events</h1>
+                        <p class="mt-2 text-indigo-100 max-w-3xl">
+                            Manage all events you've created across your venues
+                        </p>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <a href="@Url.Action("CreateEvent", "Events")"
+                           class="inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Create New Event
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Custom Recurrence Modal -->
-    <div id="myModalRepeatTime"
-         class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl">
-            <div class="bg-gray-100 border-b border-gray-200 px-4 py-3 flex justify-between items-center">
-                <h4 class="text-lg font-bold text-gray-800">Custom Recurrence</h4>
-                <button type="button" class="text-gray-500 hover:text-red-500"
-                        onclick="closeModal('myModalRepeatTime')">
-                    &times;
-                </button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div class="form-group">
-                    <label class="block font-medium text-gray-700">Repeat Every:</label>
-                    <div class="flex items-center space-x-2">
-                        <input id="numOfRepeat" type="number" min="1" value="1"
-                               class="w-16 border border-gray-300 rounded px-2 py-1 text-gray-700" />
-                        <select id="selectRepeat"
-                                class="border border-gray-300 rounded px-3 py-2 text-gray-700">
-                            <option value="Week">Week</option>
-                            <option value="Day">Day</option>
-                            <option value="Month">Month</option>
-                        </select>
+        <!-- Search and Filter Controls -->
+        <div class="bg-white rounded-xl shadow-md p-5 mb-8">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-grow">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input type="text" id="event-search"
+                               class="pl-10 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                               placeholder="Search events by name, type, or venue...">
                     </div>
                 </div>
-                <div class="form-group show-week">
-                    <span class="block font-medium text-gray-700">Repeat On:</span>
-                    <div class="flex space-x-4">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="su">
-                            <label class="form-check-label text-gray-600">S</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="m">
-                            <label class="form-check-label text-gray-600">M</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="tu">
-                            <label class="form-check-label text-gray-600">T</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="w">
-                            <label class="form-check-label text-gray-600">W</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="th">
-                            <label class="form-check-label text-gray-600">T</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="f">
-                            <label class="form-check-label text-gray-600">F</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="sa">
-                            <label class="form-check-label text-gray-600">S</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <span class="block font-medium text-gray-700">Until:</span>
-                    <input type="date" id="untilDate"
-                           class="block w-full border border-gray-300 rounded px-2 py-1 text-gray-700" />
-                </div>
-                <div class="form-group">
-                    <span class="block font-medium text-gray-700">After:</span>
-                    <div class="flex items-center space-x-2">
-                        <input type="number" id="afterNumTimes" min="1"
-                               class="w-16 border border-gray-300 rounded px-2 py-1 text-gray-700" />
-                        <span class="text-gray-600">occurrences</span>
-                    </div>
+                <div class="flex gap-4">
+                    <select id="status-filter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <option value="all">All Events</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="past">Past</option>
+                        <option value="today">Today</option>
+                    </select>
+                    <select id="venue-filter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <option value="all">All Venues</option>
+                        <!-- Venues will be populated by JavaScript -->
+                    </select>
                 </div>
             </div>
-            <div class="bg-gray-100 border-t border-gray-200 px-4 py-3 flex justify-end space-x-4">
-                <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                        onclick="closeModal('myModalRepeatTime')">
-                    Close
-                </button>
-                <button id="saveRepeatTime"
-                        class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-700">
-                    Save
-                </button>
+        </div>
+
+        <!-- Events List -->
+        <div id="events-container" class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="p-12 flex justify-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+            </div>
+
+            <!-- Events Table -->
+            <div class="overflow-x-auto">
+                <table id="events-table" class="min-w-full divide-y divide-gray-200 hidden">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venue</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="events-list" class="bg-white divide-y divide-gray-200">
+                    <!-- Events will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- No Events Message -->
+            <div id="no-events-message" class="hidden p-12 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">No events found</h3>
+                <p class="mt-2 text-gray-500">You haven't created any events yet or no events match your filters.</p>
+                <div class="mt-6">
+                    <a href="@Url.Action("CreateEvent", "Events")"
+                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Create Your First Event
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('myModal');
-        if (modal) {
-            modal.addEventListener('click', function() {
-                console.log('Modal clicked!');
+<!-- Event Details Modal -->
+<div id="event-details-modal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex justify-between items-center rounded-t-lg">
+            <h4 class="text-lg font-bold text-white" id="modal-event-title">Event Details</h4>
+            <button type="button" class="text-white hover:text-gray-200" onclick="closeModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-6 space-y-4" id="modal-event-details">
+            <!-- Event details will be populated here -->
+        </div>
+        <div class="bg-gray-100 border-t border-gray-200 px-6 py-4 flex justify-end space-x-4 rounded-b-lg">
+            <a id="modal-edit-link" href="#" class="px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-700 transition-colors">
+                Edit Event
+            </a>
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Variables to store state
+        let allEvents = [];
+        let userVenues = [];
+
+        // On document ready
+        $(document).ready(function() {
+            // Load events and venues
+            loadEvents();
+            loadUserVenues();
+
+            // Set up event listeners
+            $("#event-search").on("input", filterEvents);
+            $("#status-filter").on("change", filterEvents);
+            $("#venue-filter").on("change", filterEvents);
+        });
+
+        // Function to load all events for the current user
+        function loadEvents() {
+            $.ajax({
+                url: '/Events/GetUserEvents',
+                type: 'GET',
+                success: function(data) {
+                    allEvents = data;
+                    renderEvents(allEvents);
+                    $("#loading-indicator").addClass("hidden");
+                    $("#events-table").removeClass("hidden");
+                },
+                error: function(xhr) {
+                    console.error("Error loading events:", xhr);
+                    $("#loading-indicator").addClass("hidden");
+                    $("#no-events-message").removeClass("hidden");
+                }
             });
         }
-    });
-</script>
+
+        // Function to load user's venues for the filter dropdown
+        function loadUserVenues() {
+            $.ajax({
+                url: '/Venue/GetVenuesForUser',
+                type: 'GET',
+                success: function(data) {
+                    userVenues = data;
+                    const venueFilter = $("#venue-filter");
+
+                    // Add venues to dropdown
+                    data.forEach(function(venue) {
+                        venueFilter.append(
+                            $("<option></option>")
+                                .attr("value", venue.id)
+                                .text(venue.name)
+                        );
+                    });
+                }
+            });
+        }
+
+        // Function to render events to the table
+        function renderEvents(events) {
+            const eventsList = $("#events-list");
+            eventsList.empty();
+
+            if (events.length === 0) {
+                $("#events-table").addClass("hidden");
+                $("#no-events-message").removeClass("hidden");
+                return;
+            }
+
+            $("#no-events-message").addClass("hidden");
+            $("#events-table").removeClass("hidden");
+
+            events.forEach(function(event) {
+                const startDate = new Date(event.startDateTime);
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                // Determine status class
+                let statusClass = "";
+                let statusText = "";
+
+                if (startDate < today) {
+                    statusClass = "bg-gray-100 text-gray-800";
+                    statusText = "Past";
+                } else if (startDate.getDate() === today.getDate() &&
+                    startDate.getMonth() === today.getMonth() &&
+                    startDate.getFullYear() === today.getFullYear()) {
+                    statusClass = "bg-green-100 text-green-800";
+                    statusText = "Today";
+                } else {
+                    statusClass = "bg-blue-100 text-blue-800";
+                    statusText = "Upcoming";
+                }
+
+                // Format date and time
+                const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+                const timeOptions = { hour: '2-digit', minute: '2-digit' };
+                const formattedDate = startDate.toLocaleDateString(undefined, dateOptions);
+                const formattedTime = startDate.toLocaleTimeString(undefined, timeOptions);
+
+                // Create table row
+                const row = `
+                    <tr class="hover:bg-gray-50 transition-colors" data-event-id="${event.id}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">${event.name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">${event.eventType ? event.eventType.name : 'N/A'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${formattedDate}</div>
+                            <div class="text-sm text-gray-500">${formattedTime}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${event.venue ? event.venue.name : 'N/A'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="showEventDetails(${event.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                View
+                            </button>
+                            <a href="/Events/Edit/${event.id}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                Edit
+                            </a>
+                            <a href="/Events/Details/${event.id}" class="text-indigo-600 hover:text-indigo-900">
+                                Details
+                            </a>
+                        </td>
+                    </tr>
+                `;
+
+                eventsList.append(row);
+            });
+        }
+
+        // Function to filter events based on search and filters
+        function filterEvents() {
+            const searchTerm = $("#event-search").val().toLowerCase();
+            const statusFilter = $("#status-filter").val();
+            const venueFilter = $("#venue-filter").val();
+
+            let filteredEvents = allEvents;
+
+            // Apply search filter
+            if (searchTerm) {
+                filteredEvents = filteredEvents.filter(function(event) {
+                    return (
+                        (event.name && event.name.toLowerCase().includes(searchTerm)) ||
+                        (event.eventType && event.eventType.name.toLowerCase().includes(searchTerm)) ||
+                        (event.venue && event.venue.name.toLowerCase().includes(searchTerm))
+                    );
+                });
+            }
+
+            // Apply status filter
+            if (statusFilter !== 'all') {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                filteredEvents = filteredEvents.filter(function(event) {
+                    const startDate = new Date(event.startDateTime);
+
+                    if (statusFilter === 'upcoming') {
+                        return startDate > today;
+                    } else if (statusFilter === 'past') {
+                        return startDate < today;
+                    } else if (statusFilter === 'today') {
+                        return startDate.getDate() === today.getDate() &&
+                            startDate.getMonth() === today.getMonth() &&
+                            startDate.getFullYear() === today.getFullYear();
+                    }
+                    return true;
+                });
+            }
+
+            // Apply venue filter
+            if (venueFilter !== 'all') {
+                const venueId = parseInt(venueFilter);
+                filteredEvents = filteredEvents.filter(function(event) {
+                    return event.venueId === venueId;
+                });
+            }
+
+            // Render filtered events
+            renderEvents(filteredEvents);
+        }
+
+        // Function to show event details in modal
+        function showEventDetails(eventId) {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) return;
+
+            const startDate = new Date(event.startDateTime);
+            const endDate = new Date(event.endTime);
+
+            // Format dates
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit' };
+            const formattedStartDate = startDate.toLocaleDateString(undefined, dateOptions);
+            const formattedStartTime = startDate.toLocaleTimeString(undefined, timeOptions);
+            const formattedEndDate = endDate.toLocaleDateString(undefined, dateOptions);
+            const formattedEndTime = endDate.toLocaleTimeString(undefined, timeOptions);
+
+            // Set modal content
+            $("#modal-event-title").text(event.name);
+            $("#modal-edit-link").attr("href", `/Events/Edit/${event.id}`);
+
+            // Build details HTML
+            let detailsHtml = `
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Event Type</h3>
+                        <p class="mt-1 text-sm text-gray-900">${event.eventType ? event.eventType.name : 'N/A'}</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Venue</h3>
+                        <p class="mt-1 text-sm text-gray-900">${event.venue ? event.venue.name : 'N/A'}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Start Date & Time</h3>
+                            <p class="mt-1 text-sm text-gray-900">${formattedStartDate}</p>
+                            <p class="text-sm text-gray-700">${formattedStartTime}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">End Date & Time</h3>
+                            <p class="mt-1 text-sm text-gray-900">${formattedEndDate}</p>
+                            <p class="text-sm text-gray-700">${formattedEndTime}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $("#modal-event-details").html(detailsHtml);
+
+            // Show modal
+            $("#event-details-modal").removeClass("hidden");
+        }
+
+        // Function to close modal
+        function closeModal() {
+            $("#event-details-modal").addClass("hidden");
+        }
+    </script>
+}

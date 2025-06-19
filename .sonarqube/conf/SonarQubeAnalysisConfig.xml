@@ -9,7 +9,7 @@
   <HasBeginStepCommandLineCredentials>true</HasBeginStepCommandLineCredentials>
   <HasBeginStepCommandLineTruststorePassword>false</HasBeginStepCommandLineTruststorePassword>
   <SonarQubeHostUrl>http://192.168.4.253:9000</SonarQubeHostUrl>
-  <SonarQubeVersion>25.5.0.107428</SonarQubeVersion>
+  <SonarQubeVersion>25.6.0.109173</SonarQubeVersion>
   <SonarProjectKey>PtixiakiReservations</SonarProjectKey>
   <AdditionalConfig>
     <ConfigSetting Id="BuildUri" />
@@ -22,6 +22,7 @@
   <ServerSettings>
     <Property Name="sonar.cs.ignoreHeaderComments">true</Property>
     <Property Name="sonar.typescript.file.suffixes">.ts,.tsx,.cts,.mts</Property>
+    <Property Name="sonar.ai.codefix.hidden">false</Property>
     <Property Name="sonar.python.xunit.skipDetails">false</Property>
     <Property Name="sonar.ipynb.file.suffixes">ipynb</Property>
     <Property Name="sonar.auth.saml.signature.enabled">false</Property>
@@ -62,14 +63,14 @@
     <Property Name="sonar.ruby.exclusions">**/vendor/**</Property>
     <Property Name="sonar.auth.saml.enabled">false</Property>
     <Property Name="sonar.vbnet.file.suffixes">.vb</Property>
-    <Property Name="sonar.vbnet.analyzer.dotnet.pluginVersion">10.9.0.115408</Property>
+    <Property Name="sonar.vbnet.analyzer.dotnet.pluginVersion">10.10.1.116480</Property>
     <Property Name="sonar.technicalDebt.developmentCost">30</Property>
     <Property Name="sonar.validateWebhooks">true</Property>
     <Property Name="sonar.python.file.suffixes">py</Property>
     <Property Name="sonar.cs.file.suffixes">.cs,.razor</Property>
     <Property Name="sonar.allowPermissionManagementForProjectAdmins">true</Property>
     <Property Name="sonar.text.inclusions.activate">true</Property>
-    <Property Name="sonaranalyzer-vbnet.staticResourceName">SonarAnalyzer-vbnet-10.9.0.115408.zip</Property>
+    <Property Name="sonaranalyzer-vbnet.staticResourceName">SonarAnalyzer-vbnet-10.10.1.116480.zip</Property>
     <Property Name="sonar.java.file.suffixes">.java,.jav</Property>
     <Property Name="sonar.kotlin.file.suffixes">.kt,.kts</Property>
     <Property Name="sonar.php.file.suffixes">php,php3,php4,php5,phtml,inc</Property>
@@ -105,45 +106,45 @@
     <Property Name="sonar.terraform.activate">true</Property>
     <Property Name="sonar.auth.github.webUrl">https://github.com/</Property>
     <Property Name="sonar.php.frameworkDetection">true</Property>
-    <Property Name="sonar.cs.analyzer.dotnet.pluginVersion">10.9.0.115408</Property>
-    <Property Name="sonaranalyzer-vbnet.pluginVersion">10.9.0.115408</Property>
+    <Property Name="sonar.cs.analyzer.dotnet.pluginVersion">10.10.1.116480</Property>
+    <Property Name="sonaranalyzer-vbnet.pluginVersion">10.10.1.116480</Property>
     <Property Name="sonar.dbcleaner.weeksBeforeKeepingOnlyOneSnapshotByWeek">4</Property>
     <Property Name="sonaranalyzer-vbnet.analyzerId">SonarAnalyzer.VisualBasic</Property>
     <Property Name="sonar.cs.roslyn.ignoreIssues">false</Property>
     <Property Name="sonaranalyzer-cs.pluginKey">csharp</Property>
     <Property Name="sonar.kubernetes.activate">true</Property>
     <Property Name="sonar.java.ignoreUnnamedModuleForSplitPackage">False</Property>
-    <Property Name="sonar.vbnet.analyzer.dotnet.staticResourceName">SonarAnalyzer-vbnet-10.9.0.115408.zip</Property>
+    <Property Name="sonar.vbnet.analyzer.dotnet.staticResourceName">SonarAnalyzer-vbnet-10.10.1.116480.zip</Property>
     <Property Name="sonar.json.file.suffixes">.json</Property>
     <Property Name="sonar.auth.saml.providerName">SAML</Property>
     <Property Name="provisioning.github.project.visibility.enabled">true</Property>
     <Property Name="sonar.ruby.coverage.reportPaths">coverage/.resultset.json</Property>
     <Property Name="sonar.text.inclusions">**/*.sh,**/*.bash,**/*.zsh,**/*.ksh,**/*.ps1,**/*.properties,**/*.conf,**/*.pem,**/*.config,.env,.aws/config</Property>
     <Property Name="sonar.qualityProfiles.allowDisableInheritedRules">true</Property>
-    <Property Name="sonaranalyzer-cs.staticResourceName">SonarAnalyzer-csharp-10.9.0.115408.zip</Property>
+    <Property Name="sonaranalyzer-cs.staticResourceName">SonarAnalyzer-csharp-10.10.1.116480.zip</Property>
     <Property Name="sonar.auth.gitlab.allowUsersToSignUp">true</Property>
     <Property Name="sonar.projectCreation.mainBranchName">main</Property>
-    <Property Name="sonar.cs.analyzer.dotnet.staticResourceName">SonarAnalyzer-csharp-10.9.0.115408.zip</Property>
+    <Property Name="sonar.cs.analyzer.dotnet.staticResourceName">SonarAnalyzer-csharp-10.10.1.116480.zip</Property>
     <Property Name="sonar.authenticator.downcase">false</Property>
     <Property Name="sonaranalyzer-cs.analyzerId">SonarAnalyzer.CSharp</Property>
     <Property Name="sonar.cs.analyzer.dotnet.pluginKey">csharp</Property>
     <Property Name="sonar.technicalDebt.ratingGrid">0.05,0.1,0.2,0.5</Property>
     <Property Name="sonar.lf.enableGravatar">false</Property>
     <Property Name="sonar.docker.activate">true</Property>
-    <Property Name="sonaranalyzer-cs.pluginVersion">10.9.0.115408</Property>
+    <Property Name="sonaranalyzer-cs.pluginVersion">10.10.1.116480</Property>
     <Property Name="sonar.developerAggregatedInfo.disabled">false</Property>
     <Property Name="sonar.plugins.downloadOnlyRequired">true</Property>
     <Property Name="sonar.azureresourcemanager.file.suffixes">.bicep</Property>
     <Property Name="sonar.javascript.file.suffixes">.js,.jsx,.cjs,.mjs,.vue</Property>
     <Property Name="sonar.vbnet.analyzeGeneratedCode">false</Property>
-    <Property Name="sonar.plugins.risk.consent">ACCEPTED</Property>
+    <Property Name="sonar.plugins.risk.consent">NOT_ACCEPTED</Property>
     <Property Name="sonar.auth.gitlab.url">https://gitlab.com</Property>
     <Property Name="sonar.scanner.skipNodeProvisioning">false</Property>
     <Property Name="sonaranalyzer-vbnet.pluginKey">vbnet</Property>
     <Property Name="sonar.java.jvmframeworkconfig.activate">true</Property>
     <Property Name="sonar.updatecenter.url">https://downloads.sonarsource.com/sonarqube/update/update-center.properties</Property>
-    <Property Name="sonar.core.id">147B411E-AZcsc5-tV5K24Qds0wFm</Property>
-    <Property Name="sonar.core.startTime">6/1/2025 8:12:54 PM</Property>
+    <Property Name="sonar.core.startTime">6/3/2025 4:42:25 PM</Property>
+    <Property Name="sonar.core.id">147B411E-AZc2B26A-fcKT9hZiqod</Property>
   </ServerSettings>
   <LocalSettings>
     <Property Name="sonar.host.url">http://192.168.4.253:9000</Property>
@@ -155,7 +156,7 @@
       <RulesetPath>/Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/.sonarqube/conf/Sonar-cs.ruleset</RulesetPath>
       <DeactivatedRulesetPath>/Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/.sonarqube/conf/Sonar-cs-none.ruleset</DeactivatedRulesetPath>
       <AnalyzerPlugins>
-        <AnalyzerPlugin Key="csharp" Version="10.9.0.115408" StaticResourceName="SonarAnalyzer-csharp-10.9.0.115408.zip">
+        <AnalyzerPlugin Key="csharp" Version="10.10.1.116480" StaticResourceName="SonarAnalyzer-csharp-10.10.1.116480.zip">
           <AssemblyPaths>
             <Path>/var/folders/01/dhm1gcb90s321975_stbfd180000gn/T/.sonarqube/resources/0/THIRD-PARTY-NOTICES.txt</Path>
             <Path>/var/folders/01/dhm1gcb90s321975_stbfd180000gn/T/.sonarqube/resources/0/SonarAnalyzer.CSharp.dll</Path>
@@ -171,7 +172,7 @@
       <RulesetPath>/Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/.sonarqube/conf/Sonar-vbnet.ruleset</RulesetPath>
       <DeactivatedRulesetPath>/Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/.sonarqube/conf/Sonar-vbnet-none.ruleset</DeactivatedRulesetPath>
       <AnalyzerPlugins>
-        <AnalyzerPlugin Key="vbnet" Version="10.9.0.115408" StaticResourceName="SonarAnalyzer-vbnet-10.9.0.115408.zip">
+        <AnalyzerPlugin Key="vbnet" Version="10.10.1.116480" StaticResourceName="SonarAnalyzer-vbnet-10.10.1.116480.zip">
           <AssemblyPaths>
             <Path>/var/folders/01/dhm1gcb90s321975_stbfd180000gn/T/.sonarqube/resources/1/SonarAnalyzer.VisualBasic.dll</Path>
             <Path>/var/folders/01/dhm1gcb90s321975_stbfd180000gn/T/.sonarqube/resources/1/THIRD-PARTY-NOTICES.txt</Path>

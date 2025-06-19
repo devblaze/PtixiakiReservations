@@ -302,35 +302,171 @@ public class EventsController(
     [HttpGet]
     public async Task<IActionResult> CreateEvent()
     {
-        // Get the current user ID
-        var userId = userManager.GetUserId(User);
+        try
+        {
+            // Get the current user ID
+            var userId = userManager.GetUserId(User);
+            logger.LogInformation("Creating event form for user: {UserId}", userId);
 
-        // Fetch the venues associated with the current user
-        var venues = await context.Venue
-            .Where(v => v.UserId == userId)
-            .Select(v => new SelectListItem
+            // Fetch the venues associated with the current user
+            var venues = await context.Venue
+                .Where(v => v.UserId == userId)
+                .Select(v => new SelectListItem
+                {
+                    Value = v.Id.ToString(),
+                    Text = v.Name
+                }).ToListAsync();
+
+            // Check if there are any venues
+            if (venues.Count == 0)
             {
-                Value = v.Id.ToString(),
-                Text = v.Name
-            }).ToListAsync();
+                logger.LogWarning("User {UserId} has no venues to create events for", userId);
+                TempData["ErrorMessage"] = "You need to create a venue before you can create an event.";
+                return RedirectToAction("Create", "Venue");
+            }
 
-        // Pass the venues to the view via ViewBag
-        ViewBag.VenueList = venues;
+            // Pass the venues to the view via ViewBag
+            ViewBag.VenueList = venues;
 
-        var eventTypes = context.EventType.ToList();
-        ViewBag.EventTypeList = new SelectList(eventTypes, "Id", "Name");
+            // Get event types for dropdown
+            var eventTypes = await context.EventType.ToListAsync();
+            if (eventTypes.Count == 0)
+            {
+                logger.LogWarning("No event types found in the database");
+                TempData["ErrorMessage"] = "No event types are available. Please contact an administrator.";
+                return RedirectToAction("Index");
+            }
 
-        return View(new Event());
+            ViewBag.EventTypeList = new SelectList(eventTypes, "Id", "Name");
+
+            // Return the create form with an empty Event model
+            return View(new Event());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error preparing create event form");
+            TempData["ErrorMessage"] = "An error occurred while preparing the form. Please try again.";
+            return RedirectToAction("Index");
+        }
     }
 
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateEvent(Event newEvent)
+    public async Task<IActionResult> CreateEvent(Event newEvent, bool IsMultiDay = false, string StartDate = null,
+        string EndDate = null, string StartTime = null, string EndTime = null)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            // Reload venues for the dropdown
+            logger.LogInformation("Processing event creation. IsMultiDay: {IsMultiDay}", IsMultiDay);
+            var userId = userManager.GetUserId(User);
+
+            // For debugging
+            logger.LogInformation("Received event data: Name={Name}, VenueId={VenueId}, EventTypeId={EventTypeId}",
+                newEvent.Name, newEvent.VenueId, newEvent.EventTypeId);
+
+            // Check model state
+            if (!ModelState.IsValid)
+            {
+                logger.LogWarning("Model state is invalid. Errors: {Errors}",
+                    string.Join(", ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)));
+
+                // Reload the dropdowns for the form
+                var venues = await context.Venue
+                    .Where(v => v.UserId == userId)
+                    .Select(v => new SelectListItem
+                    {
+                        Value = v.Id.ToString(),
+                        Text = v.Name
+                    }).ToListAsync();
+
+                ViewBag.VenueList = venues;
+                ViewBag.EventTypeList = new SelectList(await context.EventType.ToListAsync(), "Id", "Name");
+
+                return View(newEvent);
+            }
+
+            // Verify venue belongs to the current user
+            var venue = await context.Venue.FirstOrDefaultAsync(v => v.Id == newEvent.VenueId && v.UserId == userId);
+            if (venue == null)
+            {
+                logger.LogWarning("User {UserId} attempted to create event for venue {VenueId} they don't own", userId,
+                    newEvent.VenueId);
+                ModelState.AddModelError("VenueId", "You can only create events for venues you own.");
+
+                // Reload the dropdowns for the form
+                ViewBag.VenueList = await context.Venue
+                    .Where(v => v.UserId == userId)
+                    .Select(v => new SelectListItem
+                    {
+                        Value = v.Id.ToString(),
+                        Text = v.Name
+                    }).ToListAsync();
+
+                ViewBag.EventTypeList = new SelectList(await context.EventType.ToListAsync(), "Id", "Name");
+
+                return View(newEvent);
+            }
+
+            if (IsMultiDay && !string.IsNullOrEmpty(StartDate) && !string.IsNullOrEmpty(EndDate)
+                && !string.IsNullOrEmpty(StartTime) && !string.IsNullOrEmpty(EndTime))
+            {
+                // Handle multi-day event creation
+                logger.LogInformation("Creating multi-day events from {StartDate} to {EndDate}", StartDate, EndDate);
+
+                DateTime startDate = DateTime.Parse(StartDate);
+                DateTime endDate = DateTime.Parse(EndDate);
+                TimeSpan startTimeSpan = TimeSpan.Parse(StartTime);
+                TimeSpan endTimeSpan = TimeSpan.Parse(EndTime);
+
+                // Create events for each day in the range
+                for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+                {
+                    var eventForDay = new Event
+                    {
+                        Name = newEvent.Name,
+                        VenueId = newEvent.VenueId,
+                        EventTypeId = newEvent.EventTypeId,
+                        StartDateTime = date.Add(startTimeSpan),
+                        EndTime = date.Add(endTimeSpan)
+                    };
+
+                    context.Add(eventForDay);
+                }
+
+                await context.SaveChangesAsync();
+
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                // Handle single event creation
+                logger.LogInformation("Creating single event on {Date}", newEvent.StartDateTime);
+
+                // Make sure StartDateTime and EndTime are properly set
+                if (newEvent.StartDateTime == DateTime.MinValue)
+                {
+                    newEvent.StartDateTime = DateTime.Now;
+                }
+
+                if (newEvent.EndTime == DateTime.MinValue)
+                {
+                    newEvent.EndTime = newEvent.StartDateTime.AddHours(2);
+                }
+
+                context.Add(newEvent);
+                await context.SaveChangesAsync();
+
+                return RedirectToAction("Index");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating event");
+
+            // Reload the dropdowns for the form
             var userId = userManager.GetUserId(User);
             ViewBag.VenueList = await context.Venue
                 .Where(v => v.UserId == userId)
@@ -340,15 +476,11 @@ public class EventsController(
                     Text = v.Name
                 }).ToListAsync();
 
-            return View(newEvent); // Return the form with validation errors
+            ViewBag.EventTypeList = new SelectList(await context.EventType.ToListAsync(), "Id", "Name");
+
+            ModelState.AddModelError("", "An error occurred while creating the event. Please try again.");
+            return View(newEvent);
         }
-
-        newEvent.FamilyEventId ??= 1;
-
-        context.Event.Add(newEvent);
-        await context.SaveChangesAsync();
-
-        return RedirectToAction(nameof(EventsForToday));
     }
 
     [Authorize]
@@ -704,5 +836,25 @@ public class EventsController(
             message = $"Successfully generated {count} events",
             events = generatedEvents
         });
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> GetUserEvents()
+    {
+        // Get the current user ID
+        var userId = userManager.GetUserId(User);
+
+        // Get all events created by the user
+        var events = await context.Event
+            .Include(e => e.EventType)
+            .Include(e => e.Venue)
+            .Where(e => e.Venue.UserId == userId)
+            .OrderByDescending(e => e.StartDateTime)
+            .ToListAsync();
+
+        logger.LogInformation("Found {Count} events for user {UserId}", events.Count, userId);
+
+        return Json(events);
     }
 }

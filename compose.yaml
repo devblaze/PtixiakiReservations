@@ -10,7 +10,7 @@
     ports:
       - "8080:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Server=${DB_SERVER:-localhost};Database=${DB_NAME:-ReservationProject};User Id=${DB_USER:-sa};Password=${DB_PASSWORD:-placeholder};Trusted_Connection=False;MultipleActiveResultSets=true;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=192.168.4.246;Database=ReservationProject;User Id=sa;Password=Blaze2310;TrustServerCertificate=True;MultipleActiveResultSets=true
       - ElasticSettings__Uri=http://${ES_HOST:-elasticsearch}:9200
     networks:
       - reservations

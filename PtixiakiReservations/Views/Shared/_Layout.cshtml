@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - Reservations</title>
+    <title>EventSphere - @ViewData["Title"]</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="~/css/site.css"/>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -23,8 +23,22 @@
             <div class="relative flex items-center justify-between h-16">
                 <!-- Logo -->
                 <div class="flex-shrink-0">
-                    <a href="/" class="text-white text-lg font-medium">
-                        Reservations
+                    <a href="/" class="text-white text-lg font-medium flex items-center">
+                        <!-- SVG Logo -->
+                        <svg class="h-8 w-8 mr-2" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="20" fill="url(#gradient)" />
+                            <path d="M15 25C15 20.5817 18.5817 17 23 17H27C31.4183 17 35 20.5817 35 25C35 29.4183 31.4183 33 27 33H23C18.5817 33 15 29.4183 15 25Z" fill="white" />
+                            <path d="M19 21H31V23H19V21Z" fill="#4F46E5" />
+                            <path d="M19 25H31V27H19V25Z" fill="#4F46E5" />
+                            <path d="M19 29H31V31H19V29Z" fill="#4F46E5" />
+                            <defs>
+                                <linearGradient id="gradient" x1="10" y1="10" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#3B82F6" />
+                                    <stop offset="1" stop-color="#4F46E5" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        EventSphere
                     </a>
                 </div>
 
@@ -57,9 +71,9 @@
                         <!-- Venue manager links - only visible to venue managers -->
                         @if (isVenueManager || isAdmin)
                         {
-                            <a href="@Url.Action("CreateEvent", "Events")"
+                            <a href="@Url.Action("Index", "Events")"
                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                Create Event
+                                Events
                             </a>
 
                             <a href="@Url.Action("Index", "Venue")"
@@ -128,7 +142,7 @@
                             }
 
                             <!-- Logout Form -->
-                            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Events", new { area = "" })">
+                            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/">
                                 <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Logout</button>
                             </form>
                         </div>
@@ -224,7 +238,7 @@
                     <div class="mt-3 px-2 space-y-1">
                         <a href="@Url.Action("Index", "Profile")" class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Your Profile</a>
                         @* <a href="@Url.Action("Index", "Settings")" class="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Settings</a> *@
-                        <form id="mobile-logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Events", new { area = "" })">
+                        <form id="mobile-logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/">
                             <button type="submit" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700">Logout</button>
                         </form>
                     </div>

@@ -218,6 +218,7 @@
 /Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/PtixiakiReservations/Views/_ViewImports.cshtml
 /Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/PtixiakiReservations/Views/_ViewStart.cshtml
 /Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/.dockerignore
+/Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/PtixiakiReservations/.env
 /Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/PtixiakiReservations/Dockerfile
 /Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/PtixiakiReservations/ScaffoldingReadme.txt
 /Users/nickantoniadis/Documents/Repositories/PtixiakiReservations/PtixiakiReservations/Properties/launchSettings.json
