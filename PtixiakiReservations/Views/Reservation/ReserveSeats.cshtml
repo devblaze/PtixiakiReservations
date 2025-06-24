@@ -103,6 +103,24 @@
                 </div>
             </div>
 
+            <!-- After the Venue section and before the seat selection section -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Select Sub Area</h3>
+
+                <div class="bg-blue-50 p-5 rounded-lg">
+                    <div class="mb-4">
+                        <label for="subAreaSelect" class="block text-sm font-medium text-gray-700 mb-1">Choose a section</label>
+                        <select id="subAreaSelect" class="form-select w-full rounded-md shadow-sm border-gray-300 bg-white text-gray-800">
+                            <option value="">Loading sub areas...</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Select the section where you'd like to sit</p>
+                    </div>
+
+                    <div id="subAreaDetails" class="hidden bg-white p-4 rounded-md border border-blue-200 mt-4">
+                        <!-- SubArea details will be displayed here -->
+                    </div>
+                </div>
+            </div>
             <!-- Seat Selection Section -->
             <div class="mb-8">
                 <h3 class="text-xl font-semibold text-gray-800 mb-4">Select Your Seats</h3>
@@ -189,6 +207,101 @@
         let selectedSeats = [];
         let seatNames = {};
 
+        // Add this to your existing JavaScript in the Scripts section
+        $(document).ready(function() {
+            // Load sub areas for the venue
+            loadSubAreas();
+
+            // Handle sub area selection change
+            $("#subAreaSelect").on("change", function() {
+                const subAreaId = $(this).val();
+                if (subAreaId) {
+                    // Show details about the selected sub area
+                    showSubAreaDetails(subAreaId);
+
+                    // Load seats for this sub area
+                    loadSeats(subAreaId);
+                } else {
+                    // Clear seat canvas and hide details
+                    clearCanvas();
+                    $("#subAreaDetails").addClass("hidden");
+                }
+            });
+
+            function loadSubAreas() {
+                // Get venue ID from the model
+                const venueId = @venueId;
+
+                // Show loading state
+                $("#subAreaSelect").html('<option value="">Loading sub areas...</option>');
+
+                // Fetch sub areas from the API
+                $.getJSON(`/SubAreas/GetSubAreas?venueId=${venueId}`, function(data) {
+                    // Clear the dropdown
+                    $("#subAreaSelect").empty();
+
+                    // Add default option
+                    $("#subAreaSelect").append('<option value="">Select a section</option>');
+
+                    // Add options for each sub area
+                    if (data && data.length > 0) {
+                        data.forEach(function(subArea) {
+                            $("#subAreaSelect").append(`<option value="${subArea.id}">${subArea.areaName}</option>`);
+                        });
+                    } else {
+                        $("#subAreaSelect").html('<option value="">No sections available</option>');
+                    }
+                }).fail(function() {
+                    $("#subAreaSelect").html('<option value="">Error loading sections</option>');
+                });
+            }
+
+            function showSubAreaDetails(subAreaId) {
+                // You can fetch additional details about the sub area if needed
+                // For now, we'll just show a simple message
+                $("#subAreaDetails").html(`
+            <div class="flex items-center">
+                <svg class="h-5 w-5 text-blue-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-sm text-gray-700">Select seats from the seating chart below</span>
+            </div>
+        `).removeClass("hidden");
+            }
+
+            function loadSeats(subAreaId) {
+                // Clear existing canvas
+                clearCanvas();
+
+                // Show loading indicator
+                showLoading();
+
+                // Fetch seats for this sub area and event
+                $.getJSON(`/Seat/get_data?SubAreaId=${subAreaId}&eventId=${@eventId}`, function(data) {
+                    // Remove loading indicator
+                    clearCanvas();
+
+                    if (data && data.length > 0) {
+                        // Render seats on the canvas
+                        renderSeats(data);
+                    } else {
+                        // Show message if no seats available
+                        showNoSeatsMessage();
+                    }
+                }).fail(function() {
+                    clearCanvas();
+                    showErrorMessage();
+                });
+            }
+
+            // Note: You'll need to implement or modify these functions based on your existing code:
+            // - clearCanvas()
+            // - showLoading()
+            // - renderSeats(data)
+            // - showNoSeatsMessage()
+            // - showErrorMessage()
+        });
+
         $(document).ready(function () {
             // Initialize Fabric.js canvas
             const canvas = new fabric.Canvas('seatCanvas', {
@@ -262,86 +375,90 @@
 
             // Handle confirm button click
             $("#confirm-reservation").on("click", function () {
-                if (selectedSeats.length === 0) {
-                    showNotification('Please select at least one seat.', 'warning');
-                    return;
-                }
+                if (selectedSeats.length > 0) {
+                    const subAreaId = $("#subAreaSelect").val();
 
-                // Validate times
-                const startTime = $("#useEventStartTime").is(':checked')
-                    ? $("#startTime").val()
-                    : $("#reservationStartTime").val();
-
-                const endTime = $("#useEventEndTime").is(':checked')
-                    ? $("#endTime").val()
-                    : $("#reservationEndTime").val();
-
-                if (!startTime || !endTime) {
-                    showNotification('Please set valid start and end times.', 'warning');
-                    return;
-                }
-
-                // Calculate duration
-                const timeStart = new Date("01/01/2007 " + startTime);
-                const timeEnd = new Date("01/01/2007 " + endTime);
-                const difference = timeEnd - timeStart;
-
-                if (difference <= 0) {
-                    showNotification('End time must be after start time.', 'warning');
-                    return;
-                }
-
-                // Format duration as "hh:mm:ss"
-                const hours = Math.floor(difference / 3600000).toString().padStart(2, '0');
-                const minutes = Math.floor((difference % 3600000) / 60000).toString().padStart(2, '0');
-                const seconds = Math.floor((difference % 60000) / 1000).toString().padStart(2, '0');
-                const duration = `${hours}:${minutes}:${seconds}`;
-
-                // Create reservation date
-                const eventDate = $("#eventDate").val();
-                const reservationDate = `${eventDate}T${startTime}`;
-
-                // Show loading state
-                $(this).prop('disabled', true)
-                    .html('<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...');
-
-                $.ajax({
-                    url: `/Reservation/MakeRes`,
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        seatIds: selectedSeats,
-                        eventId: eventId,
-                        duration: duration,
-                        resDate: new Date(reservationDate).toISOString()
-                    }),
-                    success: function (response) {
-                        // Show success notification
-                        showNotification('Reservation successful!', 'success');
-                        setTimeout(() => {
-                            window.location.href = "/Reservation/Index";
-                        }, 1500);
-                    },
-                    error: function (xhr) {
-                        // Reset button
-                        $("#confirm-reservation").prop('disabled', false)
-                            .html('<span>Complete Reservation</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>');
-
-                        // Display error message
-                        let errorMessage = "Failed to reserve seats. Please try again.";
-                        if (xhr.responseText) {
-                            try {
-                                const response = JSON.parse(xhr.responseText);
-                                if (typeof response === 'string') {
-                                    errorMessage = response;
-                                }
-                            } catch (e) {
-                                errorMessage = xhr.responseText;
-                            }
-                        }
-                        showNotification(errorMessage, 'error');
+                    if (!subAreaId) {
+                        showNotification('Please select a section.', 'warning');
+                        return;
                     }
-                });
+
+                    // Show loading state
+                    $(this).prop('disabled', true)
+                        .html('<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...');
+
+                    // Get reservation times
+                    const startTime = $("#useEventStartTime").is(":checked")
+                        ? $("#startTime").val()
+                        : $("#reservationStartTime").val();
+
+                    const endTime = $("#useEventEndTime").is(":checked")
+                        ? $("#endTime").val()
+                        : $("#reservationEndTime").val();
+
+                    // Calculate duration
+                    const timeStart = new Date(`2000-01-01T${startTime}`);
+                    const timeEnd = new Date(`2000-01-01T${endTime}`);
+                    const difference = timeEnd - timeStart;
+
+                    if (difference <= 0) {
+                        showNotification('End time must be after start time.', 'error');
+                        $(this).prop('disabled', false)
+                            .html('<span>Confirm Reservation</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>');
+                        return;
+                    }
+
+                    // Format duration as HH:MM:SS
+                    const hours = Math.floor(difference / 3600000).toString().padStart(2, '0');
+                    const minutes = Math.floor((difference % 3600000) / 60000).toString().padStart(2, '0');
+                    const seconds = Math.floor((difference % 60000) / 1000).toString().padStart(2, '0');
+                    const duration = `${hours}:${minutes}:${seconds}`;
+
+                    // Get reservation date
+                    const eventDate = $("#eventDate").val();
+                    const reservationDate = `${eventDate}T${startTime}`;
+
+                    // Submit reservation
+                    $.ajax({
+                        url: `/Reservation/MakeRes`,
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            seatIds: selectedSeats,
+                            eventId: @eventId,
+                            subAreaId: subAreaId,
+                            duration: duration,
+                            resDate: reservationDate
+                        }),
+                        success: function(response) {
+                            showNotification('Reservation successful!', 'success');
+                            setTimeout(() => {
+                                window.location.href = "/Reservation/Index";
+                            }, 1500);
+                        },
+                        error: function(xhr) {
+                            // Reset button
+                            $("#confirm-seats").prop('disabled', false)
+                                .html('<span>Confirm Reservation</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>');
+
+                            // Display error message
+                            let errorMessage = "Failed to reserve seats. Please try again.";
+                            if (xhr.responseText) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    if (typeof response === 'string') {
+                                        errorMessage = response;
+                                    }
+                                } catch (e) {
+                                    errorMessage = xhr.responseText;
+                                }
+                            }
+                            showNotification(errorMessage, 'error');
+                        }
+                    });
+                } else {
+                    showNotification('Please select at least one seat.', 'warning');
+                }
             });
 
             // Clear selection button

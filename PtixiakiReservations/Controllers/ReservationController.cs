@@ -16,8 +16,8 @@ namespace PtixiakiReservations.Controllers;
 
 [Authorize]
 public class ReservationController(
-    ApplicationDbContext context,
-    UserManager<ApplicationUser> userManager,
+    ApplicationDbContext _context,
+    UserManager<ApplicationUser> _userManager,
     RoleManager<ApplicationRole> roleManager)
     : Controller
 {
@@ -40,20 +40,20 @@ public class ReservationController(
         if (flag == true)
         {
             res =
-                context.Reservation.Include(r => r.Event)
+                _context.Reservation.Include(r => r.Event)
                     .Include(r => r.ApplicationUser)
                     .Include(r => r.Seat)
                     .Include(r => r.Seat.SubArea)
                     .Include(r => r.Seat.SubArea.Venue)
-                    .Where(r => r.Seat.SubArea.Venue.UserId == userManager.GetUserId(HttpContext.User)).ToList();
+                    .Where(r => r.Seat.SubArea.Venue.UserId == _userManager.GetUserId(HttpContext.User)).ToList();
 
             res = FilterRes(sortOrder, res);
             return View(res);
         }
 
-        string id = userManager.GetUserId(HttpContext.User);
-        var user = await userManager.FindByIdAsync(id);
-        var tmp1 = await userManager.GetRolesAsync(user);
+        string id = _userManager.GetUserId(HttpContext.User);
+        var user = await _userManager.FindByIdAsync(id);
+        var tmp1 = await _userManager.GetRolesAsync(user);
 
         if (tmp1.Contains("Venue"))
         {
@@ -61,12 +61,12 @@ public class ReservationController(
             TimeSpan span = TimeSpan.FromHours(14);
             TimeSpan span2 = TimeSpan.FromHours(-14);
 
-            res = context.Reservation.Include(r => r.Event)
+            res = _context.Reservation.Include(r => r.Event)
                 .Include(r => r.ApplicationUser)
                 .Include(r => r.Seat)
                 .Include(r => r.Seat.SubArea)
                 .Include(r => r.Seat.SubArea.Venue)
-                .Where(r => r.Seat.SubArea.Venue.UserId == userManager.GetUserId(HttpContext.User)
+                .Where(r => r.Seat.SubArea.Venue.UserId == _userManager.GetUserId(HttpContext.User)
                 ).ToList();
 
 
@@ -124,21 +124,21 @@ public class ReservationController(
 
     public JsonResult isFree(int EventId, int SubAreaId, DateTime ResDate, TimeSpan Duration)
     {
-        var subArea = context.SubArea.SingleOrDefault(s => s.Id == SubAreaId);
-        int numOfSeats = context.Seat.Where(s => s.SubAreaId == SubAreaId).Count();
+        var subArea = _context.SubArea.SingleOrDefault(s => s.Id == SubAreaId);
+        int numOfSeats = _context.Seat.Where(s => s.SubAreaId == SubAreaId).Count();
 
         int[] seatIds = new int[numOfSeats * 2];
 
 
         DateTime NowDateTime = DateTime.Now;
-        var reservations = context.Reservation.Include(r => r.Event).Include(r => r.Seat)
+        var reservations = _context.Reservation.Include(r => r.Event).Include(r => r.Seat)
             .Include(r => r.Seat.SubArea.Venue)
             .Where(r => r.Seat.SubArea.Id == subArea.Id && r.EventId == EventId).ToList();
         int i = 0;
         if (NowDateTime.Date == ResDate.Date)
         {
             var seatsUnAvailable =
-                context.Seat.Where(s => s.SubAreaId == subArea.Id && s.Available == false).ToList();
+                _context.Seat.Where(s => s.SubAreaId == subArea.Id && s.Available == false).ToList();
             foreach (var s in seatsUnAvailable)
             {
                 seatIds[i++] = s.Id;
@@ -163,7 +163,7 @@ public class ReservationController(
     {
         if (id is null) return NotFound();
 
-        var reservations = await context.Reservation
+        var reservations = await _context.Reservation
             .Include(r => r.ApplicationUser)
             .Include(r => r.Event)
             .Include(r => r.Seat)
@@ -180,83 +180,83 @@ public class ReservationController(
     {
         if (eventId is null) return NotFound();
         
-        var ev = context.Event.SingleOrDefault(e => e.Id == eventId);
+        var ev = _context.Event.SingleOrDefault(e => e.Id == eventId);
         
         return View(ev);
     }
 
     [HttpPost]
-    public async Task<IActionResult> MakeRes([FromBody] ReservationRequestViewModel request)
+    public async Task<IActionResult> MakeRes([FromBody] ReservationRequestViewModel model)
     {
-        if (request == null || request.SeatIds == null || !request.SeatIds.Any())
-        {
-            return BadRequest("No seats selected");
-        }
-
         try
         {
-            string userId = userManager.GetUserId(HttpContext.User);
-
-            // Validate the event exists
-            var eventEntity = await context.Event.FindAsync(request.EventId);
-            if (eventEntity == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Event not found");
+                return BadRequest(ModelState);
             }
 
-            // Get the selected seats
-            var seatIds = request.SeatIds;
-            var seats = await context.Seat
-                .Where(s => seatIds.Contains(s.Id))
+            // Get current user
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("You must be logged in to make a reservation.");
+            }
+
+            // Verify the SubArea exists
+            var subArea = await _context.SubArea.FindAsync(model.SubAreaId);
+            if (subArea == null)
+            {
+                return BadRequest("The selected section does not exist.");
+            }
+
+            // Verify all seats are in the selected SubArea
+            var seats = await _context.Seat
+                .Where(s => model.SeatIds.Contains(s.Id))
                 .ToListAsync();
 
-            if (seats.Count != seatIds.Length)
+            if (seats.Count != model.SeatIds.Length)
             {
-                return BadRequest("One or more selected seats do not exist");
+                return BadRequest("One or more selected seats could not be found.");
             }
 
-            // Check if any of the seats are unavailable (not just for this event, but in general)
-            var unavailableSeats = seats.Where(s => !s.Available).ToList();
-            if (unavailableSeats.Any())
+            if (seats.Any(s => s.SubAreaId != model.SubAreaId))
             {
-                return BadRequest(
-                    $"Seat(s) {string.Join(", ", unavailableSeats.Select(s => s.Name))} are not available");
+                return BadRequest("One or more selected seats do not belong to the selected section.");
             }
 
-            // Check for existing reservations for this event
-            var existingReservations = await context.Reservation
-                .Where(r => r.EventId == request.EventId && seatIds.Contains(r.SeatId))
+            // Verify seats are available
+            var existingReservations = await _context.Reservation
+                .Where(r => r.EventId == model.EventId && model.SeatIds.Contains(r.SeatId))
                 .ToListAsync();
 
             if (existingReservations.Any())
             {
-                var reservedSeatIds = existingReservations.Select(r => r.SeatId).ToList();
-                var reservedSeats = seats.Where(s => reservedSeatIds.Contains(s.Id)).Select(s => s.Name);
-                return BadRequest(
-                    $"Seat(s) {string.Join(", ", reservedSeats)} have already been reserved for this event");
+                return BadRequest("One or more seats have already been reserved.");
             }
 
-            // Create reservations
-            foreach (var seatId in seatIds)
+            // Create reservations for each seat
+            var reservations = new List<Reservation>();
+            foreach (var seatId in model.SeatIds)
             {
-                var reservation = new Reservation
+                reservations.Add(new Reservation
                 {
-                    SeatId = seatId,
                     UserId = userId,
-                    EventId = request.EventId,
-                    Duration = request.Duration,
-                    Date = request.ResDate
-                };
-
-                context.Add(reservation);
+                    SeatId = seatId,
+                    EventId = model.EventId,
+                    Date = model.ResDate,
+                    Duration = model.Duration
+                });
             }
 
-            await context.SaveChangesAsync();
-            return Ok("Reservations created successfully");
+            await _context.Reservation.AddRangeAsync(reservations);
+            await _context.SaveChangesAsync();
+
+            return Ok("Reservation successful!");
         }
         catch (Exception ex)
         {
-            return BadRequest($"Error creating reservations: {ex.Message}");
+            // Log the error
+            return StatusCode(500, "An error occurred while processing your reservation.");
         }
     }
 
@@ -268,12 +268,12 @@ public class ReservationController(
             return NotFound();
         }
 
-        var reservations = await context.Reservation.FindAsync(id);
+        var reservations = await _context.Reservation.FindAsync(id);
         if (reservations == null)
         {
             return NotFound();
         }
-        ViewData["userId"] = new SelectList(context.Users, "Id", "Id", reservations.UserId);
+        ViewData["userId"] = new SelectList(_context.Users, "Id", "Id", reservations.UserId);
         return View(reservations);
     }
 
@@ -293,8 +293,8 @@ public class ReservationController(
         {
             try
             {
-                context.Update(reservations);
-                await context.SaveChangesAsync();
+                _context.Update(reservations);
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -309,7 +309,7 @@ public class ReservationController(
             }
             return RedirectToAction(nameof(Index));
         }
-        ViewData["userId"] = new SelectList(context.Users, "Id", "Id", reservations.UserId);
+        ViewData["userId"] = new SelectList(_context.Users, "Id", "Id", reservations.UserId);
         //  ViewData["shopId"] = new SelectList(_context.Shops, "ID", "ID", reservations.shopId);
         return View(reservations);
     }
@@ -322,7 +322,7 @@ public class ReservationController(
             return NotFound();
         }
 
-        var reservations = await context.Reservation
+        var reservations = await _context.Reservation
             .Include(r => r.ApplicationUser)
             // .Include(r => r.shop)
             .FirstOrDefaultAsync(m => m.ID == id);
@@ -339,9 +339,9 @@ public class ReservationController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var reservations = await context.Reservation.FindAsync(id);
-        context.Reservation.Remove(reservations);
-        await context.SaveChangesAsync();
+        var reservations = await _context.Reservation.FindAsync(id);
+        _context.Reservation.Remove(reservations);
+        await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
     
@@ -362,7 +362,7 @@ public class ReservationController(
             return NotFound();
         }
 
-        var eventDetails = await context.Event
+        var eventDetails = await _context.Event
             .Include(e => e.Venue)
             .Include(e => e.Venue.City)
             .Include(e => e.EventType)
@@ -379,8 +379,35 @@ public class ReservationController(
         return View(eventDetails);
     }
 
+    public async Task<IActionResult> SelectSeats(int eventId, int subAreaId, string duration, string resDate)
+    {
+        var subArea = await _context.SubArea
+            .Include(s => s.Venue)
+            .FirstOrDefaultAsync(s => s.Id == subAreaId);
+
+        if (subArea == null)
+        {
+            return NotFound();
+        }
+
+        var @event = await _context.Event.FindAsync(eventId);
+        if (@event == null)
+        {
+            return NotFound();
+        }
+
+        ViewData["EventId"] = eventId;
+        ViewData["SubAreaId"] = subAreaId;
+        ViewData["Duration"] = duration;
+        ViewData["ResDate"] = resDate;
+        ViewData["VenueName"] = subArea.Venue.Name;
+        ViewData["SubAreaName"] = subArea.AreaName;
+
+        return View();
+    }
+
     private bool ReservationsExists(int id)
     {
-        return context.Reservation.Any(e => e.ID == id);
+        return _context.Reservation.Any(e => e.ID == id);
     }
 }

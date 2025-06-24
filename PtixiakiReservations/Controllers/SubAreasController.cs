@@ -39,21 +39,23 @@ namespace PtixiakiReservations.Controllers
             ViewBag.SubAreas = subAreas;
             return View();
         }
-        
-        public IActionResult ChooseSubArea()
-        {
-            return View();
-        }
-            public JsonResult GetSubAreas(int? venueId)
-        {
-            if(venueId == 0)
-            {
-                return null;
-            }
-            var subAreas = _context.SubArea.Where(s => s.VenueId == venueId).ToList();
 
-            return Json(subAreas);
+        public async Task<IActionResult> ChooseSubArea(int venueId, int eventId, string duration, string resDate)
+        {
+            var venue = await _context.Venue.FindAsync(venueId);
+            if (venue == null)
+            {
+                return NotFound();
+            }
+
+            ViewData["EventId"] = eventId;
+            ViewData["VenueId"] = venueId;
+            ViewData["Duration"] = duration;
+            ViewData["ResDate"] = resDate;
+
+            return View(venue);
         }
+        
         // GET: SubAreas/Details/5
         public async Task<IActionResult> Details(int? id)
         {

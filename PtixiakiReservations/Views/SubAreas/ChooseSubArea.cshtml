@@ -1,87 +1,96 @@
-﻿@{
-    ViewData["Title"] = "Choose Sub Area";
+﻿@model PtixiakiReservations.Models.Venue
+
+@{
+    ViewData["Title"] = "Choose Section";
+    var eventId = ViewData["EventId"];
+    var venueId = ViewData["VenueId"];
+    var duration = ViewData["Duration"];
+    var resDate = ViewData["ResDate"];
 }
 
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 my-8">
-    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
-        Choose the Sub Area
-    </h1>
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header with gradient background -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-6 px-8">
+            <h1 class="text-3xl font-bold text-white">Choose a Section</h1>
+            <p class="text-blue-100 mt-2">Select where you want to sit in @Model.Name</p>
+        </div>
 
-    <div class="border-b mb-5 border-gray-300 dark:border-gray-700"></div>
-
-    <div class="flex justify-center">
-        <canvas id="c" width="800" height="600" class="border border-gray-400 dark:border-gray-600 rounded-md shadow-lg bg-gray-50 dark:bg-gray-700"></canvas>
-    </div>
-
-    <div class="mt-6 text-center text-sm text-gray-600 dark:text-gray-300 italic">
-        Click on a sub area to select seats.
+        <div class="p-6">
+            <!-- Section list -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4" id="subAreaContainer">
+                <div class="col-span-full text-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Loading sections...</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-@section Scripts{
+@section Scripts {
     <script>
-        const canvas = new fabric.Canvas('c');
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const venueId = urlParams.get('VenueId');
-        const eventId = urlParams.get('EventId');
-        const duration = urlParams.get('Duration');
-        const date = urlParams.get('ResDate');
-
-        canvas.on('mouse:down', function (evt) {
-            const selected = evt.target;
-            if (selected && selected.get("id")) {
-                const subAreaId = selected.get('id');
-                window.location.href = `/Seat/Index/?SubAreaId=${subAreaId}&EventId=${eventId}&Duration=${duration}&ResDate=${date}`;
-            }
-        });
-
         $(document).ready(function () {
-            $.ajax({
-                type: "get",
-                url: '@Url.Action("GetSubAreas", "SubAreas")',
-                dataType: 'json',
-                data: { "venueId": venueId },
-                contentType: 'application/json; charset=utf-8',
-                success: function (subAreas) {
-                    subAreas.forEach(function (area) {
-                        const rect = new fabric.Rect({
-                            width: area.width,
-                            height: area.height,
-                            fill: '#CBD5E1',
-                            stroke: '#64748B',
-                            strokeWidth: 1,
-                            strokeUniform: true,
-                            originX: 'center',
-                            originY: 'center'
-                        });
+            const venueId = @venueId;
+            const eventId = @eventId;
+            const duration = "@duration";
+            const resDate = "@resDate";
 
-                        const text = new fabric.Text(area.areaName, {
-                            fontSize: 14,
-                            originX: 'center',
-                            originY: 'center',
-                            fill: '#334155',
-                            selectable: false,
-                        });
+            // Load sub areas
+            $.getJSON(`/SubAreas/GetSubAreas?venueId=${venueId}`, function (data) {
+                // Clear loading indicator
+                $("#subAreaContainer").empty();
 
-                        const group = new fabric.Group([rect, text], {
-                            left: area.left,
-                            top: area.top,
-                            angle: area.rotate,
-                            hasControls: false,
-                            selectable: false,
-                            lockMovementX: true,
-                            lockMovementY: true,
-                            id: area.id,
-                            hoverCursor: 'pointer'
-                        });
+                if (data && data.length > 0) {
+                    // Render sub areas
+                    data.forEach(function (subArea) {
+                        const card = `
+                            <div class="bg-blue-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                                <div class="p-5">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">${subArea.areaName}</h3>
+                                    <p class="text-sm text-gray-600 mb-4">${subArea.desc || 'No description available'}</p>
+                                    <a href="/Reservation/SelectSeats?eventId=${eventId}&subAreaId=${subArea.id}&duration=${duration}&resDate=${encodeURIComponent(resDate)}" 
+                                       class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                        Select Seats
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        `;
 
-                        canvas.add(group);
+                        $("#subAreaContainer").append(card);
                     });
-                },
-                error: function () {
-                    alert("Failed to load sub areas.");
+                } else {
+                    // No sub areas available
+                    $("#subAreaContainer").html(`
+                        <div class="col-span-full bg-gray-50 rounded-lg p-8 text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <h3 class="mt-4 text-lg font-medium text-gray-900">No sections available</h3>
+                            <p class="mt-2 text-gray-500">This venue doesn't have any defined sections yet.</p>
+                            <a href="/Events/ReserveSeats?eventId=${eventId}" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Go Back
+                            </a>
+                        </div>
+                    `);
                 }
+            }).fail(function() {
+                // Error loading sub areas
+                $("#subAreaContainer").html(`
+                    <div class="col-span-full bg-red-50 rounded-lg p-8 text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="mt-4 text-lg font-medium text-gray-900">Error Loading Sections</h3>
+                        <p class="mt-2 text-gray-500">We couldn't load the sections for this venue. Please try again.</p>
+                        <a href="/Events/ReserveSeats?eventId=${eventId}" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Go Back
+                        </a>
+                    </div>
+                `);
             });
         });
     </script>
