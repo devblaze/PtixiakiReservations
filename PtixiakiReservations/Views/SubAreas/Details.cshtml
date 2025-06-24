@@ -113,31 +113,31 @@
                 </div>
 
                 <!-- Visual Representation (Placeholder) -->
-                <div class="mt-8 bg-gray-50 rounded-lg p-5 border border-gray-200">
-                    <div class="flex items-center mb-4">
-                        <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                        </div>
-                        <h2 class="ml-3 text-lg font-medium text-gray-800">Visual Representation</h2>
-                    </div>
-
-                    <div class="flex justify-center">
-                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white" style="width: 400px; height: 300px;">
-                            <div class="absolute bg-indigo-100 border border-indigo-300 rounded text-center flex items-center justify-center"
-                                 style="width: @(Model.Width > 0 ? Math.Min(Model.Width * 4, 380) : 100)px;
-                                 height: @(Model.Height > 0 ? Math.Min(Model.Height * 4, 280) : 75)px;
-                                 top: @(Model.Top > 0 ? Math.Min(Model.Top * 4, 280) : 10)px;
-                                 left: @(Model.Left > 0 ? Math.Min(Model.Left * 4, 380) : 10)px;">
-                                <div class="text-indigo-600 font-medium text-sm">@Model.AreaName</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-center text-sm text-gray-500 mt-2">
-                        This is a simplified visual representation and may not be to scale.
-                    </div>
-                </div>
+                @* <div class="mt-8 bg-gray-50 rounded-lg p-5 border border-gray-200"> *@
+                @*     <div class="flex items-center mb-4"> *@
+                @*         <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600"> *@
+                @*             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"> *@
+                @*                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /> *@
+                @*             </svg> *@
+                @*         </div> *@
+                @*         <h2 class="ml-3 text-lg font-medium text-gray-800">Visual Representation</h2> *@
+                @*     </div> *@
+                @* *@
+                @*     <div class="flex justify-center"> *@
+                @*         <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white" style="width: 400px; height: 300px;"> *@
+                @*             <div class="absolute bg-indigo-100 border border-indigo-300 rounded text-center flex items-center justify-center" *@
+                @*                  style="width: @(Model.Width > 0 ? Math.Min(Model.Width * 4, 380) : 100)px; *@
+                @*                  height: @(Model.Height > 0 ? Math.Min(Model.Height * 4, 280) : 75)px; *@
+                @*                  top: @(Model.Top > 0 ? Math.Min(Model.Top * 4, 280) : 10)px; *@
+                @*                  left: @(Model.Left > 0 ? Math.Min(Model.Left * 4, 380) : 10)px;"> *@
+                @*                 <div class="text-indigo-600 font-medium text-sm">@Model.AreaName</div> *@
+                @*             </div> *@
+                @*         </div> *@
+                @*     </div> *@
+                @*     <div class="text-center text-sm text-gray-500 mt-2"> *@
+                @*         This is a simplified visual representation and may not be to scale. *@
+                @*     </div> *@
+                @* </div> *@
 
                 <!-- Action Buttons at Bottom -->
                 <div class="mt-8 flex justify-between items-center border-t border-gray-200 pt-6">

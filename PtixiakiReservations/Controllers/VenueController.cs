@@ -46,40 +46,55 @@ namespace PtixiakiReservations.Controllers
             var venues2 = await _context.Venue.Include(v => v.City).Where(v => v.City.Name == city).ToListAsync();
             return View(venues2);
         }
-
-        // GET: Shops/Details/5
-        [Authorize(Roles = "Admin")]
+        
         [Authorize(Roles = "Venue")]
-        public IActionResult Edit()
+        public async Task<IActionResult> MyVenues()
         {
-            string tmp = _userManager.GetUserId(HttpContext.User);
+            string userId = _userManager.GetUserId(HttpContext.User);
+            var venues = await _context.Venue
+                .Include(v => v.City)
+                .Where(v => v.UserId == userId)
+                .ToListAsync();
 
-            if (tmp == null)
+            return View(venues);
+        }
+
+        // GET: Venue/Edit/5
+        [Authorize(Roles = "Admin,Venue")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
             {
-                ViewBag.Error = string.Format("Something Went Wrong");
-                return View("Error");
+                return NotFound();
             }
 
-            var Venue = _context.Venue.Include(v => v.City)
+            var venue = await _context.Venue
+                .Include(v => v.City)
                 .Include(v => v.ApplicationUser)
-                .FirstOrDefault(s => s.UserId.Equals(tmp));
+                .FirstOrDefaultAsync(v => v.Id == id);
 
-            if (Venue == null)
+            if (venue == null)
             {
-                ViewBag.Error = string.Format("Something Went Wrong");
-                return View("Error");
+                return NotFound();
             }
 
-            ViewBag.SelectedCity = Venue.City.Name;
+            // Allow venue managers to edit their own venues, and admins to edit any venue
+            if (!User.IsInRole("Admin") && _userManager.GetUserId(HttpContext.User) != venue.UserId)
+            {
+                return Forbid();
+            }
+
+            ViewBag.SelectedCity = venue.City.Name;
 
             VenueViewModel viewModel = new VenueViewModel
             {
-                Name = Venue.Name,
-                Address = Venue.Address,
-                PostalCode = Venue.PostalCode,
-                CityId = Venue.City.Id,
-                Phone = Venue.Phone,
-                UserId = _userManager.GetUserId(HttpContext.User)
+                Id = venue.Id,  // Add Id to the view model
+                Name = venue.Name,
+                Address = venue.Address,
+                PostalCode = venue.PostalCode,
+                CityId = venue.CityId,
+                Phone = venue.Phone,
+                UserId = venue.UserId
             };
 
             ViewBag.ListOfCity = _context.City.ToList();
@@ -202,30 +217,31 @@ namespace PtixiakiReservations.Controllers
             return View("Error");
         }
 
-        // GET: Shops/Edit/5
-        public IActionResult Details(int? id)
+        // GET: Venue/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
             if (id is null)
             {
-                ViewBag.Error = string.Format("Something Went Wrong");
-                return View("Error");
+                return NotFound();
             }
 
-            var venue = _context.Venue.Include(v => v.City).FirstOrDefault(v => v.Id == id);
-
-            if (_userManager.GetUserId(HttpContext.User) != venue.UserId)
+            var venue = await _context.Venue
+                .Include(v => v.City)
+                .FirstOrDefaultAsync(v => v.Id == id);
+        
+            if (venue == null)
             {
-                ViewBag.Error = string.Format("Something Went Wrong");
-                return View("Error");
+                return NotFound();
+            }
+
+            // Allow venue managers to view their own venues, and admins to view any venue
+            if (!User.IsInRole("Admin") && _userManager.GetUserId(HttpContext.User) != venue.UserId)
+            {
+                return Forbid();
             }
 
             return View(venue);
         }
-
-        // POST: Shops/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-
 
         // GET: Shops/Delete/5
         public async Task<IActionResult> Delete(int? id)

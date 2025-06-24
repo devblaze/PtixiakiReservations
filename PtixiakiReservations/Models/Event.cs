@@ -13,6 +13,8 @@ public class Event
     [ForeignKey("EventTypeId")] public EventType EventType { get; set; }
     public int VenueId { get; set; }
     [ForeignKey("VenueId")] public Venue Venue { get; set; }
+    public int? SubAreaId { get; set; }
+    [ForeignKey("SubAreaId")] public SubArea SubArea { get; set; }
     public int? FamilyEventId { get; set; }
     [ForeignKey("FamilyEventId")] public FamilyEvent FamilyEvent { get; set; }
 }

@@ -941,4 +941,237 @@ public class EventsController(
             return Json(new List<object>());
         }
     }
+
+    [HttpGet]
+    public JsonResult GetSubAreas(int venueId)
+    {
+        var subAreas = context.SubArea
+            .Where(sa => sa.VenueId == venueId)
+            .Select(sa => new { id = sa.Id, areaName = sa.AreaName })
+            .ToList();
+
+        return Json(subAreas);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        // Get the current user ID
+        var userId = userManager.GetUserId(User);
+
+        // Find the event and include related entities
+        var eventToEdit = await context.Event
+            .Include(e => e.Venue)
+            .Include(e => e.EventType)
+            .Include(e => e.SubArea)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (eventToEdit == null)
+        {
+            return NotFound();
+        }
+
+        // Check if the current user owns the venue associated with this event
+        var venueOwner = await context.Venue
+            .FirstOrDefaultAsync(v => v.Id == eventToEdit.VenueId && v.UserId == userId);
+
+        if (venueOwner == null)
+        {
+            // If the user doesn't own this venue, they can't edit the event
+            logger.LogWarning("User {UserId} attempted to edit event {EventId} they don't own", userId, id);
+            TempData["ErrorMessage"] = "You can only edit events for venues you own.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Get venues for dropdown
+        var venues = await context.Venue
+            .Where(v => v.UserId == userId)
+            .Select(v => new SelectListItem
+            {
+                Value = v.Id.ToString(),
+                Text = v.Name
+            }).ToListAsync();
+
+        ViewBag.VenueList = venues;
+        ViewBag.EventTypeList =
+            new SelectList(await context.EventType.ToListAsync(), "Id", "Name", eventToEdit.EventTypeId);
+
+        // Get sub areas for the selected venue
+        var subAreas = await context.SubArea
+            .Where(sa => sa.VenueId == eventToEdit.VenueId)
+            .Select(sa => new SelectListItem
+            {
+                Value = sa.Id.ToString(),
+                Text = sa.AreaName
+            }).ToListAsync();
+
+        ViewBag.SubAreaList = subAreas;
+
+        return View(eventToEdit);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, Event updatedEvent)
+    {
+        if (id != updatedEvent.Id)
+        {
+            return NotFound();
+        }
+
+        // Get the current user ID
+        var userId = userManager.GetUserId(User);
+
+        // Verify the venue belongs to the current user
+        var venue = await context.Venue
+            .FirstOrDefaultAsync(v => v.Id == updatedEvent.VenueId && v.UserId == userId);
+
+        if (venue == null)
+        {
+            logger.LogWarning("User {UserId} attempted to edit event for venue {VenueId} they don't own",
+                userId, updatedEvent.VenueId);
+            ModelState.AddModelError("VenueId", "You can only edit events for venues you own.");
+
+            // Reload the form data
+            ViewBag.VenueList = await context.Venue
+                .Where(v => v.UserId == userId)
+                .Select(v => new SelectListItem
+                {
+                    Value = v.Id.ToString(),
+                    Text = v.Name
+                }).ToListAsync();
+
+            ViewBag.EventTypeList = new SelectList(await context.EventType.ToListAsync(), "Id", "Name");
+
+            // Get sub areas for the selected venue
+            ViewBag.SubAreaList = await context.SubArea
+                .Where(sa => sa.VenueId == updatedEvent.VenueId)
+                .Select(sa => new SelectListItem
+                {
+                    Value = sa.Id.ToString(),
+                    Text = sa.AreaName
+                }).ToListAsync();
+
+            return View(updatedEvent);
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                // Get the original event to update only allowed fields
+                var originalEvent = await context.Event.FindAsync(id);
+                if (originalEvent == null)
+                {
+                    return NotFound();
+                }
+
+                // Update only the fields that should be editable
+                originalEvent.Name = updatedEvent.Name;
+                originalEvent.StartDateTime = updatedEvent.StartDateTime;
+                originalEvent.EndTime = updatedEvent.EndTime;
+                originalEvent.EventTypeId = updatedEvent.EventTypeId;
+                originalEvent.VenueId = updatedEvent.VenueId;
+                originalEvent.SubAreaId = updatedEvent.SubAreaId;
+
+                await context.SaveChangesAsync();
+
+                logger.LogInformation("Event {EventId} updated successfully by user {UserId}", id, userId);
+                TempData["SuccessMessage"] = "Event updated successfully.";
+
+                return RedirectToAction(nameof(VenueEvents), new { venueId = updatedEvent.VenueId });
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                logger.LogError(ex, "Concurrency error when updating event {EventId}", id);
+
+                if (!EventExists(updatedEvent.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    ModelState.AddModelError("", "The event was modified by another user. Please try again.");
+
+                    // Reload the form data
+                    ViewBag.VenueList = await context.Venue
+                        .Where(v => v.UserId == userId)
+                        .Select(v => new SelectListItem
+                        {
+                            Value = v.Id.ToString(),
+                            Text = v.Name
+                        }).ToListAsync();
+
+                    ViewBag.EventTypeList = new SelectList(await context.EventType.ToListAsync(), "Id", "Name");
+
+                    // Get sub areas for the selected venue
+                    ViewBag.SubAreaList = await context.SubArea
+                        .Where(sa => sa.VenueId == updatedEvent.VenueId)
+                        .Select(sa => new SelectListItem
+                        {
+                            Value = sa.Id.ToString(),
+                            Text = sa.AreaName
+                        }).ToListAsync();
+
+                    return View(updatedEvent);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error updating event {EventId}", id);
+                ModelState.AddModelError("", "An error occurred while updating the event. Please try again.");
+
+                // Reload the form data
+                ViewBag.VenueList = await context.Venue
+                    .Where(v => v.UserId == userId)
+                    .Select(v => new SelectListItem
+                    {
+                        Value = v.Id.ToString(),
+                        Text = v.Name
+                    }).ToListAsync();
+
+                ViewBag.EventTypeList = new SelectList(await context.EventType.ToListAsync(), "Id", "Name");
+
+                // Get sub areas for the selected venue
+                ViewBag.SubAreaList = await context.SubArea
+                    .Where(sa => sa.VenueId == updatedEvent.VenueId)
+                    .Select(sa => new SelectListItem
+                    {
+                        Value = sa.Id.ToString(),
+                        Text = sa.AreaName
+                    }).ToListAsync();
+
+                return View(updatedEvent);
+            }
+        }
+
+        // If model state is invalid
+        ViewBag.VenueList = await context.Venue
+            .Where(v => v.UserId == userId)
+            .Select(v => new SelectListItem
+            {
+                Value = v.Id.ToString(),
+                Text = v.Name
+            }).ToListAsync();
+
+        ViewBag.EventTypeList = new SelectList(await context.EventType.ToListAsync(), "Id", "Name");
+
+        // Get sub areas for the selected venue
+        ViewBag.SubAreaList = await context.SubArea
+            .Where(sa => sa.VenueId == updatedEvent.VenueId)
+            .Select(sa => new SelectListItem
+            {
+                Value = sa.Id.ToString(),
+                Text = sa.AreaName
+            }).ToListAsync();
+
+        return View(updatedEvent);
+    }
 }
