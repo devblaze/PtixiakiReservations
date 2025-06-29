@@ -46,7 +46,7 @@ namespace PtixiakiReservations.Controllers
             var venues2 = await _context.Venue.Include(v => v.City).Where(v => v.City.Name == city).ToListAsync();
             return View(venues2);
         }
-        
+
         [Authorize(Roles = "Venue")]
         public async Task<IActionResult> MyVenues()
         {
@@ -55,6 +55,23 @@ namespace PtixiakiReservations.Controllers
                 .Include(v => v.City)
                 .Where(v => v.UserId == userId)
                 .ToListAsync();
+
+            // Get subarea counts for each venue
+            var subAreaCounts = new Dictionary<int, int>();
+            foreach (var venue in venues)
+            {
+                var count = await _context.SubArea.CountAsync(sa => sa.VenueId == venue.Id);
+                subAreaCounts[venue.Id] = count;
+            }
+
+            ViewBag.SubAreaCounts = subAreaCounts;
+
+            // Count events for all venues managed by this user
+            var eventCount = await _context.Event
+                .Where(e => venues.Select(v => v.Id).Contains(e.VenueId))
+                .CountAsync();
+
+            ViewBag.EventCount = eventCount;
 
             return View(venues);
         }
@@ -104,8 +121,7 @@ namespace PtixiakiReservations.Controllers
 
         [HttpPost]
         [Obsolete]
-        [Authorize(Roles = "Admin")]
-        [Authorize(Roles = "Venue")]
+        [Authorize(Roles = "Venue,Admin")]
         public async Task<IActionResult> Edit(VenueViewModel model)
         {
             Venue venue =
@@ -162,8 +178,7 @@ namespace PtixiakiReservations.Controllers
         }
 
         // GET: Shops/Create
-        [Authorize(Roles = "Venue")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Venue,Admin")]
         public IActionResult Create()
         {
             string id = _userManager.GetUserId(HttpContext.User);

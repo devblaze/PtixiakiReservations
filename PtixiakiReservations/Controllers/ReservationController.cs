@@ -190,73 +190,61 @@ public class ReservationController(
     {
         try
         {
-            if (!ModelState.IsValid)
+            // Validate that the event is not in the past
+            var eventToReserve = await _context.Event.FindAsync(model.EventId);
+            if (eventToReserve == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Event not found");
             }
 
-            // Get current user
-            var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
+            // Ensure we're comparing dates in the same timezone
+            var today = DateTime.Today;
+
+            // Check if the event date is in the past
+            if (eventToReserve.StartDateTime.Date < today)
             {
-                return Unauthorized("You must be logged in to make a reservation.");
+                return BadRequest("Cannot make reservations for past events");
             }
 
-            // Verify the SubArea exists
-            var subArea = await _context.SubArea.FindAsync(model.SubAreaId);
-            if (subArea == null)
+            // Also verify the reservation date is not in the past
+            if (model.ResDate.Date < today)
             {
-                return BadRequest("The selected section does not exist.");
+                return BadRequest("Cannot make reservations with a past date");
             }
 
-            // Verify all seats are in the selected SubArea
-            var seats = await _context.Seat
-                .Where(s => model.SeatIds.Contains(s.Id))
-                .ToListAsync();
+            // Ensure the ResDate is the same date as the event date to prevent off-by-one errors
+            model.ResDate = new DateTime(
+                eventToReserve.StartDateTime.Year,
+                eventToReserve.StartDateTime.Month,
+                eventToReserve.StartDateTime.Day,
+                model.ResDate.Hour,
+                model.ResDate.Minute,
+                model.ResDate.Second);
 
-            if (seats.Count != model.SeatIds.Length)
-            {
-                return BadRequest("One or more selected seats could not be found.");
-            }
+            // Continue with the existing logic to make the reservation
+            var userId = _userManager.GetUserId(HttpContext.User);
+            var user = await _userManager.FindByIdAsync(userId);
 
-            if (seats.Any(s => s.SubAreaId != model.SubAreaId))
-            {
-                return BadRequest("One or more selected seats do not belong to the selected section.");
-            }
-
-            // Verify seats are available
-            var existingReservations = await _context.Reservation
-                .Where(r => r.EventId == model.EventId && model.SeatIds.Contains(r.SeatId))
-                .ToListAsync();
-
-            if (existingReservations.Any())
-            {
-                return BadRequest("One or more seats have already been reserved.");
-            }
-
-            // Create reservations for each seat
-            var reservations = new List<Reservation>();
             foreach (var seatId in model.SeatIds)
             {
-                reservations.Add(new Reservation
+                Reservation res = new Reservation
                 {
+                    Duration = model.Duration,
                     UserId = userId,
-                    SeatId = seatId,
-                    EventId = model.EventId,
+                    ApplicationUser = user,
                     Date = model.ResDate,
-                    Duration = model.Duration
-                });
+                    SeatId = seatId,
+                    EventId = model.EventId
+                };
+                _context.Reservation.Add(res);
             }
 
-            await _context.Reservation.AddRangeAsync(reservations);
             await _context.SaveChangesAsync();
-
-            return Ok("Reservation successful!");
+            return Ok();
         }
         catch (Exception ex)
         {
-            // Log the error
-            return StatusCode(500, "An error occurred while processing your reservation.");
+            return BadRequest(ex.Message);
         }
     }
 

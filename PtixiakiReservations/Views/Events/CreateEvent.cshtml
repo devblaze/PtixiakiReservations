@@ -367,9 +367,6 @@
             const eventPreviewList = document.getElementById('eventPreviewList');
             const eventCountSpan = document.getElementById('eventCount');
 
-            const venueSelect = document.getElementById('VenueId');
-            const subAreaSelect = document.getElementById('SubAreaId');
-
             // Toggle between single and multi-day modes
             multiDayCheckbox.addEventListener('change', function () {
                 if (this.checked) {
@@ -380,43 +377,6 @@
                     singleDayContainer.classList.remove('hidden');
                     multiDayContainer.classList.add('hidden');
                 }
-            });
-
-            // Load sub areas when venue changes
-            venueSelect.addEventListener('change', function() {
-                // Clear current options
-                subAreaSelect.innerHTML = '<option value="">Select a sub area (optional)</option>';
-
-                const venueId = this.value;
-                if (!venueId) return;
-
-                // Show loading state
-                subAreaSelect.disabled = true;
-                subAreaSelect.innerHTML = '<option value="">Loading sub areas...</option>';
-
-                // Fetch sub areas for the selected venue
-                fetch(`/Events/GetSubAreas?venueId=${venueId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Reset select
-                        subAreaSelect.innerHTML = '<option value="">Select a sub area (optional)</option>';
-
-                        // Add options for each sub area
-                        data.forEach(subArea => {
-                            const option = document.createElement('option');
-                            option.value = subArea.id;
-                            option.textContent = subArea.areaName;
-                            subAreaSelect.appendChild(option);
-                        });
-
-                        // Enable select
-                        subAreaSelect.disabled = false;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching sub areas:', error);
-                        subAreaSelect.innerHTML = '<option value="">Error loading sub areas</option>';
-                        subAreaSelect.disabled = false;
-                    });
             });
 
             // Update preview when dates change
