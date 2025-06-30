@@ -12,20 +12,13 @@ namespace PtixiakiReservations.Models.ViewModels
 
     public class ProfileEditViewModel
     {
-        [Required]
-        [Display(Name = "First Name")]
+        public string Id { get; set; }
         public string FirstName { get; set; }
-
-        [Required]
-        [Display(Name = "Last Name")]
         public string LastName { get; set; }
-
-        [Phone]
-        [Display(Name = "Phone Number")]
-        public string PhoneNumber { get; set; }
-
-        [EmailAddress]
-        [Display(Name = "Email")]
         public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public int? CityId { get; set; }
+        public string Address { get; set; }
+        public string PostalCode { get; set; }
     }
 }

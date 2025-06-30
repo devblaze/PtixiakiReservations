@@ -43,6 +43,28 @@
                 <span asp-validation-for="Input.PhoneNumber" class="text-xs text-red-500"></span>
             </div>
 
+            <!-- City -->
+            <div class="form-group">
+                <label asp-for="Input.CityId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                <input id="cityName" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+                <input type="hidden" asp-for="Input.CityId" id="cityId" />
+                <span asp-validation-for="Input.CityId" class="text-xs text-red-500"></span>
+            </div>
+
+            @* <!-- Address --> *@
+            @* <div class="form-group"> *@
+            @*     <label asp-for="Input.Address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label> *@
+            @*     <input asp-for="Input.Address" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" /> *@
+            @*     <span asp-validation-for="Input.Address" class="text-xs text-red-500"></span> *@
+            @* </div> *@
+            @* *@
+            @* <!-- Postal Code --> *@
+            @* <div class="form-group"> *@
+            @*     <label asp-for="Input.PostalCode" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Postal Code</label> *@
+            @*     <input asp-for="Input.PostalCode" class="block w-full mt-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none transition duration-200 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200" /> *@
+            @*     <span asp-validation-for="Input.PostalCode" class="text-xs text-red-500"></span> *@
+            @* </div> *@
+
             <!-- Password -->
             <div class="form-group">
                 <label asp-for="Input.Password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
@@ -67,4 +89,36 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function() {
+            $("#cityName").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "@Url.Action("SearchCities", "ApplicationUser")",
+                        dataType: "json",
+                        data: {
+                            term: request.term
+                        },
+                        success: function(data) {
+                            response($.map(data, function(item) {
+                                return {
+                                    label: item.value,
+                                    value: item.value,
+                                    id: item.id
+                                };
+                            }));
+                        }
+                    });
+                },
+                minLength: 2,
+                select: function(event, ui) {
+                    $("#cityId").val(ui.item.id);
+                    return true;
+                }
+            });
+        });
+    </script>
 }

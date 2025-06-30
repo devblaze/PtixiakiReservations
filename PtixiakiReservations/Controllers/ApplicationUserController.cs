@@ -19,12 +19,14 @@ namespace PtixiakiReservations.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public ApplicationUserController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        public ApplicationUserController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
+            RoleManager<ApplicationRole> roleManager)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
         }
+
         // GET: ApplicationUser
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
@@ -51,38 +53,40 @@ namespace PtixiakiReservations.Controllers
 
             return View(user);
         }
-  
 
         // GET: ApplicationUser/Edit/5
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ChangeRole(String id)
         {
-            var user= await _userManager.FindByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id);
 
             return View(user);
         }
+
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ChangeRoleAction(String id,String Role)
+        public async Task<IActionResult> ChangeRoleAction(String id, String Role)
         {
             IdentityResult result;
             var user = await _userManager.FindByIdAsync(id);
-            var flag=await _userManager.IsInRoleAsync(user,Role);
+            var flag = await _userManager.IsInRoleAsync(user, Role);
             if (!flag)
             {
-                 result = await _userManager.AddToRoleAsync(user, Role);
+                result = await _userManager.AddToRoleAsync(user, Role);
             }
             else
             {
-                result = await _userManager.RemoveFromRoleAsync(user, Role);          
+                result = await _userManager.RemoveFromRoleAsync(user, Role);
             }
+
             if (!result.Succeeded)
             {
                 return NotFound();
             }
+
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index", "ApplicationUser");           
+            return RedirectToAction("Index", "ApplicationUser");
         }
-        
+
         public async Task<IActionResult> SeedAdminUser()
         {
             try
@@ -98,6 +102,18 @@ namespace PtixiakiReservations.Controllers
                 // Catch and return any errors during the seeding process
                 return BadRequest($"Seeding failed: {ex.Message}");
             }
+        }
+
+        [HttpGet]
+        public JsonResult SearchCities(string term)
+        {
+            var cities = _context.City
+                .Where(c => c.Name.Contains(term))
+                .Select(c => new { id = c.Id, value = c.Name })
+                .Take(10)
+                .ToList();
+
+            return Json(cities);
         }
     }
 }

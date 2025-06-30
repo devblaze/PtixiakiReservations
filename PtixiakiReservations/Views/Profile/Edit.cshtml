@@ -33,6 +33,28 @@
                 <span asp-validation-for="PhoneNumber" class="text-xs text-red-500"></span>
             </div>
 
+            <!-- City -->
+            <div>
+                <label for="cityName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                <input id="cityName" value="@ViewBag.CityName" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm text-gray-800 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                <input type="hidden" asp-for="CityId" id="cityId" />
+                <span asp-validation-for="CityId" class="text-xs text-red-500"></span>
+            </div>
+
+            @* <!-- Address --> *@
+            @* <div> *@
+            @*     <label asp-for="Address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label> *@
+            @*     <input asp-for="Address" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm text-gray-800 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" /> *@
+            @*     <span asp-validation-for="Address" class="text-xs text-red-500"></span> *@
+            @* </div> *@
+            @* *@
+            @* <!-- Postal Code --> *@
+            @* <div> *@
+            @*     <label asp-for="PostalCode" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Postal Code</label> *@
+            @*     <input asp-for="PostalCode" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm text-gray-800 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500" /> *@
+            @*     <span asp-validation-for="PostalCode" class="text-xs text-red-500"></span> *@
+            @* </div> *@
+
             <div>
                 <label asp-for="Email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
                 <input asp-for="Email" readonly disabled class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 rounded-md shadow-sm text-gray-800 dark:text-gray-300 cursor-not-allowed" />
@@ -53,4 +75,36 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function() {
+            $("#cityName").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "@Url.Action("SearchCities", "ApplicationUser")",
+                        dataType: "json",
+                        data: {
+                            term: request.term
+                        },
+                        success: function(data) {
+                            response($.map(data, function(item) {
+                                return {
+                                    label: item.value,
+                                    value: item.value,
+                                    id: item.id
+                                };
+                            }));
+                        }
+                    });
+                },
+                minLength: 2,
+                select: function(event, ui) {
+                    $("#cityId").val(ui.item.id);
+                    return true;
+                }
+            });
+        });
+    </script>
 }

@@ -57,6 +57,25 @@
                 <p class="mt-1 text-gray-800 dark:text-white">@(Model.User.PhoneNumber ?? "Not provided")</p>
             </div>
         </div>
+
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mt-6 mb-4">Location Information</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">City</p>
+                <p class="mt-1 text-gray-800 dark:text-white">@(Model.User.City?.Name ?? "Not provided")</p>
+            </div>
+
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Postal Code</p>
+                <p class="mt-1 text-gray-800 dark:text-white">@(Model.User.PostalCode ?? "Not provided")</p>
+            </div>
+
+            <div class="md:col-span-2">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Address</p>
+                <p class="mt-1 text-gray-800 dark:text-white">@(Model.User.Address ?? "Not provided")</p>
+            </div>
+        </div>
     </div>
 
     <!-- Recent Reservations -->
