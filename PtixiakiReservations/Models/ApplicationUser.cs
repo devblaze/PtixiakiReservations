@@ -17,6 +17,10 @@ public class ApplicationUser : IdentityUser
     [ForeignKey("CityId")] public City City { get; set; }
     public string Address { get; set; }
     public string PostalCode { get; set; }
+    public bool HasRequestedVenueManagerRole { get; set; }
+    public DateTime? VenueManagerRequestDate { get; set; }
+    public string? VenueManagerRequestReason { get; set; }
+    public string? VenueManagerRequestStatus { get; set; } // "Pending", "Approved", "Rejected"
 
     public static implicit operator ApplicationUser(Task<ApplicationUser> v)
     {

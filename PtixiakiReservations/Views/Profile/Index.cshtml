@@ -147,4 +147,78 @@
             </div>
         }
     </div>
+@if (User.IsInRole("VenueManager"))
+{
+    <div class="mt-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg">
+        <div class="flex items-center">
+            <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="ml-2 font-medium text-green-800 dark:text-green-300">You are a Venue Manager</span>
+        </div>
+        <p class="mt-1 text-sm text-green-700 dark:text-green-200">You can create and manage venues and events.</p>
+        <a href="@Url.Action("Index", "Venues")" class="mt-2 inline-block text-sm text-green-600 dark:text-green-400 hover:underline">
+            Manage Your Venues →
+        </a>
+    </div>
+}
+else if (Model.User.HasRequestedVenueManagerRole)
+{
+    <div class="mt-6 p-4 @(Model.User.VenueManagerRequestStatus == "Pending" ? "bg-yellow-50 dark:bg-yellow-900" : 
+                          Model.User.VenueManagerRequestStatus == "Approved" ? "bg-green-50 dark:bg-green-900" : 
+                          "bg-red-50 dark:bg-red-900") rounded-lg">
+        <div class="flex items-center">
+            @if (Model.User.VenueManagerRequestStatus == "Pending")
+            {
+                <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="ml-2 font-medium text-yellow-800 dark:text-yellow-300">Venue Manager Request Pending</span>
+            }
+            else if (Model.User.VenueManagerRequestStatus == "Approved")
+            {
+                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="ml-2 font-medium text-green-800 dark:text-green-300">Venue Manager Request Approved</span>
+            }
+            else
+            {
+                <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span class="ml-2 font-medium text-red-800 dark:text-red-300">Venue Manager Request Rejected</span>
+            }
+        </div>
+        <p class="mt-1 text-sm @(Model.User.VenueManagerRequestStatus == "Pending" ? "text-yellow-700 dark:text-yellow-200" : 
+                              Model.User.VenueManagerRequestStatus == "Approved" ? "text-green-700 dark:text-green-200" : 
+                              "text-red-700 dark:text-red-200")">
+            @if (Model.User.VenueManagerRequestStatus == "Pending")
+            {
+                <span>Your request is being reviewed by administrators. Submitted on @Model.User.VenueManagerRequestDate?.ToString("MMM dd, yyyy")</span>
+            }
+            else if (Model.User.VenueManagerRequestStatus == "Approved")
+            {
+                <span>Your request has been approved. Please log out and log back in to access venue management features.</span>
+            }
+            else
+            {
+                <span>Your request was rejected. You may submit a new request after 30 days.</span>
+            }
+        </p>
+    </div>
+}
+else
+{
+    <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <h3 class="text-lg font-medium text-gray-800 dark:text-white">Become a Venue Manager</h3>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            As a venue manager, you can create and manage venues and events for users to make reservations.
+        </p>
+        <a href="@Url.Action("RequestVenueManager", "Profile")" 
+           class="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition duration-200">
+            Request Venue Manager Role
+        </a>
+    </div>
+}
 </div>

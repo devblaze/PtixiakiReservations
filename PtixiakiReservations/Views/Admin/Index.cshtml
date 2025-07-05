@@ -7,7 +7,7 @@
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
 
     <!-- Stats Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
@@ -63,6 +63,20 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Pending Requests</p>
+                    <p class="text-2xl font-semibold text-gray-700">@Model.PendingVenueManagerRequests</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Quick Links -->
@@ -70,7 +84,18 @@
         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-700">Quick Actions</h2>
         </div>
-        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <a href="@Url.Action("VenueManagerRequests", "Admin")" class="p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors flex items-center space-x-3">
+                <div class="p-2 bg-red-100 rounded-md text-red-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://wwwwww.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Venue Manager Requests</p>
+                    <p class="text-sm text-gray-500">@Model.PendingVenueManagerRequests pending</p>
+                </div>
+            </a>
             <a href="@Url.Action("Events", "Admin")" class="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-colors flex items-center space-x-3">
                 <div class="p-2 bg-blue-100 rounded-md text-blue-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

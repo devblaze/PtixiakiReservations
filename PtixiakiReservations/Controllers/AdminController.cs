@@ -1,137 +1,112 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PtixiakiReservations.Data;
 using PtixiakiReservations.Models;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PtixiakiReservations.Controllers;
-
-[Authorize(Roles = "Admin")]
-public class AdminController(ApplicationDbContext context) : Controller
+namespace PtixiakiReservations.Controllers
 {
-    public async Task<IActionResult> Index()
+    [Authorize(Roles = "Admin")]
+    public class AdminController : Controller
     {
-        var dashboardStats = new
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
+
+        public AdminController(
+            UserManager<ApplicationUser> userManager,
+            ApplicationDbContext context)
         {
-            VenueCount = await context.Venue.CountAsync(),
-            EventCount = await context.Event.CountAsync(),
-            SubAreaCount = await context.SubArea.CountAsync(),
-            ReservationCount = await context.Reservation.CountAsync()
-        };
-
-        return View(dashboardStats);
-    }
-
-    // Events Management
-    public async Task<IActionResult> Events()
-    {
-        var events = await context.Event
-            .Include(e => e.Venue)
-            .Include(e => e.EventType)
-            .ToListAsync();
-
-        return View(events);
-    }
-
-    public async Task<IActionResult> EditEvent(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
+            _userManager = userManager;
+            _context = context;
         }
 
-        var @event = await context.Event
-            .Include(e => e.Venue)
-            .Include(e => e.EventType)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (@event == null)
+        // GET: /Admin/Index (Admin Dashboard)
+        public async Task<IActionResult> Index()
         {
-            return NotFound();
-        }
-
-        ViewData["EventTypeId"] = new SelectList(context.EventType, "Id", "Name", @event.EventTypeId);
-        ViewData["VenueId"] = new SelectList(context.Venue, "Id", "Name", @event.VenueId);
-
-        return View(@event);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditEvent(int id,
-        [Bind("Id,Name,StartDateTime,EndTime,EventTypeId,VenueId")] Event @event)
-    {
-        if (id != @event.Id)
-        {
-            return NotFound();
-        }
-
-        if (ModelState.IsValid)
-        {
-            try
+            var model = new
             {
-                context.Update(@event);
-                await context.SaveChangesAsync();
-                return RedirectToAction(nameof(Events));
-            }
-            catch (DbUpdateConcurrencyException)
+                VenueCount = await _context.Venue.CountAsync(),
+                EventCount = await _context.Event.CountAsync(),
+                SubAreaCount = await _context.SubArea.CountAsync(),
+                ReservationCount = await _context.Reservation.CountAsync(),
+                PendingVenueManagerRequests = await _context.Users
+                    .Where(u => u.HasRequestedVenueManagerRole && u.VenueManagerRequestStatus == "Pending")
+                    .CountAsync()
+            };
+
+            return View(model);
+        }
+
+        // GET: /Admin/VenueManagerRequests
+        public async Task<IActionResult> VenueManagerRequests()
+        {
+            var pendingRequests = await _context.Users
+                .Where(u => u.HasRequestedVenueManagerRole && u.VenueManagerRequestStatus == "Pending")
+                .OrderBy(u => u.VenueManagerRequestDate)
+                .ToListAsync();
+
+            var recentlyProcessed = await _context.Users
+                .Where(u => u.HasRequestedVenueManagerRole && 
+                           (u.VenueManagerRequestStatus == "Approved" || u.VenueManagerRequestStatus == "Rejected") &&
+                           u.VenueManagerRequestDate > DateTime.UtcNow.AddDays(-7))
+                .OrderByDescending(u => u.VenueManagerRequestDate)
+                .ToListAsync();
+
+            ViewBag.RecentlyProcessed = recentlyProcessed;
+            return View(pendingRequests);
+        }
+
+        // POST: /Admin/ApproveVenueManagerRequest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveVenueManagerRequest(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
             {
-                if (!EventExists(@event.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
+
+            if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
+            {
+                // Update request status
+                user.VenueManagerRequestStatus = "Approved";
+                await _userManager.UpdateAsync(user);
+
+                // Add user to VenueManager role
+                await _userManager.AddToRoleAsync(user, "VenueManager");
+
+                TempData["SuccessMessage"] = $"Request for {user.Email} has been approved.";
+            }
+
+            return RedirectToAction(nameof(VenueManagerRequests));
         }
 
-        ViewData["EventTypeId"] = new SelectList(context.EventType, "Id", "Name", @event.EventTypeId);
-        ViewData["VenueId"] = new SelectList(context.Venue, "Id", "Name", @event.VenueId);
-
-        return View(@event);
-    }
-
-    public async Task<IActionResult> DeleteEvent(int? id)
-    {
-        if (id == null)
+        // POST: /Admin/RejectVenueManagerRequest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectVenueManagerRequest(string userId)
         {
-            return NotFound();
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
+            {
+                // Update request status
+                user.VenueManagerRequestStatus = "Rejected";
+                await _userManager.UpdateAsync(user);
+
+                TempData["SuccessMessage"] = $"Request for {user.Email} has been rejected.";
+            }
+
+            return RedirectToAction(nameof(VenueManagerRequests));
         }
-
-        var @event = await context.Event
-            .Include(e => e.Venue)
-            .Include(e => e.EventType)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (@event == null)
-        {
-            return NotFound();
-        }
-
-        return View(@event);
-    }
-
-    [HttpPost, ActionName("DeleteEvent")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteEventConfirmed(int id)
-    {
-        var @event = await context.Event.FindAsync(id);
-        if (@event != null)
-        {
-            context.Event.Remove(@event);
-            await context.SaveChangesAsync();
-        }
-
-        return RedirectToAction(nameof(Events));
-    }
-
-    private bool EventExists(int id)
-    {
-        return context.Event.Any(e => e.Id == id);
     }
 }

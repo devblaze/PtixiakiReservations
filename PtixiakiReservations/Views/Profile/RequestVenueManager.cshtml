@@ -1,0 +1,37 @@
+@model PtixiakiReservations.Models.ViewModels.VenueManagerRequestViewModel
+@{
+    ViewData["Title"] = "Request to Become a Venue Manager";
+}
+
+<div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+    <div class="p-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Request to Become a Venue Manager</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">
+            As a venue manager, you'll be able to create venues and events for users to make reservations.
+            Your request will be reviewed by an administrator.
+        </p>
+    </div>
+
+    <div class="p-6">
+        <form asp-action="RequestVenueManager" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
+
+            <div class="mb-4">
+                <label asp-for="Reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"></label>
+                <textarea asp-for="Reason" rows="5"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="Explain why you want to become a venue manager and what types of venues or events you plan to create..."></textarea>
+                <span asp-validation-for="Reason" class="text-sm text-red-500"></span>
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <a asp-action="Index" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition duration-200 mr-2">
+                    Cancel
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Submit Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

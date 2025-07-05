@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -145,6 +146,63 @@ namespace PtixiakiReservations.Controllers
                 .ToListAsync();
 
             return View(reservations);
+        }
+
+// GET: /Profile/RequestVenueManager
+        public IActionResult RequestVenueManager()
+        {
+            return View(new VenueManagerRequestViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RequestVenueManager(VenueManagerRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Check if user already has pending request
+            if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
+            {
+                ModelState.AddModelError(string.Empty, "You already have a pending request to become a venue manager.");
+                return View(model);
+            }
+
+            // Check if user is already a venue manager
+            if (await _userManager.IsInRoleAsync(user, "VenueManager"))
+            {
+                ModelState.AddModelError(string.Empty, "You are already a venue manager.");
+                return View(model);
+            }
+
+            // Update user with request details
+            user.HasRequestedVenueManagerRole = true;
+            user.VenueManagerRequestDate = DateTime.UtcNow;
+            user.VenueManagerRequestReason = model.Reason;
+            user.VenueManagerRequestStatus = "Pending";
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                return View(model);
+            }
+
+            TempData["SuccessMessage"] =
+                "Your request to become a venue manager has been submitted and is pending approval.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

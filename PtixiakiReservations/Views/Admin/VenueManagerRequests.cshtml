@@ -1,0 +1,173 @@
+
+@using PtixiakiReservations.Models
+@model IEnumerable<PtixiakiReservations.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Venue Manager Requests";
+}
+
+<div class="max-w-6xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+    <div class="p-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Venue Manager Requests</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">
+            Review and manage requests from users who want to become venue managers.
+        </p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="m-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg">
+            <div class="flex items-center">
+                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="ml-2 font-medium text-green-800 dark:text-green-300">@TempData["SuccessMessage"]</span>
+            </div>
+        </div>
+    }
+
+    <div class="p-6">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Pending Requests</h2>
+
+        @if (Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                User
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Request Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Reason
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+                                            @(user.FirstName?[0].ToString().ToUpper() ?? user.Email[0].ToString().ToUpper())@(user.LastName?[0].ToString().ToUpper() ?? "")
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                @(string.IsNullOrEmpty(user.FirstName) ? user.Email : $"{user.FirstName} {user.LastName}")
+                                            </div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                @user.Email
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        @user.VenueManagerRequestDate?.ToString("MMM dd, yyyy")
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 max-w-md overflow-hidden">
+                                        @user.VenueManagerRequestReason
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex space-x-2">
+                                        <form asp-action="ApproveVenueManagerRequest" method="post">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition duration-200">
+                                                Approve
+                                            </button>
+                                        </form>
+                                        <form asp-action="RejectVenueManagerRequest" method="post">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition duration-200">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-8">
+                <p class="text-gray-500 dark:text-gray-400">There are no pending requests at this time.</p>
+            </div>
+        }
+
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mt-10 mb-4">Recently Processed Requests</h2>
+        
+        @if (ViewBag.RecentlyProcessed != null && ((IEnumerable<ApplicationUser>)ViewBag.RecentlyProcessed).Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                User
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Request Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach (var user in ViewBag.RecentlyProcessed)
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+                                            @(user.FirstName?[0].ToString().ToUpper() ?? user.Email[0].ToString().ToUpper())@(user.LastName?[0].ToString().ToUpper() ?? "")
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                @(string.IsNullOrEmpty(user.FirstName) ? user.Email : $"{user.FirstName} {user.LastName}")
+                                            </div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                @user.Email
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        @user.VenueManagerRequestDate?.ToString("MMM dd, yyyy")
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                @(user.VenueManagerRequestStatus == "Approved" ? 
+                                                "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : 
+                                                "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200")">
+                                        @user.VenueManagerRequestStatus
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-8">
+                <p class="text-gray-500 dark:text-gray-400">No requests have been processed in the last 7 days.</p>
+            </div>
+        }
+    </div>
+</div>
