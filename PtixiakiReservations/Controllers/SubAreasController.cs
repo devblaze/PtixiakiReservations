@@ -261,6 +261,17 @@ namespace PtixiakiReservations.Controllers
             return View(subAreas);
         }
 
+        [HttpGet]
+        public JsonResult GetSubAreas(int venueId)
+        {
+            var subAreas = _context.SubArea
+                .Where(sa => sa.VenueId == venueId)
+                .Select(sa => new { id = sa.Id, areaName = sa.AreaName, desc = sa.Desc })
+                .ToList();
+
+            return Json(subAreas);
+        }
+
         private bool SubAreaExists(int id)
         {
             return _context.SubArea.Any(e => e.Id == id);

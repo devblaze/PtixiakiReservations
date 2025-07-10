@@ -75,14 +75,7 @@
                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                                 Events
                             </a>
-
-                            @if (isAdmin)
-                            {
-                                <a href="@Url.Action("Index", "Venue")"
-                                   class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                    All Venues
-                                </a>
-                            }
+                            
                             @if (isVenueManager)
                             {
                                 <a href="@Url.Action("MyVenues", "Venue")"
