@@ -78,19 +78,26 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach (var item in Model)
             {
-                var photopath = "~/images/" + (item.imgUrl ?? "image.jpg");
                 var subAreaCount = 0;
+                string imagePath = "~/images/image.jpg"; // Default fallback
 
                 if (ViewBag.SubAreaCounts != null && ViewBag.SubAreaCounts.ContainsKey(item.Id))
                 {
                     subAreaCount = ViewBag.SubAreaCounts[item.Id];
                 }
 
+                if (ViewBag.ImagePaths != null && ViewBag.ImagePaths.ContainsKey(item.Id))
+                {
+                    imagePath = ViewBag.ImagePaths[item.Id];
+                }
+
                 <div class="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
                     <!-- Image with overlay -->
                     <div class="relative h-48 w-full overflow-hidden">
                         <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                             src=@photopath asp-append-version="true" alt="@item.Name" />
+                             src="@imagePath" 
+                             asp-append-version="true" 
+                             alt="@item.Name" />
 
                         <!-- City badge -->
                         <div class="absolute top-0 right-0 mt-3 mr-3 bg-white bg-opacity-90 text-indigo-800 text-xs font-bold px-2 py-1 rounded-full shadow-sm">
@@ -159,25 +166,24 @@
             }
         </div>
 
-        <!-- Empty State - Only shown when there are no venues -->
         @if (!Model.Any())
         {
-            <div class="bg-white rounded-lg shadow-md p-10 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-                <h3 class="mt-4 text-lg font-medium text-gray-900">No venues found</h3>
-                <p class="mt-2 text-sm text-gray-500">
-                    You don't have any venues assigned to you yet.
-                </p>
-
+            <div class="text-center py-12">
+                <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-full w-full">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <h3 class="mt-4 text-sm font-medium text-gray-900">No venues</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by creating your first venue.</p>
                 <div class="mt-6">
                     <a href="@Url.Action("Create", "Venue")"
-                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                       class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        Create Your First Venue
+                        Add New Venue
                     </a>
                 </div>
             </div>

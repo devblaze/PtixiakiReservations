@@ -1,7 +1,16 @@
 ﻿@model IEnumerable<PtixiakiReservations.Models.SubArea>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
 
 @{
     ViewData["Title"] = "Venue Sub Areas";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var userRoles = await UserManager.GetRolesAsync(currentUser);
+    bool canCreateSubAreas = User.IsInRole("Venue");
+    
+    // Check if current user owns this venue (you might need to pass venue info or check via AJAX)
+    bool userOwnsVenue = true; // This would need proper implementation based on your venue ownership logic
 }
 
 <div class="bg-gray-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -13,19 +22,101 @@
                     <h1 class="text-2xl md:text-3xl font-bold text-white">
                         Sub Areas for @ViewBag.VenueName
                     </h1>
-                    <a href="@Url.Action("Details", "Venue", new { id = ViewBag.VenueId })"
-                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to Venue
-                    </a>
+                    <div class="flex space-x-4">
+                        @if (canCreateSubAreas && userOwnsVenue)
+                        {
+                            <button id="createSubAreaBtn" 
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-sm transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Create Sub Area
+                            </button>
+                        }
+                        <a href="@Url.Action("Details", "Venue", new { id = ViewBag.VenueId })"
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Back to Venue
+                        </a>
+                    </div>
                 </div>
                 <p class="mt-2 text-indigo-100 max-w-3xl">
                     Explore the different areas available at this venue for events and reservations.
                 </p>
             </div>
         </div>
+
+        <!-- Create Sub Area Modal/Form (initially hidden) -->
+        @if (canCreateSubAreas && userOwnsVenue)
+        {
+            <div id="createSubAreaModal" class="hidden bg-white rounded-xl shadow-lg p-8 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Create New Sub Area</h2>
+                    <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="createSubAreaForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="areaName" class="block text-sm font-medium text-gray-700 mb-2">Area Name</label>
+                        <input type="text" id="areaName" name="areaName" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <input type="text" id="description" name="description"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="width" class="block text-sm font-medium text-gray-700 mb-2">Width</label>
+                        <input type="number" step="0.01" id="width" name="width" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="height" class="block text-sm font-medium text-gray-700 mb-2">Height</label>
+                        <input type="number" step="0.01" id="height" name="height" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="top" class="block text-sm font-medium text-gray-700 mb-2">Top Position</label>
+                        <input type="number" step="0.01" id="top" name="top" value="0"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="left" class="block text-sm font-medium text-gray-700 mb-2">Left Position</label>
+                        <input type="number" step="0.01" id="left" name="left" value="0"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label for="rotate" class="block text-sm font-medium text-gray-700 mb-2">Rotation (degrees)</label>
+                        <input type="number" step="0.01" id="rotate" name="rotate" value="0"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div class="md:col-span-2 flex justify-end space-x-4">
+                        <button type="button" id="cancelBtn" 
+                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                            Create Sub Area
+                        </button>
+                    </div>
+                </form>
+            </div>
+        }
 
         @if (!Model.Any())
         {
@@ -38,6 +129,16 @@
                 <p class="mt-2 text-sm text-gray-500">
                     This venue doesn't have any sub areas configured yet.
                 </p>
+                @if (canCreateSubAreas && userOwnsVenue)
+                {
+                    <button id="createSubAreaBtnEmpty" 
+                            class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create Your First Sub Area
+                    </button>
+                }
             </div>
         }
         else
@@ -115,3 +216,83 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createSubAreaBtn = document.getElementById('createSubAreaBtn');
+    const createSubAreaBtnEmpty = document.getElementById('createSubAreaBtnEmpty');
+    const createSubAreaModal = document.getElementById('createSubAreaModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const createSubAreaForm = document.getElementById('createSubAreaForm');
+
+    // Show modal
+    function showModal() {
+        createSubAreaModal.classList.remove('hidden');
+    }
+
+    // Hide modal
+    function hideModal() {
+        createSubAreaModal.classList.add('hidden');
+        createSubAreaForm.reset();
+    }
+
+    // Event listeners
+    if (createSubAreaBtn) {
+        createSubAreaBtn.addEventListener('click', showModal);
+    }
+    
+    if (createSubAreaBtnEmpty) {
+        createSubAreaBtnEmpty.addEventListener('click', showModal);
+    }
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', hideModal);
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', hideModal);
+    }
+
+    // Handle form submission
+    if (createSubAreaForm) {
+        createSubAreaForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(createSubAreaForm);
+            const subAreaData = [{
+                AreaName: formData.get('areaName'),
+                Desc: formData.get('description'),
+                Width: parseFloat(formData.get('width')),
+                Height: parseFloat(formData.get('height')),
+                Top: parseFloat(formData.get('top')),
+                Left: parseFloat(formData.get('left')),
+                Rotate: parseFloat(formData.get('rotate')),
+                VenueId: @ViewBag.VenueId
+            }];
+
+            try {
+                const response = await fetch('@Url.Action("Create", "SubAreas")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify(subAreaData)
+                });
+
+                if (response.ok) {
+                    // Success - reload the page to show the new sub area
+                    location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Error creating sub area: ' + errorText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating sub area. Please try again.');
+            }
+        });
+    }
+});
+</script>

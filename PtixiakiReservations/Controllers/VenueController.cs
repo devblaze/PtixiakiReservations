@@ -58,13 +58,19 @@ namespace PtixiakiReservations.Controllers
 
             // Get subarea counts for each venue
             var subAreaCounts = new Dictionary<int, int>();
+            var imagePaths = new Dictionary<int, string>();
+            
             foreach (var venue in venues)
             {
                 var count = await _context.SubArea.CountAsync(sa => sa.VenueId == venue.Id);
                 subAreaCounts[venue.Id] = count;
+                
+                // Add image path validation
+                imagePaths[venue.Id] = GetImagePath(venue.imgUrl);
             }
 
             ViewBag.SubAreaCounts = subAreaCounts;
+            ViewBag.ImagePaths = imagePaths;
 
             // Count events for all venues managed by this user
             var eventCount = await _context.Event
@@ -255,6 +261,8 @@ namespace PtixiakiReservations.Controllers
                 return Forbid();
             }
 
+            ViewBag.ImagePath = GetImagePath(venue.imgUrl);
+        
             return View(venue);
         }
 
@@ -304,6 +312,19 @@ namespace PtixiakiReservations.Controllers
         private bool VenueExists(int id)
         {
             return _context.Venue.Any(e => e.Id == id);
+        }
+    
+        private string GetImagePath(string imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl))
+                return "~/images/image.jpg";
+            
+            var imagePath = Path.Combine(HostingEnviromnet.WebRootPath, "images", imageUrl);
+            
+            if (System.IO.File.Exists(imagePath))
+                return $"~/images/{imageUrl}";
+            else
+                return "~/images/image.jpg";
         }
     }
 }
