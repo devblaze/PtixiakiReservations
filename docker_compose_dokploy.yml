@@ -1,4 +1,3 @@
-
 services:
   ptixiakireservations1:
     image: devblaze/ptixiakireservations:latest
@@ -16,10 +15,8 @@ services:
       - ASPNETCORE_URLS=http://+:8080
     networks:
       - reservations
-    # Remove your custom Traefik labels - Dokploy will add its own
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-      - "com.centurylinklabs.watchtower.depends-on=ptixiakireservations2"
   
   ptixiakireservations2:
     image: devblaze/ptixiakireservations:latest
@@ -39,8 +36,6 @@ services:
       - reservations
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-  
-  # Remove the entire Traefik service - Dokploy provides its own
   
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -90,7 +85,9 @@ services:
       - TZ=Europe/Athens
     networks:
       - reservations
-    command: --label-enable --cleanup
+    command: --label-enable --cleanup --rolling-restart
+    labels:
+      - "com.centurylinklabs.watchtower.depends-on=ptixiakireservations2"
 
   jaeger:
     image: jaegertracing/all-in-one:latest
