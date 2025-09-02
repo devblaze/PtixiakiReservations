@@ -78,6 +78,68 @@
                             </div>
                         </div>
 
+                        <!-- Venue & Sub Area Section -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-center mb-4">
+                                <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <h2 class="ml-3 text-lg font-medium text-gray-800">Venue & Location</h2>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Venue Selection -->
+                                <div>
+                                    <label asp-for="VenueId" class="block text-sm font-medium text-gray-700 mb-1">Select Venue</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <select asp-for="VenueId" asp-items="ViewBag.VenueList" id="venueSelect"
+                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white" required>
+                                            <option value="">Select a venue</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="VenueId" class="text-red-500 text-xs mt-1"></span>
+                                </div>
+
+                                <!-- Sub Area Selection - NOW REQUIRED -->
+                                <div>
+                                    <label asp-for="SubAreaId" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Select Sub Area <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                                            </svg>
+                                        </div>
+                                        <select asp-for="SubAreaId" id="subAreaSelect"
+                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white" required>
+                                            <option value="">First select a venue</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="SubAreaId" class="text-red-500 text-xs mt-1"></span>
+                                    <p class="text-xs text-gray-500 mt-1">Sub area is required for seat reservations</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Schedule Section -->
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                             <div class="flex items-center mb-4">
@@ -270,63 +332,6 @@
                             </div>
                         </div>
 
-                        <!-- Venue Section -->
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <div class="flex items-center mb-4">
-                                <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </div>
-                                <h2 class="ml-3 text-lg font-medium text-gray-800">Venue</h2>
-                            </div>
-
-                            <!-- Venue Selection -->
-                            <div>
-                                <label asp-for="VenueId" class="block text-sm font-medium text-gray-700 mb-1">Select Venue</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
-                                    <select asp-for="VenueId" asp-items="ViewBag.VenueList"
-                                            class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white">
-                                        <option value="">Select a venue</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <span asp-validation-for="VenueId" class="text-red-500 text-xs mt-1"></span>
-                            </div>
-                        </div>
-
-                        <!-- After the Venue Selection section, add the Sub Area Selection -->
-                        <div class="mt-4">
-                            <label asp-for="SubAreaId" class="block text-sm font-medium text-gray-700 mb-1">Select Sub Area (Optional)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    </svg>
-                                </div>
-                                <select asp-for="SubAreaId" id="SubAreaId"
-                                        class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white">
-                                    <option value="">Select a sub area (optional)</option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <span asp-validation-for="SubAreaId" class="text-red-500 text-xs mt-1"></span>
-                        </div>
-
                         <!-- Submit Buttons -->
                         <div class="flex justify-end space-x-3 pt-5 border-t border-gray-200">
                             <a href="@Url.Action("EventsForToday", "Events")"
@@ -339,7 +344,7 @@
                                      viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                                </svg>
+                                    </svg>
                                 Create Event
                             </button>
                         </div>
@@ -367,8 +372,46 @@
             const eventPreviewList = document.getElementById('eventPreviewList');
             const eventCountSpan = document.getElementById('eventCount');
 
-            // Toggle between single and multi-day modes
-            multiDayCheckbox.addEventListener('change', function () {
+            const venueSelect = document.getElementById('venueSelect');
+            const subAreaSelect = document.getElementById('subAreaSelect');
+
+            // Load sub areas when venue is selected
+            venueSelect.addEventListener('change', function() {
+                const venueId = this.value;
+                
+                // Reset sub area select
+                subAreaSelect.innerHTML = '<option value="">Loading...</option>';
+                
+                if (!venueId) {
+                    subAreaSelect.innerHTML = '<option value="">First select a venue</option>';
+                    return;
+                }
+
+                // Fetch sub areas for the selected venue
+                fetch(`/Events/GetSubAreas?venueId=${venueId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        subAreaSelect.innerHTML = '<option value="">Select a sub area</option>';
+                        
+                        if (data && data.length > 0) {
+                            data.forEach(subArea => {
+                                const option = document.createElement('option');
+                                option.value = subArea.id;
+                                option.textContent = subArea.areaName;
+                                subAreaSelect.appendChild(option);
+                            });
+                        } else {
+                            subAreaSelect.innerHTML = '<option value="">No sub areas available</option>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching sub areas:', error);
+                        subAreaSelect.innerHTML = '<option value="">Error loading sub areas</option>';
+                    });
+            });
+
+            // Toggle between single and multi-day
+            multiDayCheckbox.addEventListener('change', function() {
                 if (this.checked) {
                     singleDayContainer.classList.add('hidden');
                     multiDayContainer.classList.remove('hidden');
@@ -379,90 +422,52 @@
                 }
             });
 
-            // Update preview when dates change
-            startDateInput.addEventListener('change', updateEventPreview);
-            endDateInput.addEventListener('change', updateEventPreview);
-
+            // Function to update event preview
             function updateEventPreview() {
-                if (!startDateInput.value || !endDateInput.value) return;
-
-                const startDate = new Date(startDateInput.value);
-                const endDate = new Date(endDateInput.value);
-
-                if (endDate < startDate) {
-                    eventPreviewList.innerHTML = '<div class="text-red-500">End date must be after start date</div>';
-                    eventCountSpan.textContent = "0";
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                
+                if (!startDate || !endDate) {
+                    eventPreviewList.innerHTML = '<div class="text-gray-500 italic">Select both start and end dates to see preview</div>';
+                    eventCountSpan.textContent = '0';
                     return;
                 }
 
-                // Calculate number of days
-                const dayDiff = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                let previewHTML = '';
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                if (start > end) {
+                    eventPreviewList.innerHTML = '<div class="text-red-500 italic">End date must be after start date</div>';
+                    eventCountSpan.textContent = '0';
+                    return;
+                }
 
-                // Generate preview for up to 10 events (to avoid overwhelming the UI)
-                const maxPreviewItems = Math.min(dayDiff, 10);
-                let currentDate = new Date(startDate);
-
-                for (let i = 0; i < maxPreviewItems; i++) {
-                    const formattedDate = currentDate.toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric'
-                    });
-
-                    previewHTML += `<div class="mb-1">• ${formattedDate}</div>`;
-                    currentDate.setDate(currentDate.getDate() + 1);
+                const dates = [];
+                const current = new Date(start);
+                
+                while (current <= end) {
+                    dates.push(new Date(current));
+                    current.setDate(current.getDate() + 1);
                 }
 
                 // If there are more events than shown in the preview
-                if (dayDiff > maxPreviewItems) {
-                    previewHTML += `<div class="text-blue-400">+ ${dayDiff - maxPreviewItems} more events...</div>`;
-                }
-
-                eventPreviewList.innerHTML = previewHTML;
-                eventCountSpan.textContent = dayDiff;
-
-                // Highlight if there are many events
-                if (dayDiff > 30) {
-                    eventCountSpan.classList.add('text-orange-500', 'font-semibold');
+                if (dates.length > 10) {
+                    eventPreviewList.innerHTML = `
+                        <div>${dates.slice(0, 5).map(d => d.toLocaleDateString()).join('<br>')}</div>
+                        <div class="text-gray-500 italic mt-1">... and ${dates.length - 5} more dates</div>
+                    `;
                 } else {
-                    eventCountSpan.classList.remove('text-orange-500', 'font-semibold');
+                    eventPreviewList.innerHTML = dates.map(d => d.toLocaleDateString()).join('<br>');
                 }
+                
+                eventCountSpan.textContent = dates.length;
             }
 
-            // Validate date range when form is submitted
-            document.getElementById('createEventForm').addEventListener('submit', function (e) {
-                if (multiDayCheckbox.checked) {
-                    const startDate = new Date(startDateInput.value);
-                    const endDate = new Date(endDateInput.value);
-
-                    if (endDate < startDate) {
-                        e.preventDefault();
-                        alert('End date cannot be earlier than start date');
-                        return;
-                    }
-
-                    // Check if date range is reasonable
-                    const dayDiff = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                    if (dayDiff > 30) {
-                        if (!confirm(`You are about to create ${dayDiff} events (one per day). This might take a moment. Are you sure you want to continue?`)) {
-                            e.preventDefault();
-                            return;
-                        }
-                    }
-
-                    // Add visual feedback during submission
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = `
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Creating Events...
-                    `;
-                }
-            });
+            // Add event listeners for date preview updates
+            if (startDateInput && endDateInput) {
+                startDateInput.addEventListener('change', updateEventPreview);
+                endDateInput.addEventListener('change', updateEventPreview);
+            }
         });
     </script>
 }

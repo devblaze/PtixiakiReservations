@@ -7,8 +7,8 @@ namespace PtixiakiReservations.Models.ViewModels
 {
     public class JsonSeatModel
     {
-        public int top { get; set; }
-        public int left { get; set; }
+        public int y { get; set; }
+        public int x { get; set; }
         public string Name { get; set; }
     }
 }

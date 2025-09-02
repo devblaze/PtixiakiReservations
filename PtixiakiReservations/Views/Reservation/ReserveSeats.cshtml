@@ -4,6 +4,7 @@
     ViewData["Title"] = "Reserve Seats";
     var venueId = Model.Venue.Id;
     var eventId = Model.Id;
+    var subAreaId = Model.SubAreaId;
 }
 
 <div class="container mx-auto px-4 py-8 max-w-6xl">
@@ -12,6 +13,10 @@
         <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-6 px-8">
             <h1 class="text-3xl font-bold text-white">Reserve Seats</h1>
             <p class="text-blue-100 mt-2">@Model.Name</p>
+            @if (Model.SubArea != null)
+            {
+                <p class="text-blue-200 text-sm mt-1">Sub Area: @Model.SubArea.AreaName</p>
+            }
         </div>
 
         <div class="p-6">
@@ -47,6 +52,10 @@
                                 {
                                     <p class="text-sm text-gray-600">@Model.Venue.City.Name</p>
                                 }
+                                @if (Model.SubArea != null)
+                                {
+                                    <p class="text-sm text-gray-600">Area: @Model.SubArea.AreaName</p>
+                                }
                             </div>
                         </div>
 
@@ -72,6 +81,8 @@
                             <input type="hidden" id="startTime" value="@Model.StartDateTime.TimeOfDay" />
                             <input type="hidden" id="endTime" value="@Model.EndTime.TimeOfDay" />
                             <input type="hidden" id="eventDate" value="@Model.StartDateTime.ToString("yyyy-MM-dd")" />
+                            <input type="hidden" id="subAreaId" value="@subAreaId" />
+                            <input type="hidden" id="eventId" value="@eventId" />
                         </div>
 
                         <div>
@@ -103,96 +114,96 @@
                 </div>
             </div>
 
-            <!-- After the Venue section and before the seat selection section -->
-            <div class="mb-8">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">Select Sub Area</h3>
-
-                <div class="bg-blue-50 p-5 rounded-lg">
-                    <div class="mb-4">
-                        <label for="subAreaSelect" class="block text-sm font-medium text-gray-700 mb-1">Choose a section</label>
-                        <select id="subAreaSelect" class="form-select w-full rounded-md shadow-sm border-gray-300 bg-white text-gray-800">
-                            <option value="">Loading sub areas...</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Select the section where you'd like to sit</p>
-                    </div>
-
-                    <div id="subAreaDetails" class="hidden bg-white p-4 rounded-md border border-blue-200 mt-4">
-                        <!-- SubArea details will be displayed here -->
-                    </div>
-                </div>
-            </div>
-            <!-- Seat Selection Section -->
-            <div class="mb-8">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">Select Your Seats</h3>
-
-                <!-- Canvas with better framing -->
-                <div class="mb-6 flex justify-center">
-                    <div class="relative">
-                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium z-10">
-                            Stage
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
-                            <canvas id="seatCanvas" width="600" height="400" class="rounded-md shadow-inner"></canvas>
+            <!-- Only show sub area message if no sub area is set -->
+            @if (subAreaId == null || subAreaId == 0)
+            {
+                <div class="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                    <div class="flex items-center">
+                        <svg class="h-6 w-6 text-yellow-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <div>
+                            <h3 class="text-yellow-800 font-medium">No Sub Area Selected</h3>
+                            <p class="text-yellow-700 text-sm mt-1">This event doesn't have a specific sub area assigned. Seat selection is not available.</p>
                         </div>
                     </div>
                 </div>
+            }
+            else
+            {
+                <!-- Seat Selection Section -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Select Your Seats</h3>
 
-                <!-- Legend with improved styling -->
-                <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-center text-gray-700 font-semibold mb-3">Seat Legend</h3>
-                    <div class="flex justify-center flex-wrap gap-6">
-                        <div class="flex items-center">
-                            <div class="w-5 h-5 bg-green-500 rounded mr-2 shadow-sm"></div>
-                            <span class="text-sm text-gray-700">Available</span>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="w-5 h-5 bg-red-500 rounded mr-2 shadow-sm"></div>
-                            <span class="text-sm text-gray-700">Unavailable</span>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="w-5 h-5 bg-blue-500 rounded mr-2 shadow-sm"></div>
-                            <span class="text-sm text-gray-700">Selected</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Selected seats summary -->
-                <div id="selection-summary" class="mb-6 hidden">
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 class="text-blue-800 font-medium mb-2">Your Selection</h3>
-                        <div class="flex items-center">
-                            <div class="mr-3">
-                                <span id="selected-count" class="text-2xl font-bold text-blue-600">0</span>
-                                <span class="text-blue-600">seats</span>
+                    <!-- Canvas with better framing -->
+                    <div class="mb-6 flex justify-center">
+                        <div class="relative">
+                            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium z-10">
+                                Stage
                             </div>
-                            <div id="selected-seats-list" class="text-sm text-blue-800">
-                                <!-- Will be populated by JavaScript -->
+                            <div class="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+                                <canvas id="seatCanvas" width="600" height="400" class="rounded-md shadow-inner"></canvas>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Legend with improved styling -->
+                    <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-center text-gray-700 font-semibold mb-3">Seat Legend</h3>
+                        <div class="flex justify-center flex-wrap gap-6">
+                            <div class="flex items-center">
+                                <div class="w-5 h-5 bg-green-500 rounded mr-2 shadow-sm"></div>
+                                <span class="text-sm text-gray-700">Available</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-5 h-5 bg-red-500 rounded mr-2 shadow-sm"></div>
+                                <span class="text-sm text-gray-700">Unavailable</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-5 h-5 bg-blue-500 rounded mr-2 shadow-sm"></div>
+                                <span class="text-sm text-gray-700">Selected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected seats summary -->
+                    <div id="selection-summary" class="mb-6 hidden">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h3 class="text-blue-800 font-medium mb-2">Your Selection</h3>
+                            <div class="flex items-center">
+                                <div class="mr-3">
+                                    <span id="selected-count" class="text-2xl font-bold text-blue-600">0</span>
+                                    <span class="text-blue-600">seats</span>
+                                </div>
+                                <div id="selected-seats-list" class="text-sm text-blue-800">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Action buttons -->
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <button id="clear-selection" class="px-5 py-3 border border-gray-300 text-gray-700 font-medium rounded-md shadow-sm hover:bg-gray-50 transition-duration-150 hidden">
-                    Clear Selection
-                </button>
+                <!-- Action buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="clear-selection" class="px-5 py-3 border border-gray-300 text-gray-700 font-medium rounded-md shadow-sm hover:bg-gray-50 transition-duration-150 hidden">
+                        Clear Selection
+                    </button>
 
-                <button id="confirm-reservation" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-md hover:bg-blue-700 transition-duration-150 flex items-center justify-center">
-                    <span>Complete Reservation</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                </button>
-            </div>
+                    <button id="confirm-reservation" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-md hover:bg-blue-700 transition-duration-150 flex items-center justify-center">
+                        <span>Complete Reservation</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                </div>
+            }
         </div>
     </div>
 
     <!-- Back Button -->
     <div class="mt-8">
         <a href="@Url.Action("Details", "Events", new { id = Model.Id })" class="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back to Event Details
@@ -201,116 +212,63 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <script>
         const eventId = @eventId;
         const venueId = @venueId;
+        const subAreaId = @(subAreaId ?? 0);
         let selectedSeats = [];
         let seatNames = {};
+        let fabricCanvas;
 
-        // Add this to your existing JavaScript in the Scripts section
-        $(document).ready(function() {
-            // Load sub areas for the venue
-            loadSubAreas();
-
-            // Handle sub area selection change
-            $("#subAreaSelect").on("change", function() {
-                const subAreaId = $(this).val();
-                if (subAreaId) {
-                    // Show details about the selected sub area
-                    showSubAreaDetails(subAreaId);
-
-                    // Load seats for this sub area
-                    loadSeats(subAreaId);
-                } else {
-                    // Clear seat canvas and hide details
-                    clearCanvas();
-                    $("#subAreaDetails").addClass("hidden");
-                }
-            });
-
-            function loadSubAreas() {
-                // Get venue ID from the model
-                const venueId = @venueId;
-
-                // Show loading state
-                $("#subAreaSelect").html('<option value="">Loading sub areas...</option>');
-
-                // Fetch sub areas from the API
-                $.getJSON(`/SubAreas/GetSubAreas?venueId=${venueId}`, function(data) {
-                    // Clear the dropdown
-                    $("#subAreaSelect").empty();
-
-                    // Add default option
-                    $("#subAreaSelect").append('<option value="">Select a section</option>');
-
-                    // Add options for each sub area
-                    if (data && data.length > 0) {
-                        data.forEach(function(subArea) {
-                            $("#subAreaSelect").append(`<option value="${subArea.id}">${subArea.areaName}</option>`);
-                        });
-                    } else {
-                        $("#subAreaSelect").html('<option value="">No sections available</option>');
-                    }
-                }).fail(function() {
-                    $("#subAreaSelect").html('<option value="">Error loading sections</option>');
-                });
-            }
-
-            function showSubAreaDetails(subAreaId) {
-                // You can fetch additional details about the sub area if needed
-                // For now, we'll just show a simple message
-                $("#subAreaDetails").html(`
-            <div class="flex items-center">
-                <svg class="h-5 w-5 text-blue-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="text-sm text-gray-700">Select seats from the seating chart below</span>
-            </div>
-        `).removeClass("hidden");
-            }
-
-            function loadSeats(subAreaId) {
-                // Clear existing canvas
-                clearCanvas();
-
-                // Show loading indicator
-                showLoading();
-
-                // Fetch seats for this sub area and event
-                $.getJSON(`/Seat/get_data?SubAreaId=${subAreaId}&eventId=${@eventId}`, function(data) {
-                    // Remove loading indicator
-                    clearCanvas();
-
-                    if (data && data.length > 0) {
-                        // Render seats on the canvas
-                        renderSeats(data);
-                    } else {
-                        // Show message if no seats available
-                        showNoSeatsMessage();
-                    }
-                }).fail(function() {
-                    clearCanvas();
-                    showErrorMessage();
-                });
-            }
-
-            // Note: You'll need to implement or modify these functions based on your existing code:
-            // - clearCanvas()
-            // - showLoading()
-            // - renderSeats(data)
-            // - showNoSeatsMessage()
-            // - showErrorMessage()
-        });
-
-        $(document).ready(function () {
+        document.addEventListener('DOMContentLoaded', function () {
             // Initialize Fabric.js canvas
-            const canvas = new fabric.Canvas('seatCanvas', {
+            fabricCanvas = new fabric.Canvas('seatCanvas', {
                 selection: false // Disable group selection
             });
 
-            // Loading indicator
-            showLoading(canvas);
+            const subAreaIdElement = document.getElementById('subAreaId');
+            const eventIdElement = document.getElementById('eventId');
+            
+            if (subAreaIdElement && eventIdElement) {
+                const subAreaIdValue = subAreaIdElement.value;
+                const eventIdValue = eventIdElement.value;
+                
+                console.log("SubArea ID:", subAreaIdValue, "Event ID:", eventIdValue);
+                
+                // Only initialize seat map if we have a sub area
+                if (subAreaIdValue && subAreaIdValue !== '0') {
+                    loadSeatMap(subAreaIdValue, eventIdValue);
+                }
+            }
+        });
 
+        function loadSeatMap(subAreaId, eventId) {
+            console.log("Loading seat map for SubArea:", subAreaId, "Event:", eventId);
+            
+            // Show loading indicator
+            showLoadingOnFabric(fabricCanvas);
+
+            // Fetch seats for this sub area and event
+            $.getJSON(`/Seat/get_data?SubAreaId=${subAreaId}&eventId=${eventId}`, function(data) {
+                console.log("Seat data received:", data);
+                fabricCanvas.clear();
+
+                if (data && data.length > 0) {
+                    // Render seats on the canvas
+                    renderSeats(fabricCanvas, data);
+                } else {
+                    // Show message if no seats available
+                    showNoSeatsMessageOnFabric(fabricCanvas);
+                }
+            }).fail(function(xhr, status, error) {
+                console.error("Failed to load seat data:", status, error);
+                fabricCanvas.clear();
+                showErrorMessageOnFabric(fabricCanvas);
+            });
+        }
+
+        $(document).ready(function () {
             // Handle checkbox states for time inputs
             $("#useEventStartTime").on("change", function() {
                 if ($(this).is(':checked')) {
@@ -339,49 +297,17 @@
                 $("#reservationEndTime").prop('disabled', true);
             }
 
-            // Fetch seat data
-            $.getJSON(`/Seat/get_data?SubAreaId=${venueId}&eventId=${eventId}`, function (data) {
-                console.log("Seat data received:", data);
-                canvas.clear(); // Clear loading indicator
-
-                if (data && data.length) {
-                    renderSeats(canvas, data);
-                } else {
-                    // Show message if no seats available
-                    const noSeatsText = new fabric.Text('No seats available for this venue', {
-                        left: 300,
-                        top: 200,
-                        originX: 'center',
-                        originY: 'center',
-                        fill: '#666',
-                        fontSize: 18
-                    });
-                    canvas.add(noSeatsText);
-                    canvas.renderAll();
-                }
-            }).fail(function() {
-                canvas.clear();
-                const errorText = new fabric.Text('Failed to load seat data. Please try again.', {
-                    left: 300,
-                    top: 200,
-                    originX: 'center',
-                    originY: 'center',
-                    fill: '#e53e3e',
-                    fontSize: 18
-                });
-                canvas.add(errorText);
-                canvas.renderAll();
-            });
-
             // Handle confirm button click
             $("#confirm-reservation").on("click", function () {
                 if (selectedSeats.length > 0) {
-                    const subAreaId = $("#subAreaSelect").val();
+                    const reservationSubAreaId = subAreaId;
 
-                    if (!subAreaId) {
-                        showNotification('Please select a section.', 'warning');
+                    if (!reservationSubAreaId || reservationSubAreaId === 0) {
+                        showNotification('No sub area assigned to this event.', 'warning');
                         return;
                     }
+
+                    console.log("Making reservation for SubArea:", reservationSubAreaId, "Seats:", selectedSeats);
 
                     // Show loading state
                     $(this).prop('disabled', true)
@@ -404,7 +330,7 @@
                     if (difference <= 0) {
                         showNotification('End time must be after start time.', 'error');
                         $(this).prop('disabled', false)
-                            .html('<span>Confirm Reservation</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>');
+                            .html('<span>Complete Reservation</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>');
                         return;
                     }
 
@@ -425,8 +351,8 @@
                         contentType: "application/json",
                         data: JSON.stringify({
                             seatIds: selectedSeats,
-                            eventId: @eventId,
-                            subAreaId: subAreaId,
+                            eventId: eventId,
+                            subAreaId: reservationSubAreaId,
                             duration: duration,
                             resDate: reservationDate
                         }),
@@ -438,10 +364,9 @@
                         },
                         error: function(xhr) {
                             // Reset button
-                            $("#confirm-seats").prop('disabled', false)
-                                .html('<span>Confirm Reservation</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>');
+                            $("#confirm-reservation").prop('disabled', false)
+                                .html('<span>Complete Reservation</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>');
 
-                            // Display error message
                             let errorMessage = "Failed to reserve seats. Please try again.";
                             if (xhr.responseText) {
                                 try {
@@ -463,12 +388,12 @@
 
             // Clear selection button
             $("#clear-selection").on("click", function() {
-                clearAllSelections(canvas);
+                clearAllSelections(fabricCanvas);
             });
         });
 
-        function showLoading(canvas) {
-            // Create loading indicator
+        // Fabric.js helper functions
+        function showLoadingOnFabric(canvas) {
             const loadingText = new fabric.Text('Loading seats...', {
                 left: 300,
                 top: 200,
@@ -481,175 +406,126 @@
             canvas.renderAll();
         }
 
-        function showNotification(message, type = 'info') {
-            // Remove any existing notification
-            $('.notification').remove();
-
-            // Create color classes based on type
-            let bgColor = 'bg-blue-500';
-            if (type === 'success') bgColor = 'bg-green-500';
-            if (type === 'error') bgColor = 'bg-red-500';
-            if (type === 'warning') bgColor = 'bg-yellow-500';
-
-            // Create and append notification
-            const notification = $(`
-                <div class="notification fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-500 translate-x-full">
-                    <div class="flex items-center">
-                        <span>${message}</span>
-                        <button class="ml-4 text-white focus:outline-none">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `);
-
-            $('body').append(notification);
-
-            // Animate in
-            setTimeout(() => {
-                $('.notification').removeClass('translate-x-full');
-            }, 10);
-
-            // Dismiss on click
-            $('.notification button').on('click', function() {
-                dismissNotification();
+        function showNoSeatsMessageOnFabric(canvas) {
+            const noSeatsText = new fabric.Text('No seats available for this area', {
+                left: 300,
+                top: 200,
+                originX: 'center',
+                originY: 'center',
+                fill: '#666',
+                fontSize: 18
             });
-
-            // Auto dismiss after 4 seconds for success/info
-            if (type !== 'error') {
-                setTimeout(dismissNotification, 4000);
-            }
-
-            function dismissNotification() {
-                $('.notification').addClass('translate-x-full');
-                setTimeout(() => {
-                    $('.notification').remove();
-                }, 500);
-            }
+            canvas.add(noSeatsText);
+            canvas.renderAll();
         }
 
-        function updateSelectionSummary() {
-            const count = selectedSeats.length;
-
-            if (count > 0) {
-                // Show the summary and clear button
-                $('#selection-summary').removeClass('hidden');
-                $('#clear-selection').removeClass('hidden');
-
-                // Update count
-                $('#selected-count').text(count);
-
-                // Build the seat names list
-                let seatNamesList = Object.keys(seatNames)
-                    .filter(id => selectedSeats.includes(parseInt(id)))
-                    .map(id => seatNames[id])
-                    .join(', ');
-
-                $('#selected-seats-list').text(seatNamesList);
-            } else {
-                // Hide the summary and clear button
-                $('#selection-summary').addClass('hidden');
-                $('#clear-selection').addClass('hidden');
-            }
-        }
-
-        function clearAllSelections(canvas) {
-            // Find all seat groups and reset to available
-            canvas.getObjects('group').forEach(group => {
-                if (group.available) {
-                    const rect = group.item(0);
-                    rect.set('fill', '#4CAF50'); // Green for available
-                }
+        function showErrorMessageOnFabric(canvas) {
+            const errorText = new fabric.Text('Failed to load seat data. Please try again.', {
+                left: 300,
+                top: 200,
+                originX: 'center',
+                originY: 'center',
+                fill: '#e53e3e',
+                fontSize: 18
             });
-
-            // Clear selected seats array
-            selectedSeats = [];
-            updateSelectionSummary();
+            canvas.add(errorText);
             canvas.renderAll();
         }
 
         function renderSeats(canvas, seats) {
+            console.log("Rendering seats:", seats);
+            
             // Clear canvas first
             canvas.clear();
 
-            // Draw stage indicator at the top
-            const stageRect = new fabric.Rect({
-                width: 200,
-                height: 20,
-                fill: '#1a365d',
-                originX: 'center',
-                originY: 'center',
-                rx: 5,
-                ry: 5,
-                left: 300,
-                top: 30
-            });
+            // // Add stage indicator
+            // const stageRect = new fabric.Rect({
+            //     width: 200,
+            //     height: 20,
+            //     fill: '#1a365d',
+            //     originX: 'center',
+            //     originY: 'center',
+            //     rx: 5,
+            //     ry: 5,
+            //     left: 300,
+            //     top: 30
+            // });
+            //
+            // const stageText = new fabric.Text('STAGE', {
+            //     left: 300,
+            //     top: 30,
+            //     originX: 'center',
+            //     originY: 'center',
+            //     fill: 'white',
+            //     fontSize: 12,
+            //     fontFamily: 'Arial'
+            // });
 
-            const stageText = new fabric.Text('STAGE', {
-                fontSize: 12,
-                fill: '#fff',
-                originX: 'center',
-                originY: 'center',
-                left: 300,
-                top: 30
-            });
+            // canvas.add(stageRect);
+            // canvas.add(stageText);
 
-            const stageGroup = new fabric.Group([stageRect, stageText], {
-                selectable: false
-            });
-
-            canvas.add(stageGroup);
-
+            // Render each seat
             seats.forEach(seat => {
-                // Store seat name for use in selection summary
+                // Store seat name for later use
                 seatNames[seat.id] = seat.name;
-
-                // Create the seat rectangle with rounded corners
-                const rect = new fabric.Rect({
-                    width: 50,
-                    height: 50,
-                    fill: seat.available ? '#4CAF50' : '#F44336', // Green if available, red if not
-                    originX: 'center',
-                    originY: 'center',
-                    rx: 6,
-                    ry: 6,
-                    stroke: '#e2e8f0',
+                
+                // Create seat rectangle
+                const seatRect = new fabric.Rect({
+                    width: 30,
+                    height: 30,
+                    fill: seat.available ? '#4CAF50' : '#f44336', // Green for available, red for unavailable
+                    stroke: '#333',
                     strokeWidth: 1,
-                    shadow: new fabric.Shadow({
-                        color: 'rgba(0,0,0,0.1)',
-                        offsetX: 0,
-                        offsetY: 2,
-                        blur: 4
-                    })
-                });
-
-                // Create seat label text
-                const text = new fabric.Text(seat.name, {
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    fill: '#fff',
+                    rx: 5,
+                    ry: 5,
+                    left: seat.x,
+                    top: seat.y + 60, // Offset to account for stage
                     originX: 'center',
                     originY: 'center'
                 });
 
-                // Group rectangle and text
-                const seatGroup = new fabric.Group([rect, text], {
+                // Create seat label
+                const seatText = new fabric.Text(seat.name, {
                     left: seat.x,
-                    top: seat.y,
-                    selectable: false,
-                    seatId: seat.id,
-                    available: seat.available,
+                    top: seat.y + 60,
                     originX: 'center',
                     originY: 'center',
-                    hoverCursor: seat.available ? 'pointer' : 'not-allowed'
+                    fill: 'white',
+                    fontSize: 10,
+                    fontFamily: 'Arial',
+                    selectable: false
                 });
 
-                // Add click event only for available seats
+                // Group seat rectangle and text together
+                const seatGroup = new fabric.Group([seatRect, seatText], {
+                    left: seat.x,
+                    top: seat.y + 60,
+                    originX: 'center',
+                    originY: 'center',
+                    selectable: seat.available,
+                    hasControls: false,
+                    hasBorders: false,
+                    lockMovementX: true,
+                    lockMovementY: true,
+                    lockRotation: true,
+                    lockScalingX: true,
+                    lockScalingY: true
+                });
+
+                // Store seat data in the group
+                seatGroup.seatId = seat.id;
+                seatGroup.seatName = seat.name;
+                seatGroup.available = seat.available;
+
+                // Add click handler for available seats
                 if (seat.available) {
-                    seatGroup.on('mousedown', function () {
+                    seatGroup.on('mousedown', function() {
                         toggleSeatSelection(this, canvas);
+                    });
+
+                    seatGroup.set({
+                        hoverCursor: 'pointer',
+                        moveCursor: 'pointer'
                     });
                 }
 
@@ -661,35 +537,99 @@
 
         function toggleSeatSelection(seatGroup, canvas) {
             const seatId = seatGroup.seatId;
-            const rect = seatGroup.item(0); // The first item is the rectangle
+            const rect = seatGroup.item(0);
 
-            // Check if seat is already selected
-            const seatIndex = selectedSeats.indexOf(seatId);
-
-            if (seatIndex === -1) {
-                // Select the seat
+            if (selectedSeats.includes(seatId)) {
+                // Deselect seat
+                selectedSeats = selectedSeats.filter(id => id !== seatId);
+                rect.set('fill', '#4CAF50'); // Green for available
+            } else {
+                // Select seat
                 selectedSeats.push(seatId);
                 rect.set('fill', '#2196F3'); // Blue for selected
-                rect.set('shadow', new fabric.Shadow({
-                    color: 'rgba(33,150,243,0.4)',
-                    offsetX: 0,
-                    offsetY: 3,
-                    blur: 5
-                }));
-            } else {
-                // Deselect the seat
-                selectedSeats.splice(seatIndex, 1);
-                rect.set('fill', '#4CAF50'); // Green for available
-                rect.set('shadow', new fabric.Shadow({
-                    color: 'rgba(0,0,0,0.1)',
-                    offsetX: 0,
-                    offsetY: 2,
-                    blur: 4
-                }));
             }
 
             updateSelectionSummary();
             canvas.renderAll();
+        }
+
+        function updateSelectionSummary() {
+            const count = selectedSeats.length;
+
+            if (count > 0) {
+                $('#selection-summary').removeClass('hidden');
+                $('#clear-selection').removeClass('hidden');
+                $('#selected-count').text(count);
+
+                const seatNamesList = selectedSeats
+                    .map(id => seatNames[id])
+                    .join(', ');
+
+                $('#selected-seats-list').text(seatNamesList);
+            } else {
+                $('#selection-summary').addClass('hidden');
+                $('#clear-selection').addClass('hidden');
+            }
+        }
+
+        function clearAllSelections(canvas) {
+            // Find all seat groups and reset to available
+            canvas.getObjects('group').forEach(group => {
+                if (group.available && group.seatId) {
+                    const rect = group.item(0);
+                    rect.set('fill', '#4CAF50'); // Green for available
+                }
+            });
+
+            selectedSeats = [];
+            updateSelectionSummary();
+            canvas.renderAll();
+        }
+
+        // Legacy canvas helper functions (keeping for compatibility)
+        function clearCanvas() {
+            if (fabricCanvas) {
+                fabricCanvas.clear();
+            }
+        }
+
+        function showLoading() {
+            if (fabricCanvas) {
+                showLoadingOnFabric(fabricCanvas);
+            }
+        }
+
+        function showNoSeatsMessage() {
+            if (fabricCanvas) {
+                showNoSeatsMessageOnFabric(fabricCanvas);
+            }
+        }
+
+        function showErrorMessage() {
+            if (fabricCanvas) {
+                showErrorMessageOnFabric(fabricCanvas);
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            $('.notification').remove();
+
+            let bgColor = 'bg-blue-500';
+            if (type === 'success') bgColor = 'bg-green-500';
+            if (type === 'error') bgColor = 'bg-red-500';
+            if (type === 'warning') bgColor = 'bg-yellow-500';
+
+            const notification = $(`
+                <div class="notification fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50">
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            setTimeout(() => {
+                notification.fadeOut(() => notification.remove());
+            }, 5000);
         }
     </script>
 }

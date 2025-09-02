@@ -557,49 +557,100 @@
                 }
             });
 
-            saveSeatBtn.addEventListener('click', function() {
-                console.log("Saving seat map");
-                if (currentSeats.length === 0) {
-                    updateStatus("No seats to save. Add seats first.", "warning");
+            saveSeatBtn.addEventListener('click', saveSeats);
+
+            // Mark as initialized
+            window.seatsInitialized = true;
+
+            // Add this function to your existing script section in Edit.cshtml
+            function saveSeats() {
+                console.log("Saving seats...");
+
+                const subAreaId = document.querySelector('input[name="Id"]').value;
+
+                if (!subAreaId) {
+                    console.error("SubArea ID not found");
+                    updateStatus("Error: SubArea ID not found", "error");
                     return;
                 }
 
-                updateStatus("Saving seats...");
+                if (!currentSeats || currentSeats.length === 0) {
+                    updateStatus("No seats to save", "warning");
+                    return;
+                }
 
-                // Convert seats to the format expected by the backend
-                const seatsToSave = currentSeats.map(seat => ({
-                    Name: seat.name,
-                    left: seat.x,
-                    top: seat.y
+                // Transform seats to the format expected by the server
+                const seatsData = currentSeats.map(seat => ({
+                    name: seat.name,
+                    x: seat.x,
+                    y: seat.y,
+                    available: seat.available !== false, // Default to true if not specified
+                    subAreaId: parseInt(subAreaId)
                 }));
 
+                console.log("Sending seats data:", seatsData);
+                updateStatus("Saving seats...", "loading");
+
+                // Send to server using the existing CreateTableMap endpoint
                 fetch(`/Seat/CreateTableMap?subAreaId=${subAreaId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
                     },
-                    body: JSON.stringify(seatsToSave)
+                    body: JSON.stringify(seatsData)
                 })
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error(`Server returned status ${response.status}`);
+                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
                         return response.json();
                     })
                     .then(data => {
-                        updateStatus(`${seatsToSave.length} seats saved successfully!`, "success");
-                        // Reload seats to get proper IDs
+                        console.log("Seats saved successfully:", data);
+                        updateStatus("Seats saved successfully!", "success");
+
+                        // Reload seats to get updated IDs from server
                         loadSeats(subAreaId);
                     })
                     .catch(error => {
-                        console.error('Error saving seats:', error);
+                        console.error("Error saving seats:", error);
                         updateStatus("Error saving seats: " + error.message, "error");
                     });
-            });
+            }
 
-            // Mark as initialized
-            window.seatsInitialized = true;
+// Also add this helper function to update the status display
+            function updateStatus(message, type = "info") {
+                const statusBar = document.getElementById('seat-status');
+                if (!statusBar) return;
+
+                // Remove existing status classes
+                statusBar.className = statusBar.className.replace(/bg-\w+-\d+/g, '').replace(/text-\w+-\d+/g, '');
+
+                // Apply appropriate styling based on type
+                switch(type) {
+                    case "success":
+                        statusBar.classList.add('bg-green-100', 'text-green-700');
+                        break;
+                    case "error":
+                        statusBar.classList.add('bg-red-100', 'text-red-700');
+                        break;
+                    case "warning":
+                        statusBar.classList.add('bg-yellow-100', 'text-yellow-700');
+                        break;
+                    case "loading":
+                        statusBar.classList.add('bg-blue-100', 'text-blue-700');
+                        break;
+                    default:
+                        statusBar.classList.add('bg-gray-100', 'text-gray-700');
+                }
+
+                statusBar.textContent = message;
+            }
+
+// Also update the save button event handler in your existing script
+// Find this line in your existing code and make sure it calls saveSeats():
+// saveSeatBtn.addEventListener('click', saveSeats);
         }
 
         // Load seats from server

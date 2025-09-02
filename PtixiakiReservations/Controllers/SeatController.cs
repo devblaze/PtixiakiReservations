@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -100,13 +101,30 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
 
 // POST: Table/Create
     [HttpPost]
-    public async Task<IActionResult> CreateTableMap([FromBody] JsonSeatModel[] seats, int? subAreaId)
+    public async Task<IActionResult> CreateTableMap([FromBody] JsonSeatModel[] seats, int subAreaId)
     {
-        if (ModelState.IsValid && subAreaId.HasValue)
+        try
         {
+            if (seats == null || !seats.Any())
+            {
+                return BadRequest("No seat data provided");
+            }
+
+            if (subAreaId <= 0)
+            {
+                return BadRequest("Invalid sub area ID");
+            }
+
+            // Verify the sub area exists
+            var subArea = await context.SubArea.FindAsync(subAreaId);
+            if (subArea == null)
+            {
+                return NotFound("Sub area not found");
+            }
+
             // Check if there are existing seats for this subarea
             var existingSeats = await context.Seat
-                .Where(s => s.SubAreaId == subAreaId.Value)
+                .Where(s => s.SubAreaId == subAreaId)
                 .ToListAsync();
 
             // If this is an edit operation (existing seats found), remove them all first
@@ -122,24 +140,24 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
                 Seat seat = new Seat
                 {
                     Name = s.Name,
-                    X = s.left,
-                    Y = s.top,
-                    SubAreaId = subAreaId.Value,
+                    X = s.x,
+                    Y = s.y,
+                    SubAreaId = subAreaId,
                     Available = true
                 };
                 context.Add(seat);
             }
 
             await context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Seats created successfully" });
         }
-
-        Response.StatusCode = (int)HttpStatusCode.OK;
-        return Json(Response.StatusCode);
+        catch (Exception ex)
+        {
+            // Log the error
+            return StatusCode(500, new { success = false, message = "An error occurred while saving seats", error = ex.Message });
+        }
     }
-
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-
+    
     // GET: Table/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
@@ -158,8 +176,6 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
     }
 
     // POST: Table/Edit/5
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, [Bind("ID,ReservationId,VenueId")] Seat Seat)

@@ -354,8 +354,13 @@ public class EventsController(
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateEvent(Event newEvent, bool IsMultiDay = false, string StartDate = null,
-        string EndDate = null, string StartTime = null, string EndTime = null)
+    public async Task<IActionResult> CreateEvent(
+        Event newEvent,
+        bool IsMultiDay = false,
+        string StartDate = null,
+        string EndDate = null,
+        string StartTime = null,
+        string EndTime = null)
     {
         try
         {

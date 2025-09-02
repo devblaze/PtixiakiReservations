@@ -1,4 +1,5 @@
-﻿services:
+
+services:
   ptixiakireservations1:
     image: devblaze/ptixiakireservations:latest
     container_name: ptixiaki-app1
@@ -15,13 +16,10 @@
       - ASPNETCORE_URLS=http://+:8080
     networks:
       - reservations
+    # Remove your custom Traefik labels - Dokploy will add its own
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
       - "com.centurylinklabs.watchtower.depends-on=ptixiakireservations2"
-      - "traefik.enable=true"
-      # Update the rule to accept both hostnames
-      - "traefik.http.routers.app1.rule=Host(`192.168.4.41`) || Host(`${PUBLIC_URL}`)"
-      - "traefik.http.services.app1.loadbalancer.server.port=8080"
   
   ptixiakireservations2:
     image: devblaze/ptixiakireservations:latest
@@ -41,53 +39,8 @@
       - reservations
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-      - "traefik.enable=true"
-      # Update the rule to accept both hostnames
-      - "traefik.http.routers.app2.rule=Host(`192.168.4.41`) || Host(`${PUBLIC_URL}`)"
-      - "traefik.http.services.app2.loadbalancer.server.port=8080"
   
-  traefik:
-    image: traefik:v2.10
-    container_name: traefik
-    restart: unless-stopped
-    ports:
-      - "8081:80"
-      - "8090:8080"
-      - "36091:36091"
-      - "8091:8091"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik-logs:/var/log/traefik
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.playit.address=:36091"
-      
-      # Access Logs Configuration
-      - "--accesslog=true"
-      - "--accesslog.filepath=/var/log/traefik/access.log"
-      - "--accesslog.format=json"
-      - "--accesslog.bufferingsize=100"
-      
-      # Metrics Configuration
-      - "--metrics.prometheus=true"
-      - "--metrics.prometheus.addEntryPointsLabels=true"
-      - "--metrics.prometheus.addServicesLabels=true"
-      - "--metrics.prometheus.entryPoint=metrics"
-      - "--entrypoints.metrics.address=:8091"
-      
-      # Tracing Configuration
-      - "--tracing=true"
-      - "--tracing.serviceName=traefik"
-      - "--tracing.spanNameLimit=250"
-      - "--tracing.jaeger=true"
-      - "--tracing.jaeger.samplingServerURL=http://jaeger:5778/sampling"
-      - "--tracing.jaeger.localAgentHostPort=jaeger:6831"
-      - "--tracing.jaeger.propagation=jaeger"
-    networks:
-      - reservations
+  # Remove the entire Traefik service - Dokploy provides its own
   
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -137,15 +90,15 @@
       - TZ=Europe/Athens
     networks:
       - reservations
-    command: --label-enable --cleanup  # Remove --rolling-restart
+    command: --label-enable --cleanup
 
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
     restart: unless-stopped
     ports:
-      - "16686:16686"  # Jaeger UI
-      - "5778:5778"    # Sampling configuration service
+      - "16686:16686"
+      - "5778:5778"
     environment:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
     networks:
