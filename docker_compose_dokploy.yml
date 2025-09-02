@@ -1,48 +1,31 @@
 services:
-  ptixiakireservations1:
-    image: devblaze/ptixiakireservations:latest
-    container_name: ptixiaki-app1
+  ptixiakireservations:
+    build:
+      context: ./PtixiakiReservations
+      dockerfile: Dockerfile
+    container_name: ptixiaki-app-dev
     restart: unless-stopped
     depends_on:
       - elasticsearch
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=${DB_SERVER};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
       - ElasticSettings__Uri=http://elasticsearch:9200
-      - ElasticSettings__DefaultIndex=events
+      - ElasticSettings__DefaultIndex=events-dev
       - TZ=Europe/Athens
       - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
       - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "8082:8080"  # Changed from 8081 to 8082
     networks:
-      - reservations
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-  
-  ptixiakireservations2:
-    image: devblaze/ptixiakireservations:latest
-    container_name: ptixiaki-app2
-    restart: unless-stopped
-    depends_on:
-      - elasticsearch
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=${DB_SERVER};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
-      - ElasticSettings__Uri=http://elasticsearch:9200
-      - ElasticSettings__DefaultIndex=events
-      - TZ=Europe/Athens
-      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
-      - ASPNETCORE_URLS=http://+:8080
-    networks:
-      - reservations
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+      - reservations-dev
   
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
-    container_name: elasticsearch
+    container_name: elasticsearch-ptixiaki-dev
     restart: unless-stopped
     volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
+      - elasticsearch-data-dev:/usr/share/elasticsearch/data
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -53,57 +36,26 @@ services:
         soft: -1
         hard: -1
     ports:
-      - "9200:9200"
+      - "9201:9200"
     networks:
-      - reservations
+      - reservations-dev
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.0
-    container_name: kibana
+    container_name: kibana-ptixiaki-dev
     restart: unless-stopped
     ports:
-      - "5601:5601"
+      - "5602:5601"
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch-ptixiaki-dev:9200
     networks:
-      - reservations
-  
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=300
-      - WATCHTOWER_INCLUDE_STOPPED=false
-      - WATCHTOWER_LABEL_ENABLE=true
-      - WATCHTOWER_TIMEOUT=90s
-      - TZ=Europe/Athens
-    networks:
-      - reservations
-    command: --label-enable --cleanup --rolling-restart
-    labels:
-      - "com.centurylinklabs.watchtower.depends-on=ptixiakireservations2"
-
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: jaeger
-    restart: unless-stopped
-    ports:
-      - "16686:16686"
-      - "5778:5778"
-    environment:
-      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
-    networks:
-      - reservations
+      - reservations-dev
 
 networks:
-  reservations:
+  reservations-dev:
     driver: bridge
 
 volumes:
-  elasticsearch-data:
+  elasticsearch-data-dev:
