@@ -356,15 +356,17 @@ public class EventsController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateEvent(
         Event newEvent,
-        bool IsMultiDay = false,
+        string IsMultiDay = null,
         string StartDate = null,
         string EndDate = null,
         string StartTime = null,
         string EndTime = null)
     {
+        bool isMultiDay = IsMultiDay == "on" || IsMultiDay == "true";
+        
         try
         {
-            logger.LogInformation("Processing event creation. IsMultiDay: {IsMultiDay}", IsMultiDay);
+            logger.LogInformation("Processing event creation. isMultiDay: {isMultiDay}", isMultiDay);
             var userId = userManager.GetUserId(User);
 
             // For debugging
@@ -416,7 +418,7 @@ public class EventsController(
                 return View(newEvent);
             }
 
-            if (IsMultiDay && !string.IsNullOrEmpty(StartDate) && !string.IsNullOrEmpty(EndDate)
+            if (isMultiDay && !string.IsNullOrEmpty(StartDate) && !string.IsNullOrEmpty(EndDate)
                 && !string.IsNullOrEmpty(StartTime) && !string.IsNullOrEmpty(EndTime))
             {
                 // Handle multi-day event creation
@@ -424,8 +426,32 @@ public class EventsController(
 
                 DateTime startDate = DateTime.Parse(StartDate);
                 DateTime endDate = DateTime.Parse(EndDate);
-                TimeSpan startTimeSpan = TimeSpan.Parse(StartTime);
-                TimeSpan endTimeSpan = TimeSpan.Parse(EndTime);
+                
+                // Handle time parsing - extract time portion if it's a datetime string
+                TimeSpan startTimeSpan;
+                TimeSpan endTimeSpan;
+                
+                if (DateTime.TryParse(StartTime, out DateTime parsedStartTime))
+                {
+                    // If it parses as DateTime, extract the time portion
+                    startTimeSpan = parsedStartTime.TimeOfDay;
+                }
+                else
+                {
+                    // Otherwise parse as TimeSpan directly
+                    startTimeSpan = TimeSpan.Parse(StartTime);
+                }
+                
+                if (DateTime.TryParse(EndTime, out DateTime parsedEndTime))
+                {
+                    // If it parses as DateTime, extract the time portion
+                    endTimeSpan = parsedEndTime.TimeOfDay;
+                }
+                else
+                {
+                    // Otherwise parse as TimeSpan directly
+                    endTimeSpan = TimeSpan.Parse(EndTime);
+                }
 
                 // Create events for each day in the range
                 for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))

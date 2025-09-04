@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Sub Areas";
-    var subAreas = ViewBag.SubAreas;
+    var subAreas = ViewBag.SubAreas as System.Collections.Generic.List<dynamic>;
 
     // Manual counting of sub areas with seats
     int subAreasWithSeats = 0;

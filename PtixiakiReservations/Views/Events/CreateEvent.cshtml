@@ -25,12 +25,9 @@
                         <!-- Event Type Selection Section -->
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                             <div class="flex items-center mb-4">
-                                <div
-                                    class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                                         viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                 </div>
                                 <h2 class="ml-3 text-lg font-medium text-gray-800">Event Information</h2>
@@ -39,38 +36,28 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Event Name -->
                                 <div>
-                                    <label asp-for="Name" class="block text-sm font-medium text-gray-700 mb-1">Event
-                                        Name</label>
+                                    <label asp-for="Name" class="block text-sm font-medium text-gray-700 mb-1">Event Name</label>
                                     <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                                             </svg>
                                         </div>
-                                        <input asp-for="Name" placeholder="Enter event name"
-                                               class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
+                                        <input asp-for="Name" placeholder="Enter event name" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
                                     </div>
                                     <span asp-validation-for="Name" class="text-red-500 text-xs mt-1"></span>
                                 </div>
 
                                 <!-- Event Type Dropdown -->
                                 <div>
-                                    <label asp-for="EventTypeId" class="block text-sm font-medium text-gray-700 mb-1">Event
-                                        Type</label>
+                                    <label asp-for="EventTypeId" class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
                                     <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                                             </svg>
                                         </div>
-                                        <select asp-for="EventTypeId" asp-items="ViewBag.EventTypeList"
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                        <select asp-for="EventTypeId" asp-items="ViewBag.EventTypeList" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                                         </select>
                                     </div>
                                     <span asp-validation-for="EventTypeId" class="text-red-500 text-xs mt-1"></span>
@@ -83,7 +70,7 @@
                             <div class="flex items-center mb-4">
                                 <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
                                 </div>
                                 <h2 class="ml-3 text-lg font-medium text-gray-800">Venue & Location</h2>
@@ -96,24 +83,23 @@
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             </svg>
                                         </div>
-                                        <select asp-for="VenueId" asp-items="ViewBag.VenueList" id="venueSelect"
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white" required>
+                                        <select asp-for="VenueId" asp-items="ViewBag.VenueList" id="venueSelect" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white" required>
                                             <option value="">Select a venue</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                                             </svg>
                                         </div>
                                     </div>
                                     <span asp-validation-for="VenueId" class="text-red-500 text-xs mt-1"></span>
                                 </div>
 
-                                <!-- Sub Area Selection - NOW REQUIRED -->
+                                <!-- Sub Area Selection -->
                                 <div>
                                     <label asp-for="SubAreaId" class="block text-sm font-medium text-gray-700 mb-1">
                                         Select Sub Area <span class="text-red-500">*</span>
@@ -121,16 +107,15 @@
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
                                             </svg>
                                         </div>
-                                        <select asp-for="SubAreaId" id="subAreaSelect"
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white" required>
+                                        <select asp-for="SubAreaId" id="subAreaSelect" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white" required>
                                             <option value="">First select a venue</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                                             </svg>
                                         </div>
                                     </div>
@@ -143,12 +128,9 @@
                         <!-- Schedule Section -->
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                             <div class="flex items-center mb-4">
-                                <div
-                                    class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                                         viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
                                 </div>
                                 <h2 class="ml-3 text-lg font-medium text-gray-800">Event Schedule</h2>
@@ -157,14 +139,11 @@
                             <!-- Toggle for Single vs Multi-day events -->
                             <div class="relative flex items-start mb-6">
                                 <div class="flex items-center h-5">
-                                    <input type="checkbox" id="isMultiDay" name="IsMultiDay"
-                                           class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors">
+                                    <input type="checkbox" id="isMultiDay" name="IsMultiDay" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors">
                                 </div>
                                 <div class="ml-3 text-sm">
-                                    <label for="isMultiDay" class="font-medium text-gray-700">Create events for multiple
-                                        days</label>
-                                    <p class="text-gray-500">When enabled, this will create separate events for each day
-                                        in the selected range</p>
+                                    <label for="isMultiDay" class="font-medium text-gray-700">Create events for multiple days</label>
+                                    <p class="text-gray-500">When enabled, this will create separate events for each day in the selected range</p>
                                 </div>
                             </div>
 
@@ -172,45 +151,27 @@
                             <div id="singleDayContainer" class="space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label asp-for="StartDateTime"
-                                               class="block text-sm font-medium text-gray-700 mb-1">
-                                            Start Date & Time
-                                        </label>
+                                        <label asp-for="StartDateTime" class="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
                                         <div class="relative">
-                                            <div
-                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                             </div>
-                                            <input asp-for="StartDateTime" type="datetime-local"
-                                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                   value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"/>
+                                            <input asp-for="StartDateTime" type="datetime-local" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"/>
                                         </div>
-                                        <span asp-validation-for="StartDateTime"
-                                              class="text-red-500 text-xs mt-1"></span>
+                                        <span asp-validation-for="StartDateTime" class="text-red-500 text-xs mt-1"></span>
                                     </div>
 
                                     <div>
-                                        <label asp-for="EndTime" class="block text-sm font-medium text-gray-700 mb-1">
-                                            End Date & Time
-                                        </label>
+                                        <label asp-for="EndTime" class="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
                                         <div class="relative">
-                                            <div
-                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                             </div>
-                                            <input asp-for="EndTime" type="datetime-local"
-                                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                   value="@DateTime.Now.AddHours(2).ToString("yyyy-MM-ddTHH:mm")"/>
+                                            <input asp-for="EndTime" type="datetime-local" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="@DateTime.Now.AddHours(2).ToString("yyyy-MM-ddTHH:mm")"/>
                                         </div>
                                         <span asp-validation-for="EndTime" class="text-red-500 text-xs mt-1"></span>
                                     </div>
@@ -219,45 +180,35 @@
 
                             <!-- Multi-day Container -->
                             <div id="multiDayContainer" class="hidden space-y-6">
+                                <!-- Hidden fields for model binding when in multi-day mode -->
+                                <input asp-for="StartDateTime" type="hidden" id="multiStartDateTime" />
+                                <input asp-for="EndTime" type="hidden" id="multiEndDateTime" />
+                                
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <!-- Start Date -->
                                     <div>
-                                        <label for="StartDate" class="block text-sm font-medium text-gray-700 mb-1">Start
-                                            Date</label>
+                                        <label for="StartDate" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                                         <div class="relative">
-                                            <div
-                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                                 </svg>
                                             </div>
-                                            <input id="StartDate" name="StartDate" type="date"
-                                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                   value="@DateTime.Now.ToString("yyyy-MM-dd")"/>
+                                            <input id="StartDate" name="StartDate" type="date" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="@DateTime.Today.ToString("yyyy-MM-dd")"/>
                                         </div>
                                         <p class="text-xs text-gray-500 mt-1">First day to create an event</p>
                                     </div>
 
                                     <!-- End Date -->
                                     <div>
-                                        <label for="EndDate" class="block text-sm font-medium text-gray-700 mb-1">End
-                                            Date</label>
+                                        <label for="EndDate" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                                         <div class="relative">
-                                            <div
-                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                                 </svg>
                                             </div>
-                                            <input id="EndDate" name="EndDate" type="date"
-                                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                   value="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")"/>
+                                            <input id="EndDate" name="EndDate" type="date" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="@DateTime.Today.AddDays(7).ToString("yyyy-MM-dd")"/>
                                         </div>
                                         <p class="text-xs text-gray-500 mt-1">Last day to create an event</p>
                                     </div>
@@ -266,63 +217,45 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <!-- Daily Start Time -->
                                     <div>
-                                        <label for="StartTime" class="block text-sm font-medium text-gray-700 mb-1">Start
-                                            Time</label>
+                                        <label for="StartTime" class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
                                         <div class="relative">
-                                            <div
-                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                             </div>
-                                            <input id="StartTime" name="StartTime" type="time"
-                                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                   value="@DateTime.Now.ToString("HH:mm")"/>
+                                            <input id="StartTime" name="StartTime" type="time" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="@DateTime.Now.ToString("HH:mm")"/>
                                         </div>
                                         <p class="text-xs text-gray-500 mt-1">Time each day's event will start</p>
                                     </div>
 
                                     <!-- Daily End Time -->
                                     <div>
-                                        <label for="EndTime" class="block text-sm font-medium text-gray-700 mb-1">End
-                                            Time</label>
+                                        <label for="EndTime" class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
                                         <div class="relative">
-                                            <div
-                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                             </div>
-                                            <input id="EndTime" name="EndTime" type="time"
-                                                   class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                   value="@DateTime.Now.AddHours(2).ToString("HH:mm")"/>
+                                            <input id="EndTime" name="EndTime" type="time" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="@DateTime.Now.AddHours(2).ToString("HH:mm")"/>
                                         </div>
                                         <p class="text-xs text-gray-500 mt-1">Time each day's event will end</p>
                                     </div>
                                 </div>
 
                                 <!-- Preview of event dates -->
-                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4"
-                                     id="datePreviewContainer">
+                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4" id="datePreviewContainer">
                                     <h3 class="text-sm font-medium text-blue-800 mb-2 flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none"
-                                             viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                         Event Preview
                                     </h3>
                                     <p class="text-sm text-blue-700 mb-2">
                                         Based on your selection, the following events will be created:
                                     </p>
-                                    <div id="eventPreviewList"
-                                         class="text-sm text-blue-600 max-h-24 overflow-y-auto pl-2">
+                                    <div id="eventPreviewList" class="text-sm text-blue-600 max-h-24 overflow-y-auto pl-2">
                                         <!-- This will be populated by JavaScript -->
                                     </div>
                                     <p class="text-xs text-blue-500 mt-2">
@@ -334,17 +267,13 @@
 
                         <!-- Submit Buttons -->
                         <div class="flex justify-end space-x-3 pt-5 border-t border-gray-200">
-                            <a href="@Url.Action("EventsForToday", "Events")"
-                               class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm">
+                            <a href="@Url.Action("EventsForToday", "Events")" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm">
                                 Cancel
                             </a>
-                            <button type="submit"
-                                    class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-md shadow hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition hover:-translate-y-0.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-1" fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                                    </svg>
+                            <button type="submit" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-md shadow hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition hover:-translate-y-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                                </svg>
                                 Create Event
                             </button>
                         </div>
@@ -369,19 +298,41 @@
             // Elements for preview
             const startDateInput = document.getElementById('StartDate');
             const endDateInput = document.getElementById('EndDate');
+            const startTimeInput = document.getElementById('StartTime');
+            const endTimeInput = document.getElementById('EndTime');
             const eventPreviewList = document.getElementById('eventPreviewList');
             const eventCountSpan = document.getElementById('eventCount');
+
+            // Hidden fields for model binding in multi-day mode
+            const multiStartDateTime = document.getElementById('multiStartDateTime');
+            const multiEndDateTime = document.getElementById('multiEndDateTime');
 
             const venueSelect = document.getElementById('venueSelect');
             const subAreaSelect = document.getElementById('subAreaSelect');
 
+            // Function to update hidden fields for multi-day mode
+            function updateHiddenFields() {
+                if (multiDayCheckbox.checked) {
+                    const startDate = startDateInput.value;
+                    const startTime = startTimeInput.value;
+                    const endTime = endTimeInput.value;
+
+                    if (startDate && startTime) {
+                        multiStartDateTime.value = `${startDate}T${startTime}`;
+                    }
+                    if (startDate && endTime) {
+                        multiEndDateTime.value = `${startDate}T${endTime}`;
+                    }
+                }
+            }
+
             // Load sub areas when venue is selected
-            venueSelect.addEventListener('change', function() {
+            venueSelect.addEventListener('change', function () {
                 const venueId = this.value;
-                
+
                 // Reset sub area select
                 subAreaSelect.innerHTML = '<option value="">Loading...</option>';
-                
+
                 if (!venueId) {
                     subAreaSelect.innerHTML = '<option value="">First select a venue</option>';
                     return;
@@ -392,7 +343,7 @@
                     .then(response => response.json())
                     .then(data => {
                         subAreaSelect.innerHTML = '<option value="">Select a sub area</option>';
-                        
+
                         if (data && data.length > 0) {
                             data.forEach(subArea => {
                                 const option = document.createElement('option');
@@ -411,11 +362,12 @@
             });
 
             // Toggle between single and multi-day
-            multiDayCheckbox.addEventListener('change', function() {
+            multiDayCheckbox.addEventListener('change', function () {
                 if (this.checked) {
                     singleDayContainer.classList.add('hidden');
                     multiDayContainer.classList.remove('hidden');
                     updateEventPreview();
+                    updateHiddenFields();
                 } else {
                     singleDayContainer.classList.remove('hidden');
                     multiDayContainer.classList.add('hidden');
@@ -426,7 +378,7 @@
             function updateEventPreview() {
                 const startDate = startDateInput.value;
                 const endDate = endDateInput.value;
-                
+
                 if (!startDate || !endDate) {
                     eventPreviewList.innerHTML = '<div class="text-gray-500 italic">Select both start and end dates to see preview</div>';
                     eventCountSpan.textContent = '0';
@@ -435,7 +387,7 @@
 
                 const start = new Date(startDate);
                 const end = new Date(endDate);
-                
+
                 if (start > end) {
                     eventPreviewList.innerHTML = '<div class="text-red-500 italic">End date must be after start date</div>';
                     eventCountSpan.textContent = '0';
@@ -444,7 +396,7 @@
 
                 const dates = [];
                 const current = new Date(start);
-                
+
                 while (current <= end) {
                     dates.push(new Date(current));
                     current.setDate(current.getDate() + 1);
@@ -459,15 +411,28 @@
                 } else {
                     eventPreviewList.innerHTML = dates.map(d => d.toLocaleDateString()).join('<br>');
                 }
-                
+
                 eventCountSpan.textContent = dates.length;
+                updateHiddenFields();
             }
 
-            // Add event listeners for date preview updates
+            // Add event listeners for date preview updates and hidden field updates
             if (startDateInput && endDateInput) {
                 startDateInput.addEventListener('change', updateEventPreview);
                 endDateInput.addEventListener('change', updateEventPreview);
             }
+
+            if (startTimeInput && endTimeInput) {
+                startTimeInput.addEventListener('change', updateHiddenFields);
+                endTimeInput.addEventListener('change', updateHiddenFields);
+            }
+
+            // Update hidden fields before form submission
+            document.getElementById('createEventForm').addEventListener('submit', function() {
+                if (multiDayCheckbox.checked) {
+                    updateHiddenFields();
+                }
+            });
         });
     </script>
 }

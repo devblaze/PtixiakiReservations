@@ -9,6 +9,9 @@ using PtixiakiReservations.Data;
 using PtixiakiReservations.Services;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace PtixiakiReservations.Tests.Controllers;
 
@@ -453,6 +456,623 @@ public class EventsControllerTests : IDisposable
         Assert.Equal("Event 21", model[0].Name);
         Assert.Equal("Event 25", model[4].Name);
     }
+
+    #region Event Creation Tests
+
+    [Fact]
+    public async Task CreateEvent_GET_ReturnsView_WithDropdownData()
+    {
+        // Arrange
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        SetupHttpContext(controller, "user1");
+
+        // Act
+        var result = await controller.CreateEvent();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.NotNull(viewResult.ViewData["VenueList"]);
+        Assert.NotNull(viewResult.ViewData["EventTypeList"]);
+    }
+
+    [Fact]
+    public async Task CreateEvent_GET_RedirectsToVenueCreate_WhenUserHasNoVenues()
+    {
+        // Arrange
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user2");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        SetupHttpContext(controller, "user2");
+
+        // Act
+        var result = await controller.CreateEvent();
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("Create", redirectResult.ActionName);
+        Assert.Equal("Venue", redirectResult.ControllerName);
+    }
+
+    [Fact]
+    public async Task CreateEvent_SingleDay_CreatesEventSuccessfully()
+    {
+        // Arrange
+        var newEvent = new Event
+        {
+            Name = "Single Day Test Event",
+            VenueId = 1,
+            EventTypeId = 1,
+            StartDateTime = DateTime.Today.AddDays(1).AddHours(10),
+            EndTime = DateTime.Today.AddDays(1).AddHours(12)
+        };
+
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Clear existing events
+        _context.Event.RemoveRange(_context.Event.Where(e => e.Id != 1));
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await controller.CreateEvent(newEvent);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("Index", redirectResult.ActionName);
+
+        // Verify event was created
+        var createdEvent = await _context.Event
+            .FirstOrDefaultAsync(e => e.Name == "Single Day Test Event");
+        Assert.NotNull(createdEvent);
+        Assert.Equal("Single Day Test Event", createdEvent.Name);
+        Assert.Equal(1, createdEvent.VenueId);
+        Assert.Equal(1, createdEvent.EventTypeId);
+    }
+
+    [Fact]
+    public async Task CreateEvent_MultiDay_WithTimeString_CreatesMultipleEvents()
+    {
+        // Arrange
+        var newEvent = new Event
+        {
+            Name = "Multi Day Test Event",
+            VenueId = 1,
+            EventTypeId = 1
+        };
+
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Clear existing events
+        _context.Event.RemoveRange(_context.Event.Where(e => e.Id != 1));
+        await _context.SaveChangesAsync();
+
+        var startDate = DateTime.Today.AddDays(1);
+        var endDate = DateTime.Today.AddDays(3);
+
+        // Act - Test with time-only strings (like "10:00" and "12:00")
+        var result = await controller.CreateEvent(
+            newEvent,
+            "on", // IsMultiDay
+            startDate.ToString("yyyy-MM-dd"),
+            endDate.ToString("yyyy-MM-dd"),
+            "10:00", // StartTime
+            "12:00"  // EndTime
+        );
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("Index", redirectResult.ActionName);
+
+        // Verify 3 events were created (3 days)
+        var createdEvents = await _context.Event
+            .Where(e => e.Name == "Multi Day Test Event")
+            .OrderBy(e => e.StartDateTime)
+            .ToListAsync();
+        
+        Assert.Equal(3, createdEvents.Count);
+
+        // Verify each event has correct date and time
+        for (int i = 0; i < 3; i++)
+        {
+            var expectedDate = startDate.AddDays(i);
+            Assert.Equal(expectedDate.Date, createdEvents[i].StartDateTime.Date);
+            Assert.Equal(10, createdEvents[i].StartDateTime.Hour);
+            Assert.Equal(0, createdEvents[i].StartDateTime.Minute);
+            Assert.Equal(12, createdEvents[i].EndTime.Hour);
+            Assert.Equal(0, createdEvents[i].EndTime.Minute);
+        }
+    }
+
+    [Fact]
+    public async Task CreateEvent_MultiDay_WithDateTimeString_CreatesMultipleEvents()
+    {
+        // Arrange
+        var newEvent = new Event
+        {
+            Name = "Multi Day DateTime Test Event",
+            VenueId = 1,
+            EventTypeId = 1
+        };
+
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Clear existing events
+        _context.Event.RemoveRange(_context.Event.Where(e => e.Id != 1));
+        await _context.SaveChangesAsync();
+
+        var startDate = DateTime.Today.AddDays(1);
+        var endDate = DateTime.Today.AddDays(2);
+
+        // Act - Test with datetime strings (like "2025-09-04T14:30")
+        var result = await controller.CreateEvent(
+            newEvent,
+            "true", // IsMultiDay
+            startDate.ToString("yyyy-MM-dd"),
+            endDate.ToString("yyyy-MM-dd"),
+            "2025-01-01T14:30", // StartTime - date part will be ignored, only time extracted
+            "2025-01-01T16:30"  // EndTime - date part will be ignored, only time extracted
+        );
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("Index", redirectResult.ActionName);
+
+        // Verify 2 events were created (2 days)
+        var createdEvents = await _context.Event
+            .Where(e => e.Name == "Multi Day DateTime Test Event")
+            .OrderBy(e => e.StartDateTime)
+            .ToListAsync();
+        
+        Assert.Equal(2, createdEvents.Count);
+
+        // Verify each event has correct date and time (time extracted from datetime string)
+        for (int i = 0; i < 2; i++)
+        {
+            var expectedDate = startDate.AddDays(i);
+            Assert.Equal(expectedDate.Date, createdEvents[i].StartDateTime.Date);
+            Assert.Equal(14, createdEvents[i].StartDateTime.Hour); // Time extracted from datetime string
+            Assert.Equal(30, createdEvents[i].StartDateTime.Minute);
+            Assert.Equal(16, createdEvents[i].EndTime.Hour);
+            Assert.Equal(30, createdEvents[i].EndTime.Minute);
+        }
+    }
+
+    [Fact]
+    public async Task CreateEvent_MultiDay_InvalidVenue_ReturnsViewWithError()
+    {
+        // Arrange
+        var newEvent = new Event
+        {
+            Name = "Test Event",
+            VenueId = 999, // Non-existent venue
+            EventTypeId = 1
+        };
+
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.CreateEvent(newEvent, "on", "2024-01-01", "2024-01-03", "10:00", "12:00");
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.False(controller.ModelState.IsValid);
+        Assert.True(controller.ModelState.ContainsKey("VenueId"));
+    }
+
+    [Fact]
+    public async Task CreateEvent_UserDoesNotOwnVenue_ReturnsViewWithError()
+    {
+        // Arrange
+        var newEvent = new Event
+        {
+            Name = "Test Event",
+            VenueId = 1,
+            EventTypeId = 1
+        };
+
+        // Set up user that doesn't own the venue
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user2");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.CreateEvent(newEvent, "on", "2024-01-01", "2024-01-03", "10:00", "12:00");
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.False(controller.ModelState.IsValid);
+        Assert.True(controller.ModelState.ContainsKey("VenueId"));
+    }
+
+    #endregion
+
+    #region Event Search and Filtering Tests
+
+    [Fact]
+    public async Task SearchEvents_WithDateRange_ReturnsFilteredEvents()
+    {
+        // Arrange
+        _context.Event.RemoveRange(_context.Event);
+        await _context.SaveChangesAsync();
+
+        var events = new List<Event>
+        {
+            new Event
+            {
+                Id = 10, Name = "Event 1", StartDateTime = new DateTime(2024, 6, 1, 10, 0, 0),
+                EndTime = new DateTime(2024, 6, 1, 12, 0, 0), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 11, Name = "Event 2", StartDateTime = new DateTime(2024, 6, 15, 14, 0, 0),
+                EndTime = new DateTime(2024, 6, 15, 16, 0, 0), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 12, Name = "Event 3", StartDateTime = new DateTime(2024, 7, 1, 18, 0, 0),
+                EndTime = new DateTime(2024, 7, 1, 20, 0, 0), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            }
+        };
+
+        await _context.Event.AddRangeAsync(events);
+        await _context.SaveChangesAsync();
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.SearchEvents(
+            eventTypeId: null,
+            startDate: "2024-06-01",
+            endDate: "2024-06-30",
+            searchTerm: null
+        );
+
+        // Assert
+        var jsonResult = Assert.IsType<JsonResult>(result);
+        dynamic data = jsonResult.Value;
+        var eventsList = (List<Event>)data.GetType().GetProperty("events").GetValue(data);
+        
+        Assert.Equal(2, eventsList.Count); // Only June events
+        Assert.All(eventsList, e => Assert.True(e.StartDateTime.Month == 6));
+    }
+
+    [Fact]
+    public async Task SearchEvents_WithSearchTerm_ReturnsMatchingEvents()
+    {
+        // Arrange
+        _context.Event.RemoveRange(_context.Event);
+        await _context.SaveChangesAsync();
+
+        var events = new List<Event>
+        {
+            new Event
+            {
+                Id = 20, Name = "Concert at Arena", StartDateTime = DateTime.Now.AddDays(1),
+                EndTime = DateTime.Now.AddDays(1).AddHours(2), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 21, Name = "Theater Show", StartDateTime = DateTime.Now.AddDays(2),
+                EndTime = DateTime.Now.AddDays(2).AddHours(2), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 22, Name = "Music Concert", StartDateTime = DateTime.Now.AddDays(3),
+                EndTime = DateTime.Now.AddDays(3).AddHours(2), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            }
+        };
+
+        await _context.Event.AddRangeAsync(events);
+        await _context.SaveChangesAsync();
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.SearchEvents(
+            eventTypeId: null,
+            startDate: null,
+            endDate: null,
+            searchTerm: "concert"
+        );
+
+        // Assert
+        var jsonResult = Assert.IsType<JsonResult>(result);
+        dynamic data = jsonResult.Value;
+        var eventsList = (List<Event>)data.GetType().GetProperty("events").GetValue(data);
+        
+        Assert.Equal(2, eventsList.Count); // Events containing "concert"
+        Assert.All(eventsList, e => Assert.Contains("concert", e.Name.ToLower()));
+    }
+
+    [Fact]
+    public async Task GetTodayEvents_ReturnsCorrectEvents()
+    {
+        // Arrange
+        _context.Event.RemoveRange(_context.Event);
+        await _context.SaveChangesAsync();
+
+        var today = DateTime.Today;
+        var events = new List<Event>
+        {
+            new Event
+            {
+                Id = 30, Name = "Today Event 1", StartDateTime = today.AddHours(10),
+                EndTime = today.AddHours(12), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 31, Name = "Today Event 2", StartDateTime = today.AddHours(14),
+                EndTime = today.AddHours(16), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            },
+            new Event
+            {
+                Id = 32, Name = "Tomorrow Event", StartDateTime = today.AddDays(1).AddHours(10),
+                EndTime = today.AddDays(1).AddHours(12), VenueId = 1, EventTypeId = 1, Venue = _context.Venue.Find(1)
+            }
+        };
+
+        await _context.Event.AddRangeAsync(events);
+        await _context.SaveChangesAsync();
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.GetTodayEvents(null);
+
+        // Assert
+        var jsonResult = Assert.IsType<JsonResult>(result);
+        dynamic data = jsonResult.Value;
+        var eventsList = (List<Event>)data.GetType().GetProperty("events").GetValue(data);
+        
+        Assert.Equal(2, eventsList.Count); // Only today's events
+        Assert.All(eventsList, e => Assert.Equal(today.Date, e.StartDateTime.Date));
+    }
+
+    #endregion
+
+    #region Event Editing Tests
+
+    [Fact]
+    public async Task Edit_GET_ReturnsViewWithEvent()
+    {
+        // Arrange
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.Edit(1);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<Event>(viewResult.Model);
+        Assert.Equal(1, model.Id);
+        Assert.Equal("Test Event", model.Name);
+        Assert.NotNull(viewResult.ViewData["VenueList"]);
+        Assert.NotNull(viewResult.ViewData["EventTypeList"]);
+        Assert.NotNull(viewResult.ViewData["SubAreaList"]);
+    }
+
+    [Fact]
+    public async Task Edit_GET_ReturnsNotFound_WhenEventDoesNotExist()
+    {
+        // Arrange
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.Edit(999);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task Edit_GET_ReturnsNotFound_WhenUserDoesNotOwnVenue()
+    {
+        // Arrange
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user2");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.Edit(1);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("Index", redirectResult.ActionName);
+    }
+
+    [Fact]
+    public async Task Edit_POST_UpdatesEventSuccessfully()
+    {
+        // Arrange
+        var updatedEvent = new Event
+        {
+            Id = 1,
+            Name = "Updated Event Name",
+            StartDateTime = DateTime.Now.AddDays(1),
+            EndTime = DateTime.Now.AddDays(1).AddHours(3),
+            EventTypeId = 1,
+            VenueId = 1
+        };
+
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.Edit(1, updatedEvent);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("VenueEvents", redirectResult.ActionName);
+
+        // Verify the event was updated
+        var eventFromDb = await _context.Event.FindAsync(1);
+        Assert.Equal("Updated Event Name", eventFromDb.Name);
+    }
+
+    #endregion
+
+    #region Helper Method Tests
+
+    [Fact]
+    public void GetEventTimeClass_ReturnsCorrectClasses()
+    {
+        // Arrange
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        var today = DateTime.Today;
+        var tomorrow = today.AddDays(1);
+        var yesterday = today.AddDays(-1);
+
+        // Act & Assert
+        Assert.Equal("event-today", controller.GetEventTimeClass(today.AddHours(10)));
+        Assert.Equal("event-upcoming", controller.GetEventTimeClass(tomorrow.AddHours(10)));
+        Assert.Equal("event-past", controller.GetEventTimeClass(yesterday.AddHours(10)));
+    }
+
+    [Fact]
+    public async Task GetUserEvents_ReturnsUserOwnedEvents()
+    {
+        // Arrange
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user1");
+
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object);
+
+        // Act
+        var result = await controller.GetUserEvents();
+
+        // Assert
+        var jsonResult = Assert.IsType<JsonResult>(result);
+        var events = Assert.IsType<List<Event>>(jsonResult.Value);
+        
+        // All returned events should belong to venues owned by user1
+        Assert.All(events, e => Assert.Equal("user1", e.Venue.UserId));
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private void SetupHttpContext(EventsController controller, string userId)
+    {
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId)
+        }));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            User = user
+        };
+        controller.ControllerContext = new ControllerContext()
+        {
+            HttpContext = httpContext
+        };
+
+        // Mock TempData
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempDataDictionaryFactory = new Mock<ITempDataDictionaryFactory>();
+        var tempData = new TempDataDictionary(httpContext, tempDataProvider.Object);
+        tempDataDictionaryFactory.Setup(x => x.GetTempData(httpContext)).Returns(tempData);
+        controller.TempData = tempData;
+    }
+
+    #endregion
 
 // Helper methods for date classification
     private bool IsToday(DateTime date)

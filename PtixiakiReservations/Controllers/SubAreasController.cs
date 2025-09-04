@@ -57,7 +57,7 @@ namespace PtixiakiReservations.Controllers
         }
         
         // GET: SubAreas/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, int? venueId)
         {
             if (id == null)
             {
@@ -71,6 +71,10 @@ namespace PtixiakiReservations.Controllers
             {
                 return NotFound();
             }
+
+            // Pass venueId to the view for proper back navigation
+            ViewBag.VenueId = venueId ?? subArea.VenueId;
+            ViewBag.VenueName = subArea.Venue?.Name;
 
             return View(subArea);
         }
