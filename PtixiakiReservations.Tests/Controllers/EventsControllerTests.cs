@@ -952,6 +952,8 @@ public class EventsControllerTests : IDisposable
             _elasticSearchMock.Object,
             _loggerMock.Object);
 
+        SetupHttpContext(controller, "user2");
+
         // Act
         var result = await controller.Edit(1);
 
@@ -982,6 +984,8 @@ public class EventsControllerTests : IDisposable
             _roleManagerMock.Object,
             _elasticSearchMock.Object,
             _loggerMock.Object);
+
+        SetupHttpContext(controller, "user1");
 
         // Act
         var result = await controller.Edit(1, updatedEvent);
