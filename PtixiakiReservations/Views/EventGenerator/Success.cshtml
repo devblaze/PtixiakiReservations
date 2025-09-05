@@ -1,0 +1,136 @@
+@model PtixiakiReservations.Services.EventGenerationResult
+@{
+    ViewData["Title"] = "Generation Complete";
+}
+
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Success Header -->
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+            <div class="flex items-center">
+                <div class="text-4xl mr-4">🎉</div>
+                <div>
+                    <h1 class="text-3xl font-bold text-green-800">Generation Complete!</h1>
+                    <p class="text-green-700 mt-2">Successfully generated @Model.TotalItemsGenerated items</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl mb-2">🏛️</div>
+                <div class="text-2xl font-bold text-gray-900">@Model.GeneratedVenues.Count</div>
+                <div class="text-sm text-gray-600">Venues</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl mb-2">📍</div>
+                <div class="text-2xl font-bold text-gray-900">@Model.GeneratedSubAreas.Count</div>
+                <div class="text-sm text-gray-600">Sub-Areas</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl mb-2">🎪</div>
+                <div class="text-2xl font-bold text-gray-900">@Model.GeneratedEvents.Count</div>
+                <div class="text-sm text-gray-600">Events</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl mb-2">🪑</div>
+                <div class="text-2xl font-bold text-gray-900">@Model.GeneratedSeats.Count</div>
+                <div class="text-sm text-gray-600">Seats</div>
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Generated Venues -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        🏛️ Generated Venues
+                    </h2>
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        @foreach (var venue in Model.GeneratedVenues)
+                        {
+                            <div class="border-l-4 border-indigo-500 pl-4 py-2 bg-gray-50">
+                                <div class="font-medium text-gray-900">@venue.Name</div>
+                                <div class="text-sm text-gray-600">@venue.Address</div>
+                                <div class="text-xs text-gray-500">
+                                    Sub-areas: @Model.GeneratedSubAreas.Count(sa => sa.VenueId == venue.Id) | 
+                                    Events: @Model.GeneratedEvents.Count(e => e.VenueId == venue.Id)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        🎪 Upcoming Events
+                    </h2>
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        @foreach (var eventItem in Model.GeneratedEvents.OrderBy(e => e.StartDateTime).Take(10))
+                        {
+                            <div class="border-l-4 border-green-500 pl-4 py-2 bg-gray-50">
+                                <div class="font-medium text-gray-900">@eventItem.Name</div>
+                                <div class="text-sm text-gray-600">
+                                    📅 @eventItem.StartDateTime.ToString("MMM dd, yyyy")
+                                    ⏰ @eventItem.StartDateTime.ToString("HH:mm") - @eventItem.EndTime.ToString("HH:mm")
+                                </div>
+                            </div>
+                        }
+                        @if (Model.GeneratedEvents.Count > 10)
+                        {
+                            <div class="text-center text-gray-500 text-sm py-2">
+                                ... and @(Model.GeneratedEvents.Count - 10) more events
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 flex justify-center space-x-4">
+            <a href="@Url.Action("Index", "Events")" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                📋 View All Events
+            </a>
+            <a href="@Url.Action("Index", "Venue")" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                🏛️ View All Venues
+            </a>
+            <a href="@Url.Action("Index")" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                🔄 Generate More
+            </a>
+        </div>
+
+        <!-- Event Schedule Preview -->
+        @if (Model.GeneratedEvents.Any())
+        {
+            <div class="mt-8 bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📅 Event Schedule Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach (var dateGroup in Model.GeneratedEvents.GroupBy(e => e.StartDateTime.Date).OrderBy(g => g.Key).Take(6))
+                    {
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="font-medium text-gray-900 mb-2">
+                                @dateGroup.Key.ToString("MMM dd, yyyy")
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                @dateGroup.Count() event@(dateGroup.Count() != 1 ? "s" : "")
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                @dateGroup.OrderBy(e => e.StartDateTime).First().StartDateTime.ToString("HH:mm") - 
+                                @dateGroup.OrderByDescending(e => e.EndTime).First().EndTime.ToString("HH:mm")
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PtixiakiReservations.Tests.Controllers;
 
@@ -1197,5 +1199,193 @@ public class EventsControllerTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+    }
+
+    #region SubAreaId Tests
+
+    [Fact]
+    public async Task CreateEvent_SingleEvent_Should_Include_SubAreaId()
+    {
+        // Arrange
+        var controller = CreateController();
+        var userId = "user1";  // Use the same userId as seeded venue
+        SetupUserManager(userId);
+
+        // Add SubArea to the seeded venue
+        var subArea = new SubArea
+        {
+            Id = 10,
+            VenueId = 1,
+            AreaName = "Main Hall",
+            Width = 100,
+            Height = 100
+        };
+        _context.SubArea.Add(subArea);
+        await _context.SaveChangesAsync();
+
+        var newEvent = new Event
+        {
+            Name = "Test Concert",
+            VenueId = 1,
+            EventTypeId = 1,
+            SubAreaId = 10,
+            StartDateTime = DateTime.Now.AddDays(1),
+            EndTime = DateTime.Now.AddDays(1).AddHours(2)
+        };
+
+        // Act
+        var result = await controller.CreateEvent(newEvent);
+
+        // Assert
+        var createdEvent = await _context.Event
+            .FirstOrDefaultAsync(e => e.Name == "Test Concert");
+
+        Assert.NotNull(createdEvent);
+        Assert.Equal(10, createdEvent.SubAreaId);
+        Assert.Equal("Test Concert", createdEvent.Name);
+        Assert.IsType<RedirectToActionResult>(result);
+    }
+
+    [Fact]
+    public async Task CreateEvent_MultiDay_Should_Include_SubAreaId_For_All_Days()
+    {
+        // Arrange
+        var controller = CreateController();
+        var userId = "user1";  // Use the same userId as seeded venue
+        SetupUserManager(userId);
+
+        // Add SubArea to the seeded venue
+        var subArea = new SubArea
+        {
+            Id = 20,
+            VenueId = 1,
+            AreaName = "Theater Section A",
+            Width = 150,
+            Height = 200
+        };
+        _context.SubArea.Add(subArea);
+        await _context.SaveChangesAsync();
+
+        var newEvent = new Event
+        {
+            Name = "Multi-Day Festival",
+            VenueId = 1,
+            EventTypeId = 1,
+            SubAreaId = 20
+        };
+
+        // Act
+        var result = await controller.CreateEvent(
+            newEvent,
+            IsMultiDay: "true",
+            StartDate: DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"),
+            EndDate: DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
+            StartTime: "19:00",
+            EndTime: "23:00"
+        );
+
+        // Assert
+        var createdEvents = await _context.Event
+            .Where(e => e.Name == "Multi-Day Festival")
+            .ToListAsync();
+
+        Assert.Equal(3, createdEvents.Count); // 3 days of events
+        foreach (var evt in createdEvents)
+        {
+            Assert.Equal(20, evt.SubAreaId);
+            Assert.Equal("Multi-Day Festival", evt.Name);
+        }
+        Assert.IsType<RedirectToActionResult>(result);
+    }
+
+    [Fact]
+    public async Task CreateEvent_Without_SubAreaId_Should_Still_Create_Event()
+    {
+        // Arrange
+        var controller = CreateController();
+        var userId = "user1";  // Use the same userId as seeded venue
+        SetupUserManager(userId);
+
+        var newEvent = new Event
+        {
+            Name = "Event Without SubArea",
+            VenueId = 1,
+            EventTypeId = 1,
+            SubAreaId = null,
+            StartDateTime = DateTime.Now.AddDays(1),
+            EndTime = DateTime.Now.AddDays(1).AddHours(2)
+        };
+
+        // Act
+        var result = await controller.CreateEvent(newEvent);
+
+        // Assert
+        var createdEvent = await _context.Event
+            .FirstOrDefaultAsync(e => e.Name == "Event Without SubArea");
+
+        Assert.NotNull(createdEvent);
+        Assert.Null(createdEvent.SubAreaId);
+        Assert.IsType<RedirectToActionResult>(result);
+    }
+
+    [Fact]
+    public async Task GetSubAreas_Should_Return_SubAreas_For_Venue()
+    {
+        // Arrange
+        var controller = CreateController();
+
+        // Add multiple SubAreas
+        var subAreas = new List<SubArea>
+        {
+            new SubArea { Id = 30, VenueId = 1, AreaName = "Section A" },
+            new SubArea { Id = 31, VenueId = 1, AreaName = "Section B" },
+            new SubArea { Id = 32, VenueId = 2, AreaName = "Other Venue Section" }
+        };
+        _context.SubArea.AddRange(subAreas);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = controller.GetSubAreas(1);
+
+        // Assert
+        Assert.IsType<JsonResult>(result);
+        var jsonResult = result as JsonResult;
+        var data = jsonResult.Value as IEnumerable<dynamic>;
+
+        Assert.NotNull(data);
+        var subAreaList = data.ToList();
+        Assert.Equal(2, subAreaList.Count); // Only venue 1 subareas
+    }
+
+    #endregion
+
+    private EventsController CreateController()
+    {
+        var controller = new EventsController(
+            _context,
+            _userManagerMock.Object,
+            _roleManagerMock.Object,
+            _elasticSearchMock.Object,
+            _loggerMock.Object
+        );
+
+        // Setup HttpContext with TempData
+        var httpContext = new DefaultHttpContext();
+        var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        controller.TempData = tempData;
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        return controller;
+    }
+
+    private void SetupUserManager(string userId)
+    {
+        _userManagerMock.Setup(x => x.GetUserId(It.IsAny<ClaimsPrincipal>()))
+            .Returns(userId);
+        _userManagerMock.Setup(x => x.FindByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync(new ApplicationUser { Id = userId, UserName = "test@test.com" });
     }
 }

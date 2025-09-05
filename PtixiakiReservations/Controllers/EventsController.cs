@@ -461,6 +461,7 @@ public class EventsController(
                         Name = newEvent.Name,
                         VenueId = newEvent.VenueId,
                         EventTypeId = newEvent.EventTypeId,
+                        SubAreaId = newEvent.SubAreaId,  // Include SubAreaId for multi-day events
                         StartDateTime = date.Add(startTimeSpan),
                         EndTime = date.Add(endTimeSpan)
                     };

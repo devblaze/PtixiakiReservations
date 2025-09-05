@@ -368,6 +368,7 @@ public class ReservationController(
             .Include(e => e.Venue)
             .Include(e => e.Venue.City)
             .Include(e => e.EventType)
+            .Include(e => e.SubArea)
             .FirstOrDefaultAsync(m => m.Id == eventId);
 
         if (eventDetails == null)

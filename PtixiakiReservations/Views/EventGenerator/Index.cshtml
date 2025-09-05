@@ -1,0 +1,220 @@
+@model PtixiakiReservations.Services.EventGenerationOptions
+@{
+    ViewData["Title"] = "Event Generator";
+}
+
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">🎭 Event Generator</h1>
+                    <p class="text-gray-600 mt-2">Generate realistic venues, sub-areas, seats, and events for testing and development</p>
+                </div>
+                <div class="text-right">
+                    <form asp-action="Cleanup" method="post" class="inline" onsubmit="return confirm('Are you sure you want to delete ALL generated data?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            🗑️ Cleanup Generated Data
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="text-green-600 mr-3">✅</div>
+                    <div class="text-green-800">@TempData["SuccessMessage"]</div>
+                </div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="text-red-600 mr-3">❌</div>
+                    <div class="text-red-800">@TempData["ErrorMessage"]</div>
+                </div>
+            </div>
+        }
+
+        <!-- Generation Form -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <form asp-action="Generate" method="post" id="generationForm">
+                @Html.AntiForgeryToken()
+                
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">⚙️ Generation Settings</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Venue Settings -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                                🏛️ Venue Settings
+                            </h3>
+                            
+                            <div>
+                                <label asp-for="VenueCount" class="block text-sm font-medium text-gray-700 mb-1">Number of Venues</label>
+                                <input asp-for="VenueCount" type="number" min="1" max="20" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                       onchange="updatePreview()" />
+                                <span asp-validation-for="VenueCount" class="text-red-500 text-sm"></span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label asp-for="MinSubAreasPerVenue" class="block text-sm font-medium text-gray-700 mb-1">Min Sub-Areas</label>
+                                    <input asp-for="MinSubAreasPerVenue" type="number" min="1" max="10" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                                <div>
+                                    <label asp-for="MaxSubAreasPerVenue" class="block text-sm font-medium text-gray-700 mb-1">Max Sub-Areas</label>
+                                    <input asp-for="MaxSubAreasPerVenue" type="number" min="1" max="10" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Event Settings -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                                🎪 Event Settings
+                            </h3>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label asp-for="MinEventsPerVenue" class="block text-sm font-medium text-gray-700 mb-1">Min Events</label>
+                                    <input asp-for="MinEventsPerVenue" type="number" min="1" max="20" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                                <div>
+                                    <label asp-for="MaxEventsPerVenue" class="block text-sm font-medium text-gray-700 mb-1">Max Events</label>
+                                    <input asp-for="MaxEventsPerVenue" type="number" min="1" max="20" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label asp-for="MinDaysInFuture" class="block text-sm font-medium text-gray-700 mb-1">Min Days Ahead</label>
+                                    <input asp-for="MinDaysInFuture" type="number" min="1" max="365" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                                <div>
+                                    <label asp-for="MaxDaysInFuture" class="block text-sm font-medium text-gray-700 mb-1">Max Days Ahead</label>
+                                    <input asp-for="MaxDaysInFuture" type="number" min="1" max="365" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seat Settings -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                                🪑 Seat Settings
+                            </h3>
+
+                            <div class="flex items-center">
+                                <input asp-for="GenerateSeats" type="checkbox" 
+                                       class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" 
+                                       onchange="toggleSeatOptions(); updatePreview()" />
+                                <label asp-for="GenerateSeats" class="ml-2 text-sm text-gray-700">Generate Seats</label>
+                            </div>
+
+                            <div id="seatOptions" class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label asp-for="MinSeatsPerSubArea" class="block text-sm font-medium text-gray-700 mb-1">Min Seats</label>
+                                    <input asp-for="MinSeatsPerSubArea" type="number" min="5" max="500" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                                <div>
+                                    <label asp-for="MaxSeatsPerSubArea" class="block text-sm font-medium text-gray-700 mb-1">Max Seats</label>
+                                    <input asp-for="MaxSeatsPerSubArea" type="number" min="5" max="500" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                           onchange="updatePreview()" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                                📊 Generation Preview
+                            </h3>
+                            <div id="generationPreview" class="bg-gray-50 rounded-lg p-4">
+                                <div class="text-sm text-gray-600">
+                                    <div>🏛️ <span id="previewVenues">5</span> Venues</div>
+                                    <div>📍 <span id="previewSubAreas">15</span> Sub-Areas</div>
+                                    <div>🎪 <span id="previewEvents">25</span> Events</div>
+                                    <div>🪑 <span id="previewSeats">900</span> Seats</div>
+                                    <div class="font-medium mt-2">📈 Total: <span id="previewTotal">945</span> items</div>
+                                    <div class="text-xs mt-2">📅 <span id="previewDateRange">Next 90 days</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="bg-gray-50 px-6 py-4 rounded-b-lg">
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                            🚀 Generate Events
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleSeatOptions() {
+            const generateSeats = document.querySelector('input[name="GenerateSeats"]').checked;
+            const seatOptions = document.getElementById('seatOptions');
+            seatOptions.style.display = generateSeats ? 'grid' : 'none';
+        }
+
+        function updatePreview() {
+            const form = document.getElementById('generationForm');
+            const formData = new FormData(form);
+            const params = new URLSearchParams();
+            
+            for (let [key, value] of formData.entries()) {
+                params.append(key, value);
+            }
+
+            fetch('@Url.Action("Preview")?' + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('previewVenues').textContent = data.estimatedVenues;
+                    document.getElementById('previewSubAreas').textContent = data.estimatedSubAreas;
+                    document.getElementById('previewEvents').textContent = data.estimatedEvents;
+                    document.getElementById('previewSeats').textContent = data.estimatedSeats;
+                    document.getElementById('previewTotal').textContent = data.totalEstimatedItems;
+                    document.getElementById('previewDateRange').textContent = data.dateRange;
+                })
+                .catch(error => console.error('Error updating preview:', error));
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleSeatOptions();
+            updatePreview();
+        });
+    </script>
+}

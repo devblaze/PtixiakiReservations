@@ -11,10 +11,27 @@
       - "8080:8080"
     environment:
       - ConnectionStrings__DefaultConnection=Server=192.168.4.246;Database=ReservationProject;User Id=sa;Password=Blaze2310;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - ConnectionStrings__PostgresConnection=Host=postgres;Database=ReservationProject;Username=postgres;Password=Blaze2310
       - ElasticSettings__Uri=http://${ES_HOST:-elasticsearch}:9200
+    depends_on:
+      - postgres
     networks:
       - reservations
   
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=ReservationProject
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Blaze2310
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - reservations
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
     container_name: elasticsearch
@@ -48,3 +65,4 @@ networks:
 
 volumes:
   elasticsearch-data:
+  postgres-data:

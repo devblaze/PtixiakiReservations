@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		compose.yaml = compose.yaml
 		docker_compose_deploy.yml = docker_compose_deploy.yml
 		docker_compose_dokploy.yml = docker_compose_dokploy.yml
+		.gitea\workflows\ci.yml = .gitea\workflows\ci.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PtixiakiReservations.Tests", "PtixiakiReservations.Tests\PtixiakiReservations.Tests.csproj", "{1D237903-F161-4300-998D-BB282D87892E}"

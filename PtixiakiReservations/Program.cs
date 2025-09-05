@@ -60,9 +60,29 @@ try
 {
     Log.Information("Starting web application");
 
-    // Configure services
+    // Configure services with database fallback
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    {
+        var sqlServerConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+        var postgresConnection = builder.Configuration.GetConnectionString("PostgresConnection") ?? 
+                                "Host=postgres;Database=ReservationProject;Username=postgres;Password=Blaze2310";
+        
+        try
+        {
+            // Try to test SQL Server connection
+            using var testConnection = new Microsoft.Data.SqlClient.SqlConnection(sqlServerConnection);
+            testConnection.Open();
+            testConnection.Close();
+            
+            Log.Information("Using SQL Server database");
+            options.UseSqlServer(sqlServerConnection);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning("SQL Server connection failed: {Error}. Falling back to PostgreSQL", ex.Message);
+            options.UseNpgsql(postgresConnection);
+        }
+    });
 
     builder.Services.AddSignalR();
 
@@ -98,6 +118,9 @@ try
 
     builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection("ElasticSettings"));
     builder.Services.AddSingleton<IElasticSearch, ElasticSearchService>();
+
+    // Add Event Generator Service
+    builder.Services.AddScoped<IEventGeneratorService, EventGeneratorService>();
 
     // CHANGE: Remove the global authorization filter and apply it selectively
     builder.Services.AddMvc();
