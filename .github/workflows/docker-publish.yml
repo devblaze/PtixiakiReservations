@@ -67,7 +67,7 @@ jobs:
           sed -i 's/FROM mcr.microsoft.com\/dotnet\/sdk:8.0/FROM mcr.microsoft.com\/dotnet\/sdk:9.0/' ./PtixiakiReservations/Dockerfile
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./PtixiakiReservations/Dockerfile
