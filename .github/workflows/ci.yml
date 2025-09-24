@@ -45,7 +45,7 @@ jobs:
         run: dotnet test --configuration Release --no-restore --no-build --verbosity normal --logger:"trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
 
       - name: Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         if: success() || failure()
         with:
           name: .NET Tests
