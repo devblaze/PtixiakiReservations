@@ -2,7 +2,7 @@ name: Docker Build and Publish
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]
+    workflows: ["CI Pipeline for .NET"]
     types:
       - completed
     branches:
