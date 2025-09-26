@@ -105,7 +105,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref == 'refs/heads/main' && 'latest' || github.sha }}
+          image-ref: ghcr.io/devblaze/ptixiakireservations:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
 
