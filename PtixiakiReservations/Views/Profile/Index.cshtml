@@ -78,6 +78,112 @@
         </div>
     </div>
 
+<!-- Two Factor Authentication -->
+    <div class="p-6">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mt-6 mb-4">Two Factor Authentication</h2>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Enable two factor authentication to increase your profiles security</p>
+        @if (Model.Is2faEnabled)
+        {
+            <div class="flex items-center mt-4">
+            <button class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200" onclick="open2faModal(false)">Disable 2FA</button>
+            </div>
+        }
+        else
+        {
+            <div class="flex items-center mt-4">
+            <button class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200" onclick="open2faModal(true)">Enable 2FA</button>
+            </div>
+        }
+
+        <dialog id="authDialog" style="border: none; border-radius: 8px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 400px;">
+            <h3 style="text-xl font-semibold text-gray-800 dark:text-white mt-6 mb-4 margin-bottom: 20px;">Confirm Password</h3>
+            <p style="margin-bottom: 20px;">Please enter your password to enable 2FA security.</p>
+            
+            <input type="password" id="confirmPassword" class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 border bg-white bg-clip-padding border-solid border-gray-300 rounded transition ease-in-out m-0" placeholder="Password" required>
+            <div id="passwordError" style="color:#dc2626; display: none; margin-top: 10px;"></div>
+            <input type="hidden" id="actionState">
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="mt-4 inline-block px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200" onclick="document.getElementById('authDialog').close()">Cancel</button>
+                <button type="button" class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200" onclick="submitToggle2Fa()">Confirm</button>
+            </div>
+        </dialog>
+    </div>
+
+    <!-- Email Verification -->
+    <div class="p-6 border-t border-gray-200 dark:border-gray-600">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mt-6 mb-4">Email Verification</h2>
+        @if (Model.IsEmailConfirmed)
+        {
+            <div class="flex items-center">
+                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="ml-2 font-medium text-green-800 dark:text-green-300">Your email is verified</span>
+            </div>
+        }
+        else
+        {
+            <div class="flex items-center">
+                <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span class="ml-2 font-medium text-red-800 dark:text-red-300">Your email is not verified</span>
+                <button class="ml-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200" onclick="document.getElementById('emailConfirmModal').showModal()">Resend Verification Email</button>
+            </div>
+        }
+    </div>
+
+   <dialog id="emailConfirmModal" class="rounded-2xl shadow-2xl border-[3px] border-indigo-500 p-0 w-full max-w-sm backdrop:bg-gray-900/60">
+  <div class="p-8">
+
+    <h3 class="text-base font-semibold text-gray-800 mb-1">Email Security</h3>
+
+    <!-- Step 1 -->
+    <div id="step1">
+      <p class="text-sm text-gray-500 mb-5">Click the button below to generate a 6-digit verification code for your account.</p>
+
+      <div class="flex justify-end gap-3">
+        <button onclick="closeAndResetModal()"
+          class="px-5 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition">
+          Cancel
+        </button>
+        <button onclick="sendVerificationCode()" id="sendBtn"
+          class="px-5 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition flex items-center gap-2">
+          <i class="fas fa-paper-plane"></i> Send Code
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="step2" class="hidden">
+      <p class="text-sm text-gray-500 mb-5">Enter the 6-digit code sent to your email.</p>
+
+      <input type="text" id="emailCodeInput"
+        placeholder="000000" maxlength="6"
+        class="w-full border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-3 tracking-widest text-center text-lg"
+      />
+
+      <div id="emailError" class="hidden text-red-500 text-xs mb-3">
+        Invalid code. Please try again.
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button onclick="closeAndResetModal()"
+          class="px-5 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition">
+          Cancel
+        </button>
+        <button onclick="verifyTheCode()"
+          class="px-5 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition">
+          Confirm
+        </button>
+      </div>
+    </div>
+
+  </div>
+</dialog>
+
+    
     <!-- Recent Reservations -->
     <div class="border-t border-gray-200 dark:border-gray-600 p-6">
         <div class="flex justify-between items-center mb-4">
@@ -126,10 +232,26 @@
                                     @reservation.Seat.SubArea.AreaName - @reservation.Seat.Name
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap flex items-center gap-x-2">
                                 <div class="text-sm text-gray-500 dark:text-gray-400">
                                     @reservation.Date.ToString("MMM dd, yyyy h:mm tt")
                                 </div>
+
+                                <a href="/reservation/@reservation.ID/ics"
+                                    title="Add reminder to calendar"
+                                    aria-label="Add reminder to calendar"
+                                    class="p-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition flex items-center gap-2">
+                                        <!-- Calendar Icon -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" 
+                                            class="w-4 h-4" 
+                                            fill="none" 
+                                            viewBox="0 0 24 24" 
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10m-13 9h16a2 2 0 002-2V7a2 2 0 
+                                                    00-2-2H5a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                                        </svg>
+                                </a>
                             </td>
                         </tr>
                     }
@@ -147,78 +269,121 @@
             </div>
         }
     </div>
-@if (User.IsInRole("VenueManager"))
+@if (!User.IsInRole("Admin"))
 {
-    <div class="mt-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg">
-        <div class="flex items-center">
-            <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span class="ml-2 font-medium text-green-800 dark:text-green-300">You are a Venue Manager</span>
-        </div>
-        <p class="mt-1 text-sm text-green-700 dark:text-green-200">You can create and manage venues and events.</p>
-        <a href="@Url.Action("Index", "Venues")" class="mt-2 inline-block text-sm text-green-600 dark:text-green-400 hover:underline">
-            Manage Your Venues →
-        </a>
-    </div>
-}
-else if (Model.User.HasRequestedVenueManagerRole)
-{
-    <div class="mt-6 p-4 @(Model.User.VenueManagerRequestStatus == "Pending" ? "bg-yellow-50 dark:bg-yellow-900" : 
-                          Model.User.VenueManagerRequestStatus == "Approved" ? "bg-green-50 dark:bg-green-900" : 
-                          "bg-red-50 dark:bg-red-900") rounded-lg">
-        <div class="flex items-center">
-            @if (Model.User.VenueManagerRequestStatus == "Pending")
-            {
-                <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span class="ml-2 font-medium text-yellow-800 dark:text-yellow-300">Venue Manager Request Pending</span>
-            }
-            else if (Model.User.VenueManagerRequestStatus == "Approved")
-            {
-                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span class="ml-2 font-medium text-green-800 dark:text-green-300">Venue Manager Request Approved</span>
-            }
-            else
-            {
-                <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                <span class="ml-2 font-medium text-red-800 dark:text-red-300">Venue Manager Request Rejected</span>
-            }
-        </div>
-        <p class="mt-1 text-sm @(Model.User.VenueManagerRequestStatus == "Pending" ? "text-yellow-700 dark:text-yellow-200" : 
-                              Model.User.VenueManagerRequestStatus == "Approved" ? "text-green-700 dark:text-green-200" : 
-                              "text-red-700 dark:text-red-200")">
-            @if (Model.User.VenueManagerRequestStatus == "Pending")
-            {
-                <span>Your request is being reviewed by administrators. Submitted on @Model.User.VenueManagerRequestDate?.ToString("MMM dd, yyyy")</span>
-            }
-            else if (Model.User.VenueManagerRequestStatus == "Approved")
-            {
-                <span>Your request has been approved. Please log out and log back in to access venue management features.</span>
-            }
-            else
-            {
-                <span>Your request was rejected. You may submit a new request after 30 days.</span>
-            }
-        </p>
-    </div>
-}
-else
-{
+
     <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <h3 class="text-lg font-medium text-gray-800 dark:text-white">Become a Venue Manager</h3>
+        <h3 class="text-lg font-medium text-gray-800 dark:text-white">Get Permissions with Roles</h3>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-            As a venue manager, you can create and manage venues and events for users to make reservations.
+            - As a venue manager, you can create and manage venues for users to make reservations.<br />
+            - As an event manager, you can create and manage events for users to make reservations.<br/>
+            - As a super organizer you get access to all of the above.
         </p>
-        <a href="@Url.Action("RequestVenueManager", "Profile")" 
+        <a href="@Url.Action("RequestRoles", "Profile")" 
            class="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition duration-200">
-            Request Venue Manager Role
+            Request for Roles
         </a>
     </div>
 }
 </div>
+
+@section Scripts {
+    <script>
+        const modal = document.getElementById('emailConfirmModal');
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const input = document.getElementById('emailCodeInput');
+        const error = document.getElementById('emailError');
+
+        async function sendVerificationCode() {
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.innerHTML = "Sending...";
+
+            const response = await fetch('/ApplicationUser/GenerateEmailConfirmationCode', { 
+                method: 'POST',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value }
+            });
+
+            if (response.ok) {
+                // Switch views
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                input.focus();
+            }
+        }
+
+        async function verifyTheCode() {
+            const codeValue = input.value;
+            
+            const response = await fetch(`/ApplicationUser/ConfirmEmailCode?code=${codeValue}`, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value }
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                error.classList.remove('hidden');
+                input.classList.add('border-red-500', 'animate-shake');
+            }
+        }
+
+        function closeAndResetModal() {
+            modal.close();
+            // Reset the views for next time
+            step1.classList.remove('hidden');
+            step2.classList.add('hidden');
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('sendBtn').innerHTML = "Send Code";
+        }
+
+    
+
+       
+
+
+    function open2faModal(enable) {
+        const dialog = document.getElementById('authDialog');
+        
+        // Clear state
+        document.getElementById('passwordError').style.display = 'none';
+        document.getElementById('confirmPassword').value = '';
+        document.getElementById('actionState').value = enable;
+
+        // Native browser command to show the dialog as a modal
+        dialog.showModal();
+    }
+
+    async function submitToggle2Fa() {
+        const password = document.getElementById('confirmPassword').value;
+        const enable = document.getElementById('actionState').value === 'true';
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const dialog = document.getElementById('authDialog');
+
+        try {
+            const response = await fetch('/ApplicationUser/Toggle2Fa', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({ Password: password, Enable: enable })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                dialog.close(); // Native close
+                window.location.reload(); 
+            } else {
+                const errorDiv = document.getElementById('passwordError');
+                errorDiv.innerText = data.message || 'Error occurred.';
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+    }
+</script>
+}

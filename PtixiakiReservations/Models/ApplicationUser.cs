@@ -21,6 +21,14 @@ public class ApplicationUser : IdentityUser
     public DateTime? VenueManagerRequestDate { get; set; }
     public string? VenueManagerRequestReason { get; set; }
     public string? VenueManagerRequestStatus { get; set; } // "Pending", "Approved", "Rejected"
+        public bool HasRequestedEventManagerRole { get; set; }
+    public DateTime? EventManagerRequestDate { get; set; }
+    public string? EventManagerRequestReason { get; set; }
+    public string? EventManagerRequestStatus { get; set; } // "Pending", "Approved", "Rejected"
+        public bool HasRequestedSuperOrganizerRole { get; set; }
+    public DateTime? SuperOrganizerRequestDate { get; set; }
+    public string? SuperOrganizerRequestReason { get; set; }
+    public string? SuperOrganizerRequestStatus { get; set; } // "Pending", "Approved", "Rejected"
 
     public static implicit operator ApplicationUser(Task<ApplicationUser> v)
     {

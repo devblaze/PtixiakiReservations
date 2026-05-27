@@ -245,20 +245,31 @@ public class EventGeneratorService : IEventGeneratorService
     {
         var eventType = eventTypes[_random.Next(eventTypes.Count)];
         var eventName = _eventNames[_random.Next(_eventNames.Length)];
-        
-        // Generate future dates within the specified range
+
+        // Random μέρα
         var startDate = DateTime.Now.AddDays(_random.Next(options.MinDaysInFuture, options.MaxDaysInFuture + 1));
-        
-        // Add random time of day
-        var startTime = TimeSpan.FromHours(_random.Next(10, 23)) + TimeSpan.FromMinutes(_random.Next(0, 60));
-        startDate = startDate.Date + startTime;
-        
-        // Event duration between 1-4 hours
-        var duration = TimeSpan.FromHours(_random.NextDouble() * 3 + 1);
-        var endDate = startDate + duration;
-        
-        // Always assign a SubArea if available (which should always be the case now)
+
+        // Random ώρα έναρξης (10:00 - 18:00)
+        int startHour = _random.Next(10, 18);
+
+        // Random λεπτά μόνο ανά 15λεπτο
+        int[] minuteOptions = { 0, 15, 30, 45 };
+        int startMinute = minuteOptions[_random.Next(minuteOptions.Length)];
+
+        startDate = startDate.Date.AddHours(startHour).AddMinutes(startMinute);
+
+        // Random διάρκεια 1–4 ώρες
+        int durationHours = _random.Next(1, 5);
+
+        // Προαιρετικά + 0 ή 30 λεπτά
+        int durationMinutes = _random.Next(0, 2) * 30;
+
+        var endDate = startDate
+            .AddHours(durationHours)
+            .AddMinutes(durationMinutes);
+
         int? subAreaId = null;
+
         if (venueSubAreas.Any())
         {
             subAreaId = venueSubAreas[_random.Next(venueSubAreas.Count)].Id;

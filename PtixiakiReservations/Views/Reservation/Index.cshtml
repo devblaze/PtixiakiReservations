@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "My Reservations";
+
+    var upcomingReservations = Model.Where(r => !r.IsPastReservation).ToList();
+    var pastReservations = Model.Where(r => r.IsPastReservation).ToList();
 }
 
 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -232,17 +235,52 @@
                                 <div class="text-sm text-gray-900">@item.Seat.SubArea.AreaName</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if (item.Date > DateTime.Now)
+                                @if (item.IsPastReservation)
                                 {
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Upcoming
-                                        </span>
+                                        @if (item.Attended == null)
+                                        {
+                                            <div class="flex flex-col gap-2">
+                                                <form asp-action="MarkAttendance" method="post">
+                                                    <input type="hidden" name="reservationId" value="@item.ID" />
+                                                    <input type="hidden" name="attended" value="true" />
+
+                                                    <button type="submit"
+                                                            class="px-3 py-1 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 text-sm w-full">
+                                                        Attended
+                                                    </button>
+                                                </form>
+
+                                                <form asp-action="MarkAttendance" method="post">
+                                                    <input type="hidden" name="reservationId" value="@item.ID" />
+                                                    <input type="hidden" name="attended" value="false" />
+
+                                                    <button type="submit"
+                                                            class="px-3 py-1 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 text-sm w-full">
+                                                        Didn't Attend
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (item.Attended == true)
+                                        {
+                                            <span class="text-green-600 font-semibold">
+                                                Attended
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-red-600 font-semibold">
+                                                Didn't Attend
+                                            </span>
+                                        }
                                 }
                                 else
                                 {
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            Past
-                                        </span>
+                                        <div class="flex justify-end space-x-3">
+                                            <p class="text-green-600">
+                                                Upcoming
+                                            </p>
+                                        </div>
                                 }
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -255,6 +293,13 @@
                                         </svg>
                                         Details
                                     </a>
+                                    @if (item.IsPastReservation && item.Attended == true)
+                                    {
+                                        <button onclick="openReviewModal(@item.ID)"
+                                                class="text-purple-600 hover:text-purple-800 font-medium">
+                                            ★ Review
+                                        </button>
+                                    }
                                     <a asp-action="Delete" asp-route-id="@item.ID"
                                        class="text-red-600 hover:text-red-900 flex items-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -296,18 +341,165 @@
     </div>
 </div>
 
+<div id="reviewModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-3xl shadow-2xl w-[750px] max-w-3xl p-10 relative">
+
+        <!-- Close -->
+        <button onclick="closeReviewModal()"
+                class="absolute top-5 right-5 text-gray-400 hover:text-black text-2xl transition">
+            ✕
+        </button>
+
+        <!-- Title -->
+        <h2 class="text-3xl font-bold mb-8 text-gray-800">
+            Write Review
+        </h2>
+
+        <form asp-action="SaveReview" method="post"
+              onsubmit="return showThankYouMessage(event)">
+
+            <input type="hidden" id="reservationId" name="reservationId" />
+
+            <!-- Hidden rating -->
+            <input type="hidden" id="selectedRating" name="rating" value="5" />
+
+            <!-- Stars -->
+            <div class="mb-6">
+                <label class="block mb-3 font-semibold text-gray-700 text-lg">
+                    Rating
+                </label>
+
+                <div class="flex gap-2 text-4xl cursor-pointer select-none">
+
+                    <span onclick="setRating(1)" id="star1"
+                          class="text-yellow-400 hover:scale-130 transition">★</span>
+
+                    <span onclick="setRating(2)" id="star2"
+                          class="text-yellow-400 hover:scale-130 transition">★</span>
+
+                    <span onclick="setRating(3)" id="star3"
+                          class="text-yellow-400 hover:scale-130 transition">★</span>
+
+                    <span onclick="setRating(4)" id="star4"
+                          class="text-yellow-400 hover:scale-130 transition">★</span>
+
+                    <span onclick="setRating(5)" id="star5"
+                          class="text-yellow-400 hover:scale-130 transition">★</span>
+
+                </div>
+            </div>
+
+            <!-- Review -->
+            <div class="mb-6">
+                <label class="block mb-3 font-semibold text-gray-700 text-lg">
+                    Review
+                </label>
+
+                <textarea name="review"
+                          rows="6"
+                          class="w-full border border-gray-300 rounded-2xl p-5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-lg resize-none"
+                          placeholder="Share your experience..."></textarea>
+            </div>
+
+            <!-- Button -->
+            <button type="submit"
+                    class="w-full bg-blue-600 text-white py-4 rounded-2xl hover:bg-blue-700 transition duration-200 text-lg font-medium"
+                    onclick="showThankYouMessage()">
+                Send Review
+            </button>
+
+        </form>
+    </div>
+</div>
+<div id="thankYouModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60]">
+
+    <div class="bg-white rounded-3xl shadow-2xl w-[400px] p-8 text-center relative">
+
+        <h2 class="text-2xl font-bold text-green-600 mb-4">
+            Thank You!
+        </h2>
+
+        <p class="text-gray-600 mb-6">
+            Thanks for your review!
+        </p>
+
+        <button onclick="closeThankYouModal()"
+                class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition">
+            OK
+        </button>
+    </div>
+</div>
+
+<style>
+    .highlight {
+        font-weight: 600;
+        color: #3b82f6;
+    }
+</style>
+
 @section Scripts {
-    <script>
+        <script>
+        // =========================
         // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
+        // =========================
+        document.getElementById('searchInput').addEventListener('input', function () {
+            filterReservations();
+            const query = this.value.trim();
+
+            clearHighlights();
+
+            if (!query) return;
+
+            document.querySelectorAll("#reservationTableBody td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4)").forEach(td => {
+                highlightNode(td, query);
+            });
+        });
+
+        // =========================
+        // Filter functionality
+        // =========================
+        document.getElementById('filterSelect').addEventListener('change', function () {
             filterReservations();
         });
 
-        // Filter functionality
-        document.getElementById('filterSelect').addEventListener('change', function() {
-            filterReservations();
-        });
+        function highlightNode(node, query) {
+            if (!query) return;
+
+            const regex = new RegExp(`(${query})`, "gi");
+
+            const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null);
+
+            const textNodes = [];
+            while (walker.nextNode()) {
+                textNodes.push(walker.currentNode);
+            }
+
+            textNodes.forEach(textNode => {
+                const parent = textNode.parentNode;
+
+                if (!textNode.nodeValue.trim()) return;
+
+                const replaced = textNode.nodeValue.replace(regex, '<span class="highlight">$1</span>');
+
+                if (replaced !== textNode.nodeValue) {
+                    const span = document.createElement("span");
+                    span.innerHTML = replaced;
+                    parent.replaceChild(span, textNode);
+                }
+            });
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll("span.highlight").forEach(mark => {
+                const parent = mark.parentNode;
+                parent.replaceChild(document.createTextNode(mark.textContent), mark);
+                parent.normalize();
+            });
+        }
+
 
         function filterReservations() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -317,21 +509,90 @@
 
             rows.forEach(row => {
                 const textContent = row.textContent.toLowerCase();
-                const matchesSearch = searchTerm === '' || textContent.includes(searchTerm);
+
+                const matchesSearch =
+                    searchTerm === '' || textContent.includes(searchTerm);
+
                 let matchesFilter = true;
 
                 if (filterValue === 'upcoming') {
                     matchesFilter = row.classList.contains('upcoming');
-                } else if (filterValue === 'past') {
+                }
+                else if (filterValue === 'past') {
                     matchesFilter = row.classList.contains('past');
                 }
 
-                if (matchesSearch && matchesFilter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display =
+                    matchesSearch && matchesFilter ? '' : 'none';
             });
         }
+
+        // =========================
+        // Review Modal
+        // =========================
+        function openReviewModal(id) {
+
+            document.getElementById("reviewModal").classList.remove("hidden");
+            document.getElementById("reviewModal").classList.add("flex");
+
+            document.getElementById("reservationId").value = id;
+
+            // reset form state
+            document.querySelector('textarea[name="review"]').value = "";
+
+            setRating(5);
+        }
+
+        function closeReviewModal() {
+            document.getElementById("reviewModal").classList.add("hidden");
+            document.getElementById("reviewModal").classList.remove("flex");
+        }
+
+        // =========================
+        // Star Rating
+        // =========================
+        function setRating(rating) {
+
+            document.getElementById("selectedRating").value = rating;
+
+            for (let i = 1; i <= 5; i++) {
+
+                const star = document.getElementById("star" + i);
+
+                if (i <= rating) {
+                    star.classList.remove("text-gray-300");
+                    star.classList.add("text-yellow-400");
+                } else {
+                    star.classList.remove("text-yellow-400");
+                    star.classList.add("text-gray-300");
+                }
+            }
+        }
+
+        // =========================
+        // Thank you popup
+        // =========================
+        function showThankYouMessage() {
+            event.preventDefault();
+
+            closeReviewModal();
+
+            setTimeout(() => {
+                document.getElementById("thankYouModal").classList.remove("hidden");
+                document.getElementById("thankYouModal").classList.add("flex");
+            }, 300);
+        }
+
+        function closeThankYouModal() {
+            document.getElementById("thankYouModal").classList.add("hidden");
+            document.getElementById("thankYouModal").classList.remove("flex");
+        }
+
+        // =========================
+        // Default stars on page load
+        // =========================
+        document.addEventListener("DOMContentLoaded", function () {
+            setRating(5);
+        });
     </script>
 }

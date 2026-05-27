@@ -1,0 +1,113 @@
+@using PtixiakiReservations.Models
+@model IEnumerable<PtixiakiReservations.Models.City>
+@{
+    ViewData["Title"] = "Manage Cities";
+}
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Cities</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Manage all available cities</p>
+        </div>
+
+        <a href="@Url.Action("CreateCity","City")"
+           class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition shadow-sm">
+            + Add City
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-2xl overflow-hidden">
+
+        <table class="min-w-full">
+
+            <!-- Head -->
+            <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm uppercase">
+                <tr>
+                    <th class="py-3 px-6 text-left">City</th>
+                    <th class="py-3 px-6 text-center">ID</th>
+                    <th class="py-3 px-6 text-center">Actions</th>
+                </tr>
+            </thead>
+
+            <!-- Body -->
+            <tbody class="text-gray-700 dark:text-gray-200 text-sm">
+
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+
+                        <td class="py-4 px-6 font-medium">
+                            @item.Name
+                        </td>
+
+                        <td class="py-4 px-6 text-center text-gray-500">
+                            #@item.Id
+                        </td>
+
+                        <td class="py-4 px-6 text-center space-x-2">
+
+                            <!-- Edit -->
+                            <a href="@Url.Action("EditCity","City",new { CityId = item.Id })"
+                               class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition">
+                                Edit
+                            </a>
+
+                            <!-- Delete -->
+                            <form asp-action="DeleteCity" asp-controller="City"
+                                  asp-route-id="@item.Id"
+                                  method="post"
+                                  onsubmit="return confirm('Delete this city?');"
+                                  class="inline">
+                                <button type="submit"
+                                    class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition">
+                                    Delete
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <!-- Empty State -->
+                <tr>
+                    <td colspan="3" class="text-center py-10 text-gray-500">
+                        No cities found.
+                        <div class="mt-3">
+                            <a href="@Url.Action("CreateCity","City")"
+                               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                Add your first city
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6 mb-4">
+        <a href="@Url.Action("Index", "Admin")"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg 
+                hover:bg-blue-700 transition shadow-sm">
+
+            <!-- Arrow icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 19l-7-7 7-7" />
+            </svg>
+
+            Back to Admin Panel
+        </a>
+    </div>
+
+</div>

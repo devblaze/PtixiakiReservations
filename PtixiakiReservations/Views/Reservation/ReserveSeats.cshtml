@@ -15,7 +15,7 @@
             <p class="text-blue-100 mt-2">@Model.Name</p>
             @if (Model.SubArea != null)
             {
-                <p class="text-blue-200 text-sm mt-1">Sub Area: @Model.SubArea.AreaName</p>
+                <p class="text-blue-200 text-sm mt-1">Layout: @Model.SubArea.AreaName</p>
             }
         </div>
 
@@ -94,7 +94,7 @@
                                 <div class="flex items-center">
                                     <input type="checkbox" id="useEventStartTime" class="h-4 w-4 text-blue-600 border-gray-300 rounded" checked>
                                     <label for="useEventStartTime" class="ml-2 text-sm text-gray-700">From Start</label>
-                                </div>
+                                </div> 
                             </div>
                         </div>
 
@@ -114,7 +114,7 @@
                 </div>
             </div>
 
-            <!-- Only show sub area message if no sub area is set -->
+            <!-- Only show Layout message if no Layout is set -->
             @if (subAreaId == null || subAreaId == 0)
             {
                 <div class="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
@@ -123,8 +123,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                         <div>
-                            <h3 class="text-yellow-800 font-medium">No Sub Area Selected</h3>
-                            <p class="text-yellow-700 text-sm mt-1">This event doesn't have a specific sub area assigned. Seat selection is not available.</p>
+                            <h3 class="text-yellow-800 font-medium">No Layout Selected</h3>
+                            <p class="text-yellow-700 text-sm mt-1">This event doesn't have a specific Layout assigned. Seat selection is not available.</p>
                         </div>
                     </div>
                 </div>
@@ -141,7 +141,12 @@
                             <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium z-10">
                                 Stage
                             </div>
-                            <div class="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+                            <div class="bg-gray-50 p-4 rounded-lg border-2 border-gray-200 max-w-full overflow-x-auto">
+                                <div id="ZoomContainer">
+                                    <button type="button" onclick="ZoomIn()" class=" bg-green-500 text-white px-4 py-1 mb-5 rounded-full text-sm font-medium z-10">+</button>
+                                    <button type="button" onclick="ZoomOut()" class=" bg-red-500 text-white px-4 py-1 mb-5 rounded-full text-sm font-medium z-10">-</button>
+                                    <button type="button" onclick="ResetZoom()" class=" bg-blue-500 text-white px-4 py-1 mb-5 rounded-full text-sm font-medium z-10">Reset</button>
+                                </div>
                                 <canvas id="seatCanvas" width="600" height="400" class="rounded-md shadow-inner"></canvas>
                             </div>
                         </div>
@@ -221,6 +226,49 @@
         let seatNames = {};
         let fabricCanvas;
 
+        function ZoomIn(){
+            if(!fabricCanvas) return;
+
+            let zoom = fabricCanvas.getZoom();
+            zoom*=1.1;
+            if(zoom>5) zoom=5;
+            fabricCanvas.zoomToPoint({x:fabricCanvas.width/2, y:fabricCanvas.height/2},zoom);
+        }
+
+        function ZoomOut(){
+            if(!fabricCanvas) return;
+
+            let zoom = fabricCanvas.getZoom();
+            zoom/=1.1;
+            if(zoom<0.1) zoom=0.1;
+            fabricCanvas.zoomToPoint({x:fabricCanvas.width/2, y:fabricCanvas.height/2},zoom);
+        }
+
+        function ResetZoom(){
+            if(!fabricCanvas) return;
+            fabricCanvas.setZoom(1);
+            fabricCanvas.viewportTransform=[1,0,0,1,0,0];
+            fabricCanvas.requestRenderAll();
+        }
+
+        function resizeCanvasToFitSeats(seats) {
+            if (!fabricCanvas || !seats || seats.length === 0) return;
+
+            const minWidth = 600;
+            const minHeight = 400;
+            const sidePadding = 90;
+            const bottomPadding = 140;
+
+            const maxX = Math.max(...seats.map(seat => Number(seat.x) || 0));
+            const maxY = Math.max(...seats.map(seat => Number(seat.y) || 0));
+            const canvasWidth = Math.max(minWidth, Math.ceil(maxX + sidePadding));
+            const canvasHeight = Math.max(minHeight, Math.ceil(maxY + bottomPadding));
+
+            fabricCanvas.setWidth(canvasWidth);
+            fabricCanvas.setHeight(canvasHeight);
+            fabricCanvas.calcOffset();
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             // Initialize Fabric.js canvas
             fabricCanvas = new fabric.Canvas('seatCanvas', {
@@ -236,7 +284,7 @@
                 
                 console.log("SubArea ID:", subAreaIdValue, "Event ID:", eventIdValue);
                 
-                // Only initialize seat map if we have a sub area
+                // Only initialize seat map if we have a Layout
                 if (subAreaIdValue && subAreaIdValue !== '0') {
                     loadSeatMap(subAreaIdValue, eventIdValue);
                 }
@@ -244,17 +292,18 @@
         });
 
         function loadSeatMap(subAreaId, eventId) {
-            console.log("Loading seat map for SubArea:", subAreaId, "Event:", eventId);
+            console.log("Loading seat map for Layout:", subAreaId, "Event:", eventId);
             
             // Show loading indicator
             showLoadingOnFabric(fabricCanvas);
 
-            // Fetch seats for this sub area and event
+            // Fetch seats for this Layout and event
             $.getJSON(`/Seat/get_data?SubAreaId=${subAreaId}&eventId=${eventId}`, function(data) {
                 console.log("Seat data received:", data);
                 fabricCanvas.clear();
 
                 if (data && data.length > 0) {
+                    resizeCanvasToFitSeats(data);
                     // Render seats on the canvas
                     renderSeats(fabricCanvas, data);
                 } else {
@@ -271,30 +320,32 @@
         $(document).ready(function () {
             // Handle checkbox states for time inputs
             $("#useEventStartTime").on("change", function() {
+                //Removed checking logic
                 if ($(this).is(':checked')) {
                     $("#reservationStartTime").val('@Model.StartDateTime.ToString("HH:mm")');
-                    $("#reservationStartTime").prop('disabled', true);
-                } else {
-                    $("#reservationStartTime").prop('disabled', false);
+                     $("#reservationStartTime").prop('disabled', true);
+                 } else {
+                     $("#reservationStartTime").prop('disabled', false);
                 }
             });
 
             $("#useEventEndTime").on("change", function() {
-                if ($(this).is(':checked')) {
-                    $("#reservationEndTime").val('@Model.EndTime.ToString("HH:mm")');
-                    $("#reservationEndTime").prop('disabled', true);
-                } else {
-                    $("#reservationEndTime").prop('disabled', false);
+                //Removed checking logic
+                 if ($(this).is(':checked')) {
+                     $("#reservationEndTime").val('@Model.EndTime.ToString("HH:mm")');
+                     $("#reservationEndTime").prop('disabled', true);
+                 } else {
+                     $("#reservationEndTime").prop('disabled', false);
                 }
             });
 
             // Initial state
             if ($("#useEventStartTime").is(':checked')) {
-                $("#reservationStartTime").prop('disabled', true);
+                 $("#reservationStartTime").prop('disabled', true);
             }
 
             if ($("#useEventEndTime").is(':checked')) {
-                $("#reservationEndTime").prop('disabled', true);
+                 $("#reservationEndTime").prop('disabled', true);
             }
 
             // Handle confirm button click
@@ -303,7 +354,7 @@
                     const reservationSubAreaId = subAreaId;
 
                     if (!reservationSubAreaId || reservationSubAreaId === 0) {
-                        showNotification('No sub area assigned to this event.', 'warning');
+                        showNotification('No Layout assigned to this event.', 'warning');
                         return;
                     }
 

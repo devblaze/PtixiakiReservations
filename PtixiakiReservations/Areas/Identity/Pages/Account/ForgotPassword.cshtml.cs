@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using PtixiakiReservations.Models;
+using PtixiakiReservations.Services;
 
 namespace PtixiakiReservations.Areas.Identity.Pages.Account
 {
@@ -18,12 +19,12 @@ namespace PtixiakiReservations.Areas.Identity.Pages.Account
     public class ForgotPasswordModel : PageModel
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
 
-        public ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailService emailService)
         {
             _userManager = userManager;
-            _emailSender = emailSender;
+            _emailService = emailService;
         }
 
         [BindProperty]
@@ -36,36 +37,38 @@ namespace PtixiakiReservations.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+       public async Task<IActionResult> OnPostAsync()
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return Page();
+
+            var user = await _userManager.FindByEmailAsync(Input.Email);
+            if (user == null) return RedirectToPage("./ForgotPasswordConfirmation");
+
+            // 1. Generate 2FA Code
+            var code = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+
+            string subject = "Your EventSphere Security Code";
+            string message = $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                    <h2>Security Verification</h2>
+                    <p>You requested a verification code.</p>
+                    <p>Your code is: <strong style='font-size: 24px; color: #4F46E5;'>{code}</strong></p>
+                    <p style='font-size: 12px; color: #666;'>If you did not request this code, please ignore this email.</p>
+                </div>";
+
+            try
             {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToPage("./ForgotPasswordConfirmation");
-                }
-
-                // For more information on how to enable account confirmation and password reset please 
-                // visit https://go.microsoft.com/fwlink/?LinkID=532713
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                var callbackUrl = Url.Page(
-                    "/Account/ResetPassword",
-                    pageHandler: null,
-                    values: new { area = "Identity", code },
-                    protocol: Request.Scheme);
-
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                return RedirectToPage("./ForgotPasswordConfirmation");
+                await _emailService.SendEmailAsync(user.Email, subject, message);
+                TempData["ResetEmail"] = Input.Email;
+                return RedirectToPage("./ResetPasswordWith2fa");
             }
-
-            return Page();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"EMAIL ERROR: {ex.Message}");
+                
+                ModelState.AddModelError(string.Empty, "Failed to send verification email. Please try again later.");
+                return Page();
+            } 
         }
     }
 }

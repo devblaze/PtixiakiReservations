@@ -71,7 +71,7 @@ public class ReservationControllerTests : IDisposable
         };
         _context.EventType.Add(eventType);
 
-        // Add sub areas
+        // Add layouts
         var subArea1 = new SubArea
         {
             Id = 1,

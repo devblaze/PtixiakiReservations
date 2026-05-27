@@ -1,127 +1,38 @@
-name: Deploy to Production
+name: Build & Deploy to Windows VM
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
-      version:
-        description: 'Version tag to deploy (e.g., v1.0.0 or latest)'
-        required: true
-        default: 'latest'
+  push:
+    branches: [ "main" ]
 
 jobs:
   deploy:
-    name: Deploy to ${{ github.event.inputs.environment }}
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Deploy via Docker Compose
-        run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
-            cd /opt/ptixiaki-reservations
+    - name: Build and Push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: xristoskap/ptixiaki-reservations:latest
 
-            # Backup current docker-compose.yml
-            cp docker-compose.yml docker-compose.yml.backup
-
-            # Pull the latest changes
-            git pull origin main
-
-            # Update the image tag in docker-compose.yml
-            export IMAGE_TAG=${{ github.event.inputs.version }}
-
-            # Pull new images
-            docker-compose pull
-
-            # Stop and remove old containers
-            docker-compose down
-
-            # Start new containers
-            docker-compose up -d
-
-            # Wait for health check
-            sleep 30
-
-            # Check if the application is running
-            if curl -f http://localhost:8080/health; then
-              echo "Deployment successful!"
-              # Clean up old images
-              docker image prune -af
-            else
-              echo "Deployment failed! Rolling back..."
-              docker-compose down
-              cp docker-compose.yml.backup docker-compose.yml
-              docker-compose up -d
-              exit 1
-            fi
-          ENDSSH
-
-      - name: Notify Deployment Status
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: |
-            Deployment to ${{ github.event.inputs.environment }} ${{ job.status }}
-            Version: ${{ github.event.inputs.version }}
-            Actor: ${{ github.actor }}
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-
-  smoke-test:
-    name: Run Smoke Tests
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: success()
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Smoke Tests
-        run: |
-          # Basic health check
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.APP_URL }}/health)
-          if [ $response -eq 200 ]; then
-            echo "Health check passed"
-          else
-            echo "Health check failed with status: $response"
-            exit 1
-          fi
-
-          # Check main endpoints
-          endpoints=("/Events/EventsForToday" "/Account/Login" "/api/health")
-          for endpoint in "${endpoints[@]}"; do
-            response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.APP_URL }}${endpoint})
-            if [ $response -eq 200 ] || [ $response -eq 302 ]; then
-              echo "Endpoint ${endpoint} is accessible"
-            else
-              echo "Endpoint ${endpoint} failed with status: $response"
-              exit 1
-            fi
-          done
-
-      - name: Notify Test Results
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: |
-            Smoke tests ${{ job.status }} for ${{ github.event.inputs.environment }}
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+    - name: Deploy to Windows VM
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        password: ${{ secrets.VM_PASSWORD }}
+        script: |
+          cd C:\deploy\ptixiaki
+          docker compose pull
+          docker compose up -d

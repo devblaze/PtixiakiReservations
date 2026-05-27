@@ -16,9 +16,12 @@ namespace PtixiakiReservations.Models.ViewModels
         public City City { get; set; }        
         public int CityId { get; set; }
         public string PostalCode { get; set; }
-        public string Phone { get; set; }       
+        public string Phone { get; set; }    
+        public string? VenueUrl { get; set; }
+        public string? SocialMediaUrl { get; set; }   
         public string UserId { get; set; }
         public ApplicationUser ApplicationUser { get; set; }
         public IFormFile Photo { get; set; }
+        public List<int> SelectedEventTypeIds { get; set; } = new List<int>();
     }
 }

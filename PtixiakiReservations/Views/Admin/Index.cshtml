@@ -44,7 +44,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 font-medium">Sub Areas</p>
+                    <p class="text-sm text-gray-500 font-medium">Layouts</p>
                     <p class="text-2xl font-semibold text-gray-700">@Model.SubAreaCount</p>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 font-medium">Pending Requests</p>
-                    <p class="text-2xl font-semibold text-gray-700">@Model.PendingVenueManagerRequests</p>
+                    <p class="text-2xl font-semibold text-gray-700">@Model.PendingRequests</p>
                 </div>
             </div>
         </div>
@@ -85,15 +85,15 @@
             <h2 class="text-xl font-semibold text-gray-700">Quick Actions</h2>
         </div>
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <a href="@Url.Action("VenueManagerRequests", "Admin")" class="p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors flex items-center space-x-3">
+            <a href="@Url.Action("RoleRequests", "Admin")" class="p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors flex items-center space-x-3">
                 <div class="p-2 bg-red-100 rounded-md text-red-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://wwwwww.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
                 </div>
                 <div>
-                    <p class="font-medium text-gray-700">Venue Manager Requests</p>
-                    <p class="text-sm text-gray-500">@Model.PendingVenueManagerRequests pending</p>
+                    <p class="font-medium text-gray-700">Role Requests</p>
+                    <p class="text-sm text-gray-500">@Model.PendingRequests pending</p>
                 </div>
             </a>
             @* <a href="@Url.Action("Events", "Admin")" class="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-colors flex items-center space-x-3"> *@
@@ -138,6 +138,28 @@
                 <div>
                     <p class="font-medium text-gray-700">Manage Users</p>
                     <p class="text-sm text-gray-500">View and manage user accounts</p>
+                </div>
+            </a>
+            <a href="@Url.Action("ManageCities","City")" class="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-colors flex items-center space-x-3">
+                <div class="p-2 bg-blue-100 rounded-md text-blue-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Manage Cities</p>
+                    <p class="text-sm text-gray-500">View and manage Cities</p>
+                </div>
+            </a>
+            <a href="@Url.Action("ManageEventType","EventType")" class="p-4 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-200 transition-colors flex items-center space-x-3">
+                <div class="p-2 bg-green-100 rounded-md text-green-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-700">Manage Event Types</p>
+                    <p class="text-sm text-gray-500">View and manage Event Types</p>
                 </div>
             </a>
         </div>

@@ -54,7 +54,19 @@ namespace PtixiakiReservations.Controllers
             {
                 User = user,
                 Roles = roles,
-                RecentReservations = reservations
+                RecentReservations = reservations,
+
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Address = user.Address,
+                PostalCode = user.PostalCode,
+                CityId = user.CityId,
+                IsEmailConfirmed = user.EmailConfirmed,
+
+                Is2faEnabled = user.TwoFactorEnabled 
             };
 
             return View(model);
@@ -148,15 +160,20 @@ namespace PtixiakiReservations.Controllers
             return View(reservations);
         }
 
-// GET: /Profile/RequestVenueManager
-        public IActionResult RequestVenueManager()
+// GET: /Profile/RequestRoles
+        public IActionResult RequestRoles()
         {
-            return View(new VenueManagerRequestViewModel());
+            var model = new RoleRequestViewModel 
+            { 
+                SelectedRoleRequest = "Venue" 
+            };
+    
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RequestVenueManager(VenueManagerRequestViewModel model)
+        public async Task<IActionResult> RequestRoles(RoleRequestViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -169,25 +186,34 @@ namespace PtixiakiReservations.Controllers
                 return NotFound();
             }
 
-            // Check if user already has pending request
-            if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
+            switch (model.SelectedRoleRequest)
             {
-                ModelState.AddModelError(string.Empty, "You already have a pending request to become a venue manager.");
-                return View(model);
+                case "Venue":
+                    user.HasRequestedVenueManagerRole = true;
+                    user.VenueManagerRequestStatus = "Pending";
+                    user.VenueManagerRequestDate = DateTime.UtcNow;
+                    user.VenueManagerRequestReason = model.Reason; // Save their reason!
+                    break;
+                    
+                case "Event":
+                    user.HasRequestedEventManagerRole = true;
+                    user.EventManagerRequestStatus = "Pending";
+                    user.EventManagerRequestDate = DateTime.UtcNow;
+                    user.EventManagerRequestReason = model.Reason;
+                    break;
+                    
+                case "SuperOrganizer":
+                    user.HasRequestedSuperOrganizerRole = true;
+                    user.SuperOrganizerRequestStatus = "Pending";
+                    user.SuperOrganizerRequestDate = DateTime.UtcNow;
+                    user.SuperOrganizerRequestReason = model.Reason;
+                    break;
+                    
+                default:
+                    ModelState.AddModelError("", "Invalid role selected.");
+                    return View(model);
             }
 
-            // Check if user is already a venue manager
-            if (await _userManager.IsInRoleAsync(user, "VenueManager"))
-            {
-                ModelState.AddModelError(string.Empty, "You are already a venue manager.");
-                return View(model);
-            }
-
-            // Update user with request details
-            user.HasRequestedVenueManagerRole = true;
-            user.VenueManagerRequestDate = DateTime.UtcNow;
-            user.VenueManagerRequestReason = model.Reason;
-            user.VenueManagerRequestStatus = "Pending";
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)

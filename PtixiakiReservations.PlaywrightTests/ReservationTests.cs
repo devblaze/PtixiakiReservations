@@ -19,7 +19,7 @@ namespace PtixiakiReservations.PlaywrightTests
             await Page.ClickAsync("button[type='submit']");
 
             // Create SubArea
-            await Page.ClickAsync("a:has-text('Add Sub Area')");
+            await Page.ClickAsync("a:has-text('Add Layout')");
             await Page.FillAsync("input[name='AreaName']", "Main Theater");
             await Page.FillAsync("input[name='Width']", "100");
             await Page.FillAsync("input[name='Height']", "80");

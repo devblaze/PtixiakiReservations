@@ -14,5 +14,9 @@ namespace PtixiakiReservations.Models
         [ForeignKey("EventId")] public Event Event { get; set; }
         public DateTime Date { get; set; }
         public TimeSpan Duration { get; set; }
+        public bool IsPastReservation { get; set; }
+        public bool? Attended { get; set; }
+        public string? Review { get; set; }
+        public int? Rating { get; set; }
     }
 }

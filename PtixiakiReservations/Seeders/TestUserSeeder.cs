@@ -9,6 +9,7 @@ namespace PtixiakiReservations.Seeders
     {
         public static async Task SeedTestUsersAsync(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
+
             // Make sure the "Venue" role exists
             if (!await roleManager.RoleExistsAsync("Venue"))
             {

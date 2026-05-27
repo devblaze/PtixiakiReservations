@@ -1,6 +1,16 @@
 ﻿@model IEnumerable<PtixiakiReservations.Models.Event>
+@using Microsoft.AspNetCore.Identity
+@using PtixiakiReservations.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
 @{
     ViewBag.Title = "My Events";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var userRoles = await UserManager.GetRolesAsync(currentUser);
+    bool isAdmin = User.IsInRole("Admin");
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 12;
 }
 
 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -84,6 +94,7 @@
                 </table>
             </div>
 
+
             <!-- No Events Message -->
             <div id="no-events-message" class="hidden p-12 text-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,6 +116,8 @@
     </div>
 </div>
 
+<div id="js-pagination-container" class="mt-12 flex justify-center pb-12"></div>
+
 <!-- Event Details Modal -->
 <div id="event-details-modal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl">
@@ -116,14 +129,17 @@
                 </svg>
             </button>
         </div>
+        
         <div class="p-6 space-y-4" id="modal-event-details">
             <!-- Event details will be populated here -->
         </div>
+        
         <div class="bg-gray-100 border-t border-gray-200 px-6 py-4 flex justify-end space-x-4 rounded-b-lg">
-            <a id="modal-edit-link" href="#" class="px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-700 transition-colors">
+            <a id="modal-edit-btn" class="cursor-pointer px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-700 transition-colors">
                 Edit Event
             </a>
-            <button onclick="closeModal()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+
+            <button onclick="closeModal()" type="button" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
                 Close
             </button>
         </div>
@@ -134,7 +150,10 @@
     <script>
         // Variables to store state
         let allEvents = [];
+        let filteredEvents = [];
         let userVenues = [];
+        let jsCurrentPage = 1;
+        const jsPageSize = 12;
 
         // On document ready
         $(document).ready(function() {
@@ -154,8 +173,8 @@
                 url: '/Events/GetUserEvents',
                 type: 'GET',
                 success: function(data) {
-                    allEvents = data;
-                    renderEvents(allEvents);
+                    allEvents = data.events;
+                    filterEvents();
                     $("#loading-indicator").addClass("hidden");
                     $("#events-table").removeClass("hidden");
                 },
@@ -259,9 +278,6 @@
                             <button onclick="showEventDetails(${event.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">
                                 View
                             </button>
-                            <a href="/Events/Edit/${event.id}" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                Edit
-                            </a>
                             <a href="/Events/Details/${event.id}" class="text-indigo-600 hover:text-indigo-900">
                                 Details
                             </a>
@@ -279,7 +295,7 @@
             const statusFilter = $("#status-filter").val();
             const venueFilter = $("#venue-filter").val();
 
-            let filteredEvents = allEvents;
+            filteredEvents = allEvents;
 
             // Apply search filter
             if (searchTerm) {
@@ -321,14 +337,97 @@
                 });
             }
 
-            // Render filtered events
-            renderEvents(filteredEvents);
+            jsCurrentPage = 1; 
+            renderPage();
+        }
+
+        function renderPage() {
+            const startIndex = (jsCurrentPage - 1) * jsPageSize;
+            const endIndex = startIndex + jsPageSize;
+            
+            // 2. Slice the array
+            const pageEvents = filteredEvents.slice(startIndex, endIndex);
+            renderEvents(pageEvents);
+
+            renderPaginationControls();
+        }
+
+        function renderPaginationControls() {
+            const totalPages = Math.ceil(filteredEvents.length / jsPageSize);
+            const navContainer = $("#js-pagination-container");
+            navContainer.empty();
+
+            if (totalPages <= 1) return;
+
+            let html = '<nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">';
+
+            // Previous Button
+            if (jsCurrentPage > 1) {
+                html += `
+                <button type="button" onclick="changePage(${jsCurrentPage - 1})" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Previous
+                </button>`;
+            }
+
+            let startPage = Math.max(1, jsCurrentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+            if (startPage > 1) {
+                html += `<button type="button" onclick="changePage(1)" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">1</button>`;
+                if (startPage > 2) {
+                    html += `<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const activeClass = i === jsCurrentPage 
+                    ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600" 
+                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50";
+                
+                html += `<button type="button" onclick="changePage(${i})" class="${activeClass} relative inline-flex items-center px-4 py-2 border text-sm font-medium">${i}</button>`;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>`;
+                }
+                html += `<button type="button" onclick="changePage(${totalPages})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">${totalPages}</button>`;
+            }
+
+            // Next Button
+            if (jsCurrentPage < totalPages) {
+                html += `
+                <button type="button" onclick="changePage(${jsCurrentPage + 1})" class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    Next
+                    <svg class="h-5 w-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>`;
+            }
+
+            html += '</nav>';
+            navContainer.html(html);
+        }
+
+        // Handle page clicking
+        window.changePage = function(pageNumber) {
+            jsCurrentPage = pageNumber;
+            renderPage();
+            // Scroll back to the top of the table seamlessly
+            document.getElementById('events-container').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Function to show event details in modal
         function showEventDetails(eventId) {
             const event = allEvents.find(e => e.id === eventId);
-            if (!event) return;
+            if (!event) {
+                console.error("Could not find event with ID:", eventId);
+                return;
+            }
 
             const startDate = new Date(event.startDateTime);
             const endDate = new Date(event.endTime);
@@ -341,9 +440,24 @@
             const formattedEndDate = endDate.toLocaleDateString(undefined, dateOptions);
             const formattedEndTime = endDate.toLocaleTimeString(undefined, timeOptions);
 
-            // Set modal content
+            // Set modal title
             $("#modal-event-title").text(event.name);
-            $("#modal-edit-link").attr("href", `/Events/Edit/${event.id}`);
+
+            const editBtn = document.getElementById("modal-edit-btn");
+            
+            editBtn.onclick = null; 
+            
+    
+            editBtn.onclick = function(e) {
+                e.preventDefault(); // Stop any browser weirdness
+                
+                // If you see this alert, the button works!
+                console.log("Navigating to: /Events/Edit/" + event.id);
+                
+                // Force the browser to go to the Edit page
+                window.location.assign("/Events/Edit/" + event.id);
+            };
+            // -----------------------------------------
 
             // Build details HTML
             let detailsHtml = `
@@ -384,5 +498,15 @@
         function closeModal() {
             $("#event-details-modal").addClass("hidden");
         }
+
+        function updateUrl(param, value) {
+            const url = new URL(window.location.href);
+            url.searchParams.set(param, value);
+            if (param !== 'page') {
+                url.searchParams.set('page', '1');
+            }
+            window.location.href = url.href;
+        }
+
     </script>
 }

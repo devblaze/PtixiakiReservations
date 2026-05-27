@@ -51,39 +51,41 @@
                             var userRoles = currentUser != null ? await UserManager.GetRolesAsync(currentUser) : new List<string>();
                             var isVenueManager = userRoles.Contains("Venue");
                             var isAdmin = userRoles.Contains("Admin");
+                            var isSuper = userRoles.Contains("SuperOrganizer");
+                            var isEventManager = userRoles.Contains("Event");
+
                         }
 
-                        <!-- Home link - visible to all users -->
+                        <!-- Search link - visible to all users -->
                         <a href="@Url.Action("EventsForToday", "Events")"
+                           class="inline-flex items-center justify-center h-8 w-8 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </a>
+
+                        <!-- Home link - visible to all users -->
+
+                        <a href="@Url.Action("HomePage", "Events")"
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                             Home
                         </a>
-
-                        <!-- Reservations link - visible to all logged-in users -->
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <a href="@Url.Action("Index", "Reservation")"
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                Reservations
-                            </a>
-                        }
-
-                        <!-- Venue manager links - only visible to venue managers -->
-                        @if (isVenueManager || isAdmin)
+                        
+                        @if (isEventManager|| isAdmin || isSuper)
                         {
                             <a href="@Url.Action("Index", "Events")"
                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                                 Events
                             </a>
-                            
-                            @if (isVenueManager)
-                            {
-                                <a href="@Url.Action("MyVenues", "Venue")"
-                                   class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                    Venues
-                                </a>
-                            }
                         }
+                        @if (isVenueManager|| isAdmin || isSuper)
+                        {
+                            <a href="@Url.Action("MyVenues", "Venue")"
+                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Venues
+                            </a>
+                        }
+                        
                     </div>
                 </div>
 
@@ -98,7 +100,11 @@
                                     <div class="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-white">
                                         @(User.Identity?.Name?[0].ToString().ToUpper())
                                     </div>
-                                    <span class="text-white ml-2">@User.Identity?.Name</span>
+                                    @{
+                                    var user = await UserManager.GetUserAsync(User);
+                                    var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
+                                    }
+                                    <span class="text-white ml-2"><b>@(roles.Any() ? string.Join(", ", roles) : "User")</b>:  @User.Identity?.Name</span>
                                     <svg class="ml-1 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                     </svg>
@@ -125,18 +131,18 @@
                                 <p class="text-sm font-medium text-gray-900 dark:text-white">@User.Identity?.Name</p>
 
                                 <!-- User Role -->
-                                @{
-                                    var user = await UserManager.GetUserAsync(User);
-                                    var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
-                                }
                                 <p class="text-xs text-gray-500 dark:text-gray-400">
                                     @(roles.Any() ? string.Join(", ", roles) : "User")
                                 </p>
                             </div>
 
                             <!-- Menu Links -->
-                            <a href="@Url.Action("Index", "Profile")" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">Your Profile</a>
+                            <a href="@Url.Action("Index", "Profile")" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">My Profile</a>
                             @* <a href="@Url.Action("Index", "Settings")" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">Settings</a> *@
+
+                            <!-- Reservations Link -->
+                            <a href="@Url.Action("Index", "Reservation")" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">My Reservations</a>
+
 
                             <!-- Admin Panel Link - Only visible to admins -->
                             @if (User.IsInRole("Admin"))
@@ -186,24 +192,34 @@
                     var mobileUserRoles = mobileCurrentUser != null ? await UserManager.GetRolesAsync(mobileCurrentUser) : new List<string>();
                     var isMobileVenueManager = mobileUserRoles.Contains("Venue");
                     var isMobileAdmin = mobileUserRoles.Contains("Admin");
+                    var isMobileSuper = mobileUserRoles.Contains("SuperOrganizer");
+                    var isMobileEventManager = mobileUserRoles.Contains("Event");
                 }
 
-                <!-- Home link - visible to all users -->
                 <a href="@Url.Action("EventsForToday", "Events")"
-                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
+                    class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+                     Search...
+                </a>
 
+                <!-- Home link - visible to all users -->
+                <a href="@Url.Action("HomePage", "Events")"
+                   class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
+                @*
                 <!-- Reservations link - visible to all logged-in users -->
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <a href="@Url.Action("Index", "Reservation")"
                        class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Reservations</a>
                 }
-
+                *@
                 <!-- Venue manager links - only visible to venue managers -->
-                @if (isMobileVenueManager || isMobileAdmin)
+                @if (isMobileEventManager|| isMobileAdmin || isMobileSuper)
                 {
                     <a href="@Url.Action("CreateEvent", "Events")"
                        class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Create Event</a>
+                }
+                @if (isMobileVenueManager|| isMobileAdmin || isMobileSuper)
+                {
 
                     <a href="@Url.Action("Index", "Venue")"
                        class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">View Venues</a>
@@ -256,8 +272,8 @@
     @await RenderSectionAsync("Scripts", required: false)
 </main>
 
-<footer class="bg-gray-800 text-white py-4">
-    <div class="container mx-auto text-center">
+<footer class="bg-gray-800 text-white py-4 bottom-0 h-[20px]">
+    <div class="container mx-auto text-center bottom-0 h-[20px]">
         <p>&copy; 2025 Reservations. All rights reserved.</p>
     </div>
 </footer>

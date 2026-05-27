@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: ptixiaki_db
+    restart: always
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
+      POSTGRES_DB: appdb
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    image: xristoskap/ptixiaki-reservations:latest
+    container_name: ptixiaki_web
+    restart: always
+    depends_on:
+      - db
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Database=appdb;Username=appuser;Password=apppass"
+    ports:
+      - "8080:8080"
+
+volumes:
+  dbdata:

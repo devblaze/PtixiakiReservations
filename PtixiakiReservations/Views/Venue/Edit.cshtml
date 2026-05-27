@@ -1,99 +1,294 @@
-﻿@model PtixiakiReservations.Models.ViewModels.VenueViewModel
+@model PtixiakiReservations.Models.ViewModels.VenueViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Collections.Generic
+@using System.Linq
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Venue";
+    var allCategoriesChecked = Model.SelectedEventTypeIds?.Any() != true;
+    var eventTypes = (ViewBag.EventTypes as IEnumerable<SelectListItem>)?.ToList() ?? new List<SelectListItem>();
+    var currentImagePath = Url.Content((ViewBag.ImagePath as string) ?? "~/images/image.jpg");
+    var inputClasses = "block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500";
 }
 
-<div class="container mx-auto p-6">
-    <div class="bg-white p-6 shadow-lg rounded-md">
-        <h4 class="text-xl font-semibold text-gray-700 mb-4">Venue Details</h4>
-        <form asp-action="Edit" enctype="multipart/form-data" class="space-y-6">
-            <div asp-validation-summary="ModelOnly" class="text-red-500"></div>
-
-            <!-- Name Field -->
+<div class="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mx-auto" style="max-width: 960px;">
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <label asp-for="Name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input asp-for="Name"
-                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
-                <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
+                <h1 class="text-2xl font-bold text-gray-900">Edit Venue</h1>
+                <p class="mt-1 text-sm text-gray-600">Update venue information, supported event types, and public links.</p>
             </div>
+            <a asp-action="Details" asp-route-id="@Model.Id"
+               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                Cancel
+            </a>
+        </div>
 
-            <!-- Address Field -->
-            <div>
-                <label asp-for="Address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <input asp-for="Address"
-                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
-                <span asp-validation-for="Address" class="text-red-500 text-sm"></span>
-            </div>
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" class="space-y-6">
+            <div asp-validation-summary="ModelOnly" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+            <input asp-for="Id" type="hidden" />
 
-            <!-- City Field -->
-            <div>
-                <label asp-for="City" class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                <select asp-for="CityId"
-                        asp-items="@(new SelectList(@ViewBag.ListOfCity, "Id", "Name", ViewBag.SelectedCity))"
-                        class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50">
-                </select>
-                <span asp-validation-for="City" class="text-red-500 text-sm"></span>
-            </div>
-
-            <!-- Postal Code Field -->
-            <div>
-                <label asp-for="PostalCode" class="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
-                <input asp-for="PostalCode"
-                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
-                <span asp-validation-for="PostalCode" class="text-red-500 text-sm"></span>
-            </div>
-
-            <!-- Phone Field -->
-            <div>
-                <label asp-for="Phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input asp-for="Phone"
-                       class="block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base text-gray-700 rounded-sm bg-gray-50"/>
-                <span asp-validation-for="Phone" class="text-red-500 text-sm"></span>
-            </div>
-
-            <!-- Photo Upload -->
-            <div>
-                <label for="Photo" class="block text-sm font-medium text-gray-700 mb-1">Photo Upload</label>
-                <div class="mt-1 flex items-center">
-                    <input asp-for="Photo"
-                           class="block w-full text-sm text-gray-900 border border-gray-300 rounded-sm cursor-pointer bg-gray-50 focus:outline-none focus:border-blue-500"
-                           id="file_input" type="file">
-                    <span asp-validation-for="Photo" class="text-red-500 text-sm"></span>
+            <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                    <h2 class="text-base font-semibold text-gray-900">Basic Info</h2>
+                    <p class="mt-1 text-sm text-gray-500">Core venue details shown across the application.</p>
                 </div>
-            </div>
+                <div class="space-y-6 p-6">
+                    <div>
+                        <label asp-for="Name" class="block text-sm font-semibold text-gray-800">Venue Name</label>
+                        <input asp-for="Name" class="@inputClasses mt-2" placeholder="Enter venue name" />
+                        <span asp-validation-for="Name" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
 
-            <!-- Submit Button -->
-            <div>
-                <input type="submit" value="Save"
-                       class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-sm shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"/>
+                    <div>
+                        <label asp-for="Address" class="block text-sm font-semibold text-gray-800">Address</label>
+                        <input asp-for="Address" class="@inputClasses mt-2" placeholder="Street address" />
+                        <span asp-validation-for="Address" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <label asp-for="CityId" class="block text-sm font-semibold text-gray-800">City</label>
+                            <select asp-for="CityId" asp-items="ViewBag.ListOfCity" class="@inputClasses mt-2"></select>
+                            <span asp-validation-for="CityId" class="mt-1 block text-sm text-red-600"></span>
+                        </div>
+
+                        <div>
+                            <label asp-for="PostalCode" class="block text-sm font-semibold text-gray-800">Postal Code</label>
+                            <input asp-for="PostalCode" class="@inputClasses mt-2" placeholder="Postal code" />
+                            <span asp-validation-for="PostalCode" class="mt-1 block text-sm text-red-600"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                    <h2 class="text-base font-semibold text-gray-900">Contact</h2>
+                    <p class="mt-1 text-sm text-gray-500">Public contact and external links for this venue.</p>
+                </div>
+                <div class="space-y-6 p-6">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <label asp-for="Phone" class="block text-sm font-semibold text-gray-800">Phone</label>
+                            <input asp-for="Phone" class="@inputClasses mt-2" placeholder="Contact phone number" />
+                            <span asp-validation-for="Phone" class="mt-1 block text-sm text-red-600"></span>
+                        </div>
+
+                        <div>
+                            <label asp-for="VenueUrl" class="block text-sm font-semibold text-gray-800">Website</label>
+                            <input asp-for="VenueUrl" class="@inputClasses mt-2" placeholder="https://example.com" />
+                            <p class="mt-1 text-xs text-gray-500">Public website visitors will see.</p>
+                            <span asp-validation-for="VenueUrl" class="mt-1 block text-sm text-red-600"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label asp-for="SocialMediaUrl" class="block text-sm font-semibold text-gray-800">Social Media</label>
+                        <input asp-for="SocialMediaUrl" class="@inputClasses mt-2" placeholder="https://instagram.com/venue" />
+                        <p class="mt-1 text-xs text-gray-500">Optional social profile for the venue.</p>
+                        <span asp-validation-for="SocialMediaUrl" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                    <h2 class="text-base font-semibold text-gray-900">Event Configuration</h2>
+                    <p class="mt-1 text-sm text-gray-500">Choose the event types this venue supports.</p>
+                </div>
+                <div class="space-y-5 p-6">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                        <div class="w-full md:max-w-sm">
+                            <label for="categorySearch" class="block text-sm font-semibold text-gray-800">Search Categories</label>
+                            <input id="categorySearch" type="search" class="@inputClasses mt-2" placeholder="Search event types" />
+                        </div>
+
+                        <label for="categoryCheckBox" class="inline-flex items-center gap-2 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800">
+                            <input type="checkbox"
+                                   id="categoryCheckBox"
+                                   class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                   @(allCategoriesChecked ? "checked" : "") />
+                            All Categories?
+                        </label>
+                    </div>
+
+                    <div id="categoryList" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        @foreach (var eventType in eventTypes)
+                        {
+                            var checkboxId = $"category_{eventType.Value}";
+                            <label for="@checkboxId"
+                                   class="category-card flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50">
+                                <input type="checkbox"
+                                       id="@checkboxId"
+                                       name="SelectedEventTypeIds"
+                                       value="@eventType.Value"
+                                       checked="@eventType.Selected"
+                                       class="category-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                <span class="category-name">@eventType.Text</span>
+                            </label>
+                        }
+                    </div>
+
+                    <p id="categoryEmptyState" class="hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+                        No categories found.
+                    </p>
+                    <span asp-validation-for="SelectedEventTypeIds" class="block text-sm text-red-600"></span>
+                </div>
+            </section>
+
+            <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                    <h2 class="text-base font-semibold text-gray-900">Media</h2>
+                    <p class="mt-1 text-sm text-gray-500">Upload or replace the venue photo.</p>
+                </div>
+                <div class="p-6">
+                    <label for="file_input"
+                           id="dropArea"
+                           class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-8 text-center transition hover:border-indigo-300 hover:bg-indigo-50">
+                        <img id="imagePreview"
+                             src="@currentImagePath"
+                             class="mb-4 h-28 w-28 rounded-lg border border-gray-200 bg-white object-cover shadow-sm"
+                             alt="Venue image preview" />
+                        <span class="text-sm font-semibold text-indigo-700">Upload an image</span>
+                        <span class="mt-1 text-sm text-gray-500">Drag and drop or click to choose a file.</span>
+                        <span class="mt-1 text-xs text-gray-400">PNG, JPG, or GIF up to 10MB.</span>
+                        <input asp-for="Photo" id="file_input" type="file" accept="image/*" class="sr-only" />
+                    </label>
+                    <span asp-validation-for="Photo" class="mt-2 block text-sm text-red-600"></span>
+                </div>
+            </section>
+
+            <div class="sticky bottom-0 z-20 bg-gray-50 py-4">
+                <div class="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-end">
+                    <a asp-action="Details" asp-route-id="@Model.Id"
+                       class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                            class="inline-flex items-center justify-center rounded-lg border border-transparent bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Save Changes
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 </div>
-<!-- Back to List -->
-<div class="mt-6">
-    <a asp-action="Index"
-       class="text-blue-600 hover:underline text-sm font-medium">
-        Back to List
-    </a>
-</div>
-
-@if (ViewBag.SelectedValue != null)
-{
-    <div class="mt-4 text-sm text-gray-600">
-        Selected City: <span class="font-semibold">@ViewBag.SelectedValue</span>
-    </div>
-}
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const fileInput = document.querySelector('#file_input');
-            fileInput.addEventListener("change", function () {
-                const fileName = this.value.split("\\").pop();
-                this.nextElementSibling.innerText = fileName;
+            const fileInput = document.getElementById("file_input");
+            const imagePreview = document.getElementById("imagePreview");
+            const dropArea = document.getElementById("dropArea");
+            const categoryCheckBox = document.getElementById("categoryCheckBox");
+            const categorySearch = document.getElementById("categorySearch");
+            const categoryCards = Array.from(document.querySelectorAll(".category-card"));
+            const categoryInputs = Array.from(document.querySelectorAll(".category-checkbox"));
+            const categoryEmptyState = document.getElementById("categoryEmptyState");
+
+            function setAllCategories(checked) {
+                categoryCheckBox.checked = checked;
+
+                categoryInputs.forEach(function (input) {
+                    input.disabled = checked;
+                    if (checked) {
+                        input.checked = false;
+                    }
+                });
+            }
+
+            function updateAllCategoriesState() {
+                const allSelected = categoryInputs.length > 0 && categoryInputs.every(function (input) {
+                    return input.checked;
+                });
+
+                if (allSelected) {
+                    setAllCategories(true);
+                } else {
+                    categoryCheckBox.checked = false;
+                    categoryInputs.forEach(function (input) {
+                        input.disabled = false;
+                    });
+                }
+            }
+
+            function filterCategories() {
+                const query = categorySearch.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                categoryCards.forEach(function (card) {
+                    const name = card.querySelector(".category-name").textContent.toLowerCase();
+                    const isVisible = name.includes(query);
+                    card.classList.toggle("hidden", !isVisible);
+
+                    if (isVisible) {
+                        visibleCount += 1;
+                    }
+                });
+
+                categoryEmptyState.classList.toggle("hidden", visibleCount > 0);
+            }
+
+            categoryCheckBox.addEventListener("change", function () {
+                setAllCategories(categoryCheckBox.checked);
+            });
+
+            categoryInputs.forEach(function (input) {
+                input.addEventListener("change", updateAllCategoriesState);
+            });
+
+            categorySearch.addEventListener("input", filterCategories);
+
+            if (categoryCheckBox.checked) {
+                setAllCategories(true);
+            } else {
+                updateAllCategoriesState();
+            }
+            filterCategories();
+
+            function previewImage(file) {
+                if (!file || !file.type.startsWith("image/")) {
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    imagePreview.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            fileInput.addEventListener("change", function (event) {
+                previewImage(event.target.files[0]);
+            });
+
+            ["dragenter", "dragover", "dragleave", "drop"].forEach(function (eventName) {
+                dropArea.addEventListener(eventName, function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                });
+            });
+
+            ["dragenter", "dragover"].forEach(function (eventName) {
+                dropArea.addEventListener(eventName, function () {
+                    dropArea.classList.add("border-indigo-500", "bg-indigo-50");
+                });
+            });
+
+            ["dragleave", "drop"].forEach(function (eventName) {
+                dropArea.addEventListener(eventName, function () {
+                    dropArea.classList.remove("border-indigo-500", "bg-indigo-50");
+                });
+            });
+
+            dropArea.addEventListener("drop", function (event) {
+                const file = event.dataTransfer.files[0];
+                if (file) {
+                    fileInput.files = event.dataTransfer.files;
+                    previewImage(file);
+                }
             });
         });
     </script>

@@ -112,14 +112,14 @@ public class SeatController(ApplicationDbContext context, UserManager<Applicatio
 
             if (subAreaId <= 0)
             {
-                return BadRequest("Invalid sub area ID");
+                return BadRequest("Invalid layout ID");
             }
 
-            // Verify the sub area exists
+            // Verify the layout exists
             var subArea = await context.SubArea.FindAsync(subAreaId);
             if (subArea == null)
             {
-                return NotFound("Sub area not found");
+                return NotFound("Layout not found");
             }
 
             // Check if there are existing seats for this subarea

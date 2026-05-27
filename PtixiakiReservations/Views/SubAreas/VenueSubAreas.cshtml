@@ -4,10 +4,10 @@
 @inject SignInManager<ApplicationUser> SignInManager
 
 @{
-    ViewData["Title"] = "Venue Sub Areas";
+    ViewData["Title"] = "Venue Layouts";
     var currentUser = await UserManager.GetUserAsync(User);
     var userRoles = await UserManager.GetRolesAsync(currentUser);
-    bool canCreateSubAreas = User.IsInRole("Venue");
+    bool canCreateSubAreas = User.IsInRole("Venue") || User.IsInRole("SuperOrganizer") || User.IsInRole("Admin");
     
     // Check if current user owns this venue (you might need to pass venue info or check via AJAX)
     bool userOwnsVenue = true; // This would need proper implementation based on your venue ownership logic
@@ -20,7 +20,7 @@
             <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-8 md:py-10 md:px-8">
                 <div class="flex items-center justify-between">
                     <h1 class="text-2xl md:text-3xl font-bold text-white">
-                        Sub Areas for @ViewBag.VenueName
+                        Layouts for @ViewBag.VenueName
                     </h1>
                     <div class="flex space-x-4">
                         @if (canCreateSubAreas && userOwnsVenue)
@@ -30,7 +30,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                Create Sub Area
+                                Create Layout
                             </button>
                         }
                         <a href="@Url.Action("Details", "Venue", new { id = ViewBag.VenueId })"
@@ -48,12 +48,12 @@
             </div>
         </div>
 
-        <!-- Create Sub Area Modal/Form (initially hidden) -->
+        <!-- Create Layout Modal/Form (initially hidden) -->
         @if (canCreateSubAreas && userOwnsVenue)
         {
             <div id="createSubAreaModal" class="hidden bg-white rounded-xl shadow-lg p-8 mb-8">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-gray-800">Create New Sub Area</h2>
+                    <h2 class="text-xl font-semibold text-gray-800">Create New Layout</h2>
                     <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -62,8 +62,16 @@
                 </div>
                 
                 <form id="createSubAreaForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div class="md:col-span-2">
+                        <label for="layoutCount" class="block text-sm font-medium text-gray-700 mb-2">How many layouts do you want to create?</label>
+                        <input type="number" step="1" min="1" id="layoutCount" name="layoutCount" value="1" required
+                               oninput="if (this.value < 1) this.value = 1;"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+
                     <div>
-                        <label for="areaName" class="block text-sm font-medium text-gray-700 mb-2">Area Name</label>
+                        <label for="areaName" class="block text-sm font-medium text-gray-700 mb-2">Layout Name</label>
                         <input type="text" id="areaName" name="areaName" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
@@ -111,7 +119,7 @@
                         </button>
                         <button type="submit" 
                                 class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                            Create Sub Area
+                            Create Layout
                         </button>
                     </div>
                 </form>
@@ -125,9 +133,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                <h3 class="mt-4 text-lg font-medium text-gray-900">No sub areas found</h3>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">No layout found</h3>
                 <p class="mt-2 text-sm text-gray-500">
-                    This venue doesn't have any sub areas configured yet.
+                    This venue doesn't have any layouts configured yet.
                 </p>
                 @if (canCreateSubAreas && userOwnsVenue)
                 {
@@ -136,14 +144,14 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        Create Your First Sub Area
+                        Create Your First layout
                     </button>
                 }
             </div>
         }
         else
         {
-            <!-- Sub areas grid -->
+            <!-- Layouts grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach (var subArea in Model)
                 {
@@ -152,7 +160,7 @@
                         <div class="h-2 bg-gradient-to-r from-purple-400 to-indigo-500"></div>
 
                         <div class="p-6">
-                            <!-- Sub area name with icon -->
+                            <!-- Layout name with icon -->
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 bg-indigo-100 rounded-md p-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,7 +170,7 @@
                                 <h3 class="ml-3 text-xl font-semibold text-gray-800">@subArea.AreaName</h3>
                             </div>
 
-                            <!-- Sub area dimensions -->
+                            <!-- Layout dimensions -->
                             <div class="mt-4 grid grid-cols-2 gap-4">
                                 <div class="bg-gray-50 rounded-md px-3 py-2">
                                     <span class="text-xs font-medium text-gray-500">Width</span>
@@ -189,12 +197,31 @@
                             }
 
                             <!-- Actions -->
-                            <div class="mt-6 flex justify-end">
+                            <div class="mt-6 flex justify-end gap-3">
+
+                               <!-- Duplicate Button -->
+                                <button type="button"
+                                        onclick="openDuplicateModal(@subArea.Id, '@subArea.AreaName')"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-sm transition-colors">
+
+                                    Duplicate
+                                </button>
+
+                                <!-- View Details Button -->
                                 <a href="@Url.Action("Details", "SubAreas", new { id = subArea.Id, venueId = ViewBag.VenueId })"
-                                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
+
                                     View Details
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="ml-2 h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
                                     </svg>
                                 </a>
                             </div>
@@ -217,8 +244,49 @@
     </div>
 </div>
 
+<!-- Duplicate Modal -->
+<div id="duplicateModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+
+        <!-- Title -->
+        <h2 class="text-xl font-semibold text-gray-800">
+            Please type a name for the layout that you like to dublicate
+        </h2>
+        <br>
+        <br>
+
+        <!-- Input -->
+        <div class="mt-4">
+            <input id="duplicateName"
+                   type="text"
+                   placeholder="Enter layout name"
+                   class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+        </div>
+
+        <!-- Buttons -->
+        <div class="mt-6 flex justify-end gap-3">
+
+            <!-- Cancel -->
+            <button type="button"
+                    onclick="closeDuplicateModal()"
+                    class="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors">
+                Cancel
+            </button>
+
+            <!-- Confirm -->
+            <button type="button"
+                    onclick="confirmDuplicate()"
+                    class="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const createSubAreaBtn = document.getElementById('createSubAreaBtn');
     const createSubAreaBtnEmpty = document.getElementById('createSubAreaBtnEmpty');
     const createSubAreaModal = document.getElementById('createSubAreaModal');
@@ -226,22 +294,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = document.getElementById('cancelBtn');
     const createSubAreaForm = document.getElementById('createSubAreaForm');
 
-    // Show modal
     function showModal() {
         createSubAreaModal.classList.remove('hidden');
     }
 
-    // Hide modal
     function hideModal() {
         createSubAreaModal.classList.add('hidden');
         createSubAreaForm.reset();
     }
 
-    // Event listeners
     if (createSubAreaBtn) {
         createSubAreaBtn.addEventListener('click', showModal);
     }
-    
+
     if (createSubAreaBtnEmpty) {
         createSubAreaBtnEmpty.addEventListener('click', showModal);
     }
@@ -254,45 +319,105 @@ document.addEventListener('DOMContentLoaded', function() {
         cancelBtn.addEventListener('click', hideModal);
     }
 
-    // Handle form submission
     if (createSubAreaForm) {
-        createSubAreaForm.addEventListener('submit', async function(e) {
+        createSubAreaForm.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const formData = new FormData(createSubAreaForm);
-            const subAreaData = [{
-                AreaName: formData.get('areaName'),
-                Desc: formData.get('description'),
-                Width: parseFloat(formData.get('width')),
-                Height: parseFloat(formData.get('height')),
-                Top: parseFloat(formData.get('top')),
-                Left: parseFloat(formData.get('left')),
-                Rotate: parseFloat(formData.get('rotate')),
-                VenueId: @ViewBag.VenueId
-            }];
+            const layoutCount = parseInt(formData.get('layoutCount')) || 1;
+
+            const subAreaData = [];
+
+            for (let i = 0; i < layoutCount; i++) {
+                subAreaData.push({
+                    AreaName: formData.get('areaName'),
+                    Desc: formData.get('description'),
+                    Width: parseFloat(formData.get('width')),
+                    Height: parseFloat(formData.get('height')),
+                    Top: parseFloat(formData.get('top')),
+                    Left: parseFloat(formData.get('left')),
+                    Rotate: parseFloat(formData.get('rotate')),
+                    VenueId: @ViewBag.VenueId
+                });
+            }
 
             try {
                 const response = await fetch('@Url.Action("Create", "SubAreas")', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                        'RequestVerificationToken':
+                            document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                     },
                     body: JSON.stringify(subAreaData)
                 });
 
                 if (response.ok) {
-                    // Success - reload the page to show the new sub area
                     location.reload();
                 } else {
                     const errorText = await response.text();
-                    alert('Error creating sub area: ' + errorText);
+                    alert('Error creating layout: ' + errorText);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error creating sub area. Please try again.');
+                alert('Error creating layout. Please try again.');
             }
         });
     }
 });
+
+let selectedSubAreaId = 0;
+let selectedSubAreaName = '';
+
+function openDuplicateModal(subAreaId, subAreaName) {
+    selectedSubAreaId = subAreaId;
+    selectedSubAreaName = subAreaName;
+
+    document.getElementById('duplicateModal').classList.remove('hidden');
+    document.getElementById('duplicateModal').classList.add('flex');
+
+    document.getElementById('duplicateName').value = '';
+}
+
+function closeDuplicateModal() {
+    document.getElementById('duplicateModal').classList.add('hidden');
+    document.getElementById('duplicateModal').classList.remove('flex');
+
+    document.getElementById('duplicateName').value = '';
+}
+
+async function confirmDuplicate() {
+
+    const inputName =
+        document.getElementById('duplicateName').value.trim();
+
+    const layoutName =
+        inputName || `Copy of ${selectedSubAreaName}`;
+
+    try {
+
+        const response = await fetch('/SubAreas/Duplicate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: selectedSubAreaId,
+                name: layoutName
+            })
+        });
+
+        if (response.ok) {
+            closeDuplicateModal();
+            location.reload();
+        }
+        else {
+            alert('Duplicate failed');
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong');
+    }
+}
 </script>

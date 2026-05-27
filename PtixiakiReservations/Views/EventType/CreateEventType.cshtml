@@ -1,0 +1,42 @@
+
+@model IEnumerable<PtixiakiReservations.Models.EventType>
+@{
+    ViewData["Title"] = "Add Event Type";
+}
+
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8">
+                <h1 class="text-2xl md:text-3xl font-bold text-white">Add New Event Type</h1>
+                <p class="mt-2 text-indigo-100 max-w-3xl">
+                    Add a new event type that users can pick for their events
+                </p>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6">
+                <form asp-controller="EventType" asp-action="CreateEventType"  method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- City Name -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Event Type Name</label>
+                                    <div class="flex">
+                                        <input type="text" name="ETName" placeholder="Event Type name" class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" required/>
+                                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 mx-5">Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

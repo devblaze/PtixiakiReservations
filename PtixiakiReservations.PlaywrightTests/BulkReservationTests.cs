@@ -27,7 +27,7 @@ namespace PtixiakiReservations.PlaywrightTests
 
             foreach (var (name, width, height, desc) in subAreas)
             {
-                await Page.ClickAsync("a:has-text('Add Sub Area')");
+                await Page.ClickAsync("a:has-text('Add Layout')");
                 await Page.FillAsync("input[name='AreaName']", name);
                 await Page.FillAsync("input[name='Width']", width);
                 await Page.FillAsync("input[name='Height']", height);
@@ -458,7 +458,7 @@ namespace PtixiakiReservations.PlaywrightTests
             await Page.SelectOptionAsync("select[name='CityId']", new SelectOptionValue { Index = 1 });
             await Page.ClickAsync("button[type='submit']");
 
-            await Page.ClickAsync("a:has-text('Add Sub Area')");
+            await Page.ClickAsync("a:has-text('Add Layout')");
             await Page.FillAsync("input[name='AreaName']", "Main Floor");
             await Page.FillAsync("input[name='Width']", "150");
             await Page.FillAsync("input[name='Height']", "100");

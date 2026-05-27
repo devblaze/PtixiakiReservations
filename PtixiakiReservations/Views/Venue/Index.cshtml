@@ -8,6 +8,7 @@
     // Get current user info for permission checking
     var userIsAdmin = User.IsInRole("Admin");
     var userIsVenueManager = User.IsInRole("Venue");
+    var userIsSuper = User.IsInRole("SuperOrganizer");
 }
 
 <div class="bg-gray-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -24,7 +25,7 @@
                     </p>
                 </div>
 
-                @if (userIsAdmin || userIsVenueManager)
+                @if (userIsAdmin || userIsVenueManager || userIsSuper)
                 {
                     <div class="mt-4 md:mt-0">
                         <a href="@Url.Action("Create", "Venue")"
@@ -82,6 +83,7 @@
                 </div>
             </div>
         </div>
+        
 
         <!-- Venue Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -150,7 +152,7 @@
                                 </svg>
                             </a>
 
-                            @if (userIsAdmin || (userIsVenueManager && item.UserId == Context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name)?.Id))
+                            @if (userIsAdmin || (userIsVenueManager && item.UserId == Context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name)?.Id) ||(userIsSuper && item.UserId == Context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name)?.Id))
                             {
                                 <a asp-action="Edit" asp-route-id="@item.Id"
                                    class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
@@ -178,7 +180,7 @@
                     There are no venues available at the moment.
                 </p>
 
-                @if (userIsAdmin || userIsVenueManager)
+                @if (userIsAdmin || userIsVenueManager || userIsSuper)
                 {
                     <div class="mt-6">
                         <a href="@Url.Action("Create", "Venue")"

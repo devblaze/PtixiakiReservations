@@ -14,8 +14,9 @@
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Input.TwoFactorCode"></label>
-                <input asp-for="Input.TwoFactorCode" class="form-control" autocomplete="off" />
-                <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
+                <h1>Enter the Two Factor authentication code that you received.</h1>
+                <input asp-for="Input.TwoFactorCode" class="form-control border-3 border-grey-500 p-6 rounded-lg shadow-md" autocomplete="off" />
+                <span asp-validation-for="Input.TwoFactorCode" class="text-danger px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm"></span>
             </div>
             <div class="form-group">
                 <div class="checkbox">

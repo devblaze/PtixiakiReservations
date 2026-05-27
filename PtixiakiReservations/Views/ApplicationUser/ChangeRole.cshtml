@@ -47,6 +47,30 @@
                     </dd>
                 </div>
             }
+            @if (await UserManager.IsInRoleAsync(Model, "Event"))
+            {
+                <div class="flex flex-col md:flex-row">
+                    <dt class="text-sm font-medium text-gray-500 md:w-1/4">
+                        Role: Event
+                    </dt>
+                    <dd class="mt-1 text-sm text-gray-900 md:mt-0 md:w-3/4">
+                        True
+                        <p class="text-xs text-gray-600">If someone is in this role and you choose that role, it removes the role.</p>
+                    </dd>
+                </div>
+            }
+            @if (await UserManager.IsInRoleAsync(Model, "SuperOrganizer"))
+            {
+                <div class="flex flex-col md:flex-row">
+                    <dt class="text-sm font-medium text-gray-500 md:w-1/4">
+                        Role: Super Organizer
+                    </dt>
+                    <dd class="mt-1 text-sm text-gray-900 md:mt-0 md:w-3/4">
+                        True
+                        <p class="text-xs text-gray-600">If someone is in this role and you choose that role, it removes the role.</p>
+                    </dd>
+                </div>
+            }
             @if (await UserManager.IsInRoleAsync(Model, "Admin"))
             {
                 <div class="flex flex-col md:flex-row">
@@ -63,11 +87,19 @@
         <div class="mt-6 flex flex-col sm:flex-row gap-4">
             <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Venue"
                class="px-4 py-2 bg-blue-500 text-white rounded-md text-center hover:bg-blue-600">
-                Change to Venue Role
+                Change to Venue
+            </a>
+            <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Event"
+               class="px-4 py-2 bg-blue-500 text-white rounded-md text-center hover:bg-blue-600">
+                Change to Event
+            </a>
+            <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="SuperOrganizer"
+               class="px-4 py-2 bg-blue-500 text-white rounded-md text-center hover:bg-blue-600">
+                Change to Super Organizer
             </a>
             <a asp-action="ChangeRoleAction" asp-route-Id=@Model.Id asp-route-Role="Admin"
                class="px-4 py-2 bg-blue-500 text-white rounded-md text-center hover:bg-blue-600">
-                Change to Admin Role
+                Change to Admin
             </a>
         </div>
     </div>

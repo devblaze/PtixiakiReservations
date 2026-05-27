@@ -2,6 +2,16 @@
 
 @{
     ViewData["Title"] = "Edit Event";
+    var currentVenueName = "";
+    var venueList = ViewBag.VenueList as IEnumerable<SelectListItem>;
+    if (venueList != null && Model != null && Model.VenueId > 0)
+    {
+        var selectedVenue = venueList.FirstOrDefault(v => v.Value == Model.VenueId.ToString());
+        if (selectedVenue != null)
+        {
+            currentVenueName = selectedVenue.Text;
+        }
+    }
 }
 
 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -15,23 +25,6 @@
                 </p>
             </div>
         </div>
-
-        <!-- Alert Messages -->
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-md">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-red-700">@TempData["ErrorMessage"]</p>
-                    </div>
-                </div>
-            </div>
-        }
 
         @if (TempData["SuccessMessage"] != null)
         {
@@ -52,7 +45,7 @@
         <!-- Form Card -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="p-6">
-                <form method="post" id="editEventForm">
+                <form method="post" id="editEventForm" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id" />
                     <div class="space-y-6">
@@ -144,7 +137,23 @@
                             </div>
                         </div>
 
-                        <!-- Venue and Sub Area Section -->
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Event Poster</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg bg-white">
+                                <div class="text-center">
+                                    <label for="imageFile" class="cursor-pointer font-medium text-indigo-600">
+                                        <span>Upload a file</span>
+                                        <input id="imageFile" name="imageFile" type="file" class="sr-only" accept="image/*" onchange="previewImage(this)">
+                                    </label>
+                                    <p id="childImageNote" class="hidden text-indigo-500 text-xs italic mt-1">Inherits Father's image if left empty</p>
+                                </div>
+                            </div>
+                            <div id="imagePreviewContainer" class="hidden mt-4">
+                                <img id="imagePreview" src="#" class="h-32 w-auto rounded-lg shadow-sm border">
+                            </div>
+                        </div>
+
+                        <!-- Venue and Layout Section -->
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                             <div class="flex items-center mb-4">
                                 <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
@@ -158,7 +167,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Venue Selection -->
                                 <div>
-                                    <label asp-for="VenueId" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,22 +175,22 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                         </div>
-                                        <select asp-for="VenueId" asp-items="ViewBag.VenueList"
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white">
-                                            <option value="">Select a venue</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                            </svg>
+                                        
+                                        <input type="hidden" asp-for="VenueId" id="VenueId" />
+                                        <div class="flex gap-2">
+                                            <input type="text" id="venueSearch" 
+                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg bg-white disabled:bg-gray-100 disabled:text-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
+                                                placeholder="Search for a venue..." autocomplete="off" value="@currentVenueName" />
+                                            <button class="px-4 py-2 bg-gray-200 rounded-md text-sm hidden" type="button" id="clearVenueSelection">Clear</button>
                                         </div>
+                                        <ul id="venueSearchResults" class="absolute w-full bg-white border rounded-b-lg shadow-xl z-50 hidden max-h-60 overflow-y-auto mt-1"></ul>
                                     </div>
                                     <span asp-validation-for="VenueId" class="text-red-500 text-xs mt-1"></span>
                                 </div>
 
-                                <!-- Sub Area Selection -->
+                                <!-- Layout Selection -->
                                 <div>
-                                    <label asp-for="SubAreaId" class="block text-sm font-medium text-gray-700 mb-1">Sub Area (Optional)</label>
+                                    <label asp-for="SubAreaId" class="block text-sm font-medium text-gray-700 mb-1">Layout</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,7 +199,7 @@
                                         </div>
                                         <select asp-for="SubAreaId" asp-items="ViewBag.SubAreaList" id="SubAreaId"
                                                 class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none bg-white">
-                                            <option value="">Select a sub area (optional)</option>
+                                            <option value="">Select a Layout</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -231,79 +240,121 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const venueSelect = document.getElementById('VenueId');
+            const venueHiddenInput = document.getElementById('VenueId');
+            const venueSearch = document.getElementById('venueSearch');
+            const venueResultsList = document.getElementById('venueSearchResults');
+            const clearVenueBtn = document.getElementById('clearVenueSelection');
             const subAreaSelect = document.getElementById('SubAreaId');
             
-            // Load sub areas when venue changes
-            venueSelect.addEventListener('change', function() {
-                // Clear current options
-                subAreaSelect.innerHTML = '<option value="">Select a sub area (optional)</option>';
+            // --- 1. Venue Search Logic ---
+            venueSearch.addEventListener('input', function(e) {
+                if (e.target.value.length < 2) { 
+                    venueResultsList.classList.add('hidden'); 
+                    return; 
+                }
                 
-                const venueId = this.value;
-                if (!venueId) return;
+                fetch(`/Events/SearchVenues?query=${encodeURIComponent(e.target.value)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        venueResultsList.innerHTML = '';
+                        data.forEach(v => {
+                            const li = document.createElement('li');
+                            li.className = 'p-3 hover:bg-indigo-50 cursor-pointer border-b text-sm';
+                            li.innerHTML = `<strong>${v.name}</strong><br><small>${v.city || ''}</small>`;
+                            li.onclick = () => {
+                                venueHiddenInput.value = v.id;
+                                venueSearch.value = v.name + (v.city ? ', ' + v.city : '');
+                                venueSearch.disabled = true;
+                                clearVenueBtn.classList.remove('hidden');
+                                venueResultsList.classList.add('hidden');
+                                fetchSubAreas(v.id);
+                            };
+                            venueResultsList.appendChild(li);
+                        });
+                        venueResultsList.classList.remove('hidden');
+                    })
+                    .catch(error => console.error('Error searching venues:', error));
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(e) {
+                if (!venueSearch.contains(e.target) && !venueResultsList.contains(e.target)) {
+                    venueResultsList.classList.add('hidden');
+                }
+            });
+
+            // --- 2. Clear Selection Logic ---
+            clearVenueBtn.onclick = () => {
+                venueHiddenInput.value = '';
+                venueSearch.value = '';
+                venueSearch.disabled = false;
+                clearVenueBtn.classList.add('hidden');
+                subAreaSelect.innerHTML = '<option value="">Select a Layout</option>';
+                venueSearch.focus();
+            };
+
+            // --- 3. Layout Fetching Logic ---
+            function fetchSubAreas(venueId, preselectId = null) {
+                if (!venueId) {
+                    subAreaSelect.innerHTML = '<option value="">Select a Layout</option>';
+                    return;
+                }
                 
-                // Show loading state
                 subAreaSelect.disabled = true;
-                subAreaSelect.innerHTML = '<option value="">Loading sub areas...</option>';
+                subAreaSelect.innerHTML = '<option value="">Loading Layouts...</option>';
                 
-                // Fetch sub areas for the selected venue
                 fetch(`/Events/GetSubAreas?venueId=${venueId}`)
                     .then(response => response.json())
                     .then(data => {
-                        // Reset select
-                        subAreaSelect.innerHTML = '<option value="">Select a sub area (optional)</option>';
-                        
-                        // Add options for each sub area
-                        data.forEach(subArea => {
-                            const option = document.createElement('option');
-                            option.value = subArea.id;
-                            option.textContent = subArea.areaName;
-                            subAreaSelect.appendChild(option);
-                        });
-                        
-                        // Enable select
-                        subAreaSelect.disabled = false;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching sub areas:', error);
-                        subAreaSelect.innerHTML = '<option value="">Error loading sub areas</option>';
-                        subAreaSelect.disabled = false;
-                    });
-            });
-            
-            // Trigger change event on page load if venue is already selected
-            if (venueSelect.value) {
-                // We want to preserve the currently selected sub area
-                const currentSubAreaId = subAreaSelect.value;
-                
-                // Clear the current options
-                const defaultOption = subAreaSelect.querySelector('option[value=""]');
-                subAreaSelect.innerHTML = '';
-                if (defaultOption) {
-                    subAreaSelect.appendChild(defaultOption);
-                }
-                
-                // Get sub areas for the selected venue
-                fetch(`/Events/GetSubAreas?venueId=${venueSelect.value}`)
-                    .then(response => response.json())
-                    .then(data => {
+                        subAreaSelect.innerHTML = '<option value="">Select a Layouts</option>';
                         data.forEach(subArea => {
                             const option = document.createElement('option');
                             option.value = subArea.id;
                             option.textContent = subArea.areaName;
                             
-                            // If this was the previously selected option, mark it as selected
-                            if (currentSubAreaId && subArea.id.toString() === currentSubAreaId) {
+                            // Restore previously selected area
+                            if (preselectId && subArea.id.toString() === preselectId.toString()) {
                                 option.selected = true;
                             }
                             
                             subAreaSelect.appendChild(option);
                         });
+                        subAreaSelect.disabled = false;
                     })
                     .catch(error => {
-                        console.error('Error fetching sub areas on page load:', error);
+                        console.error('Error fetching layouts:', error);
+                        subAreaSelect.innerHTML = '<option value="">Error loading Layouts</option>';
+                        subAreaSelect.disabled = false;
                     });
             }
+            
+            // --- 4. Page Load Initialization ---
+            if (venueHiddenInput.value) {
+                // Lock search and show clear button since it's already filled
+                venueSearch.disabled = true;
+                clearVenueBtn.classList.remove('hidden');
+                
+                const currentSubAreaId = subAreaSelect.value;
+                fetchSubAreas(venueHiddenInput.value, currentSubAreaId);
+            }
+            
+            // Prevent Enter key from submitting form while searching
+            venueSearch.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
         });
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { 
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
     </script>
 }

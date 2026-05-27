@@ -129,21 +129,18 @@ public static class ApplicationDbSeed
 
         var cities = dbContext.City.ToList();
 
-        // Seed FamilyEvents
-        if (!dbContext.FamilyEvent.Any())
+        if (!dbContext.EventType.Any())
         {
-            var familyEvents = new List<FamilyEvent>
+            dbContext.EventType.AddRange(new List<EventType>
             {
-                new FamilyEvent { Name = "Annual Music Festival" },
-                new FamilyEvent { Name = "Tech Meetup" },
-                new FamilyEvent { Name = "Science Fair" }
-            };
+                new EventType { Name = "Festival" },
+                new EventType { Name = "Conference" },
+                new EventType { Name = "Show" }
+            });
 
-            dbContext.FamilyEvent.AddRange(familyEvents);
             await dbContext.SaveChangesAsync();
         }
-
-        var familyEventsFromDb = dbContext.FamilyEvent.ToList();
+        var eventTypes = dbContext.EventType.ToList();
 
         // Seed venues
         if (!dbContext.Venue.Any())
@@ -177,10 +174,40 @@ public static class ApplicationDbSeed
 
         var venuesFromDb = dbContext.Venue.ToList();
 
-        // Seed events
+        // Seed events (Migrated to Self-Referencing Parent/Child structure)
         if (!dbContext.Event.Any())
         {
-            dbContext.Event.AddRange(new List<Event>
+            // 1. Create the Main/Parent Events (These replace the old FamilyEvents)
+            var parentEvents = new List<Event>
+            {
+                new Event
+                {
+                    Name = "Annual Music Festival",
+                    StartDateTime = DateTime.Now.AddDays(1),
+                    EndTime = DateTime.Now.AddDays(5),
+                    Venue = venuesFromDb.FirstOrDefault(v => v.Name == "Grand Concert Hall")
+                },
+                new Event
+                {
+                    Name = "Tech Meetup",
+                    StartDateTime = DateTime.Now.AddDays(2),
+                    EndTime = DateTime.Now.AddDays(4),
+                    Venue = venuesFromDb.FirstOrDefault(v => v.Name == "Grand Concert Hall")
+                },
+                new Event
+                {
+                    Name = "Science Fair",
+                    StartDateTime = DateTime.Now.AddDays(3),
+                    EndTime = DateTime.Now.AddDays(6),
+                    Venue = venuesFromDb.FirstOrDefault(v => v.Name == "Downtown Theater")
+                }
+            };
+
+            dbContext.Event.AddRange(parentEvents);
+            await dbContext.SaveChangesAsync(); // Save to generate the Parent IDs
+
+            // 2. Create the Sub/Child Events pointing to the Parents
+            var childEvents = new List<Event>
             {
                 new Event
                 {
@@ -188,7 +215,7 @@ public static class ApplicationDbSeed
                     StartDateTime = DateTime.Now.AddDays(1),
                     EndTime = DateTime.Now.AddDays(1).AddHours(3),
                     Venue = venuesFromDb.FirstOrDefault(v => v.Name == "Grand Concert Hall"),
-                    FamilyEvent = familyEventsFromDb.FirstOrDefault(fe => fe.Name == "Annual Music Festival")
+                    ParentEventId = parentEvents.FirstOrDefault(e => e.Name == "Annual Music Festival")?.Id
                 },
                 new Event
                 {
@@ -196,7 +223,7 @@ public static class ApplicationDbSeed
                     StartDateTime = DateTime.Now.AddDays(2),
                     EndTime = DateTime.Now.AddDays(2).AddHours(2),
                     Venue = venuesFromDb.FirstOrDefault(v => v.Name == "Grand Concert Hall"),
-                    FamilyEvent = familyEventsFromDb.FirstOrDefault(fe => fe.Name == "Tech Meetup")
+                    ParentEventId = parentEvents.FirstOrDefault(e => e.Name == "Tech Meetup")?.Id
                 },
                 new Event
                 {
@@ -204,10 +231,11 @@ public static class ApplicationDbSeed
                     StartDateTime = DateTime.Now.AddDays(3),
                     EndTime = DateTime.Now.AddDays(3).AddHours(4),
                     Venue = venuesFromDb.FirstOrDefault(v => v.Name == "Downtown Theater"),
-                    FamilyEvent = familyEventsFromDb.FirstOrDefault(fe => fe.Name == "Science Fair")
+                    ParentEventId = parentEvents.FirstOrDefault(e => e.Name == "Science Fair")?.Id
                 }
-            });
+            };
 
+            dbContext.Event.AddRange(childEvents);
             await dbContext.SaveChangesAsync();
         }
     }

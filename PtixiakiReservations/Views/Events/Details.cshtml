@@ -13,8 +13,22 @@
         </div>
 
         <div class="p-8">
+        @{
+            var finalPath = !string.IsNullOrEmpty(Model.DisplayImagePath) 
+                ? Model.DisplayImagePath 
+                : Model.ParentEvent?.DisplayImagePath;
+            }
+
+            @if (!string.IsNullOrEmpty(finalPath))
+                    {
+                        <img src="@finalPath" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300" />
+                    }
+                    else
+                    {
+                        <div data-type="@Model.EventType.Name" class="event-icon flex items-center justify-center h-full text-gray-400"></div>
+                    }
             <!-- Event Details -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
                 <!-- Left Column - Event Information -->
                 <div class="md:col-span-2 space-y-6">
                     <!-- Date and Time -->
@@ -51,13 +65,20 @@
                                     <h3 class="text-lg font-semibold text-gray-800">Location</h3>
                                     <p class="text-gray-700 mt-1">@Model.Venue.Name</p>
                                     @if (Model.Venue.Address != null)
-                                    {
-                                        <p class="text-gray-600">@Model.Venue.Address</p>
-                                    }
-                                    @if (Model.Venue.City != null)
-                                    {
-                                        <p class="text-gray-600">@Model.Venue.City.Name</p>
-                                    }
+{
+    <p class="text-gray-600">@Model.Venue.Address</p>
+
+    var mapQuery = Uri.EscapeDataString(
+        Model.Venue.Name + ", " +
+        Model.Venue.Address + ", " +
+        Model.Venue.City.Name
+    );
+
+    <a href="https://www.google.com/maps/search/?api=1&query=@mapQuery"
+       class="inline-flex items-center mt-3 text-blue-600 hover:text-blue-800 font-medium transition-colors">
+        📍 View on Google Maps
+    </a>
+}
                                 </div>
                             </div>
                         </div>
@@ -78,6 +99,13 @@
                             </div>
                         </div>
                     }
+
+                    <div class="w-full mt-3 text-center">
+   
+</div>
+
+</div>
+                    
                 </div>
 
                 <!-- Right Column - Action Card -->
@@ -104,6 +132,7 @@
                             </p>
                         </div>
 
+                        @if(Model.ParentEventId != null || Model.ChildEvents == null || !Model.ChildEvents.Any()){
                         <!-- Direct Reserve Button -->
                         <a href="@Url.Action("ReserveSeats", "Reservation", new { eventId = Model.Id })"
                            class="w-full block text-center px-6 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
@@ -113,11 +142,119 @@
                         <p class="text-sm text-gray-500 mt-4 text-center">
                             Select your preferred seats on the next page
                         </p>
+                        }
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Sub Events -->
+    @if(Model.ParentEventId == null && Model.ChildEvents!= null && Model.ChildEvents.Any()){
+        var schedulePageSize = 10;
+        var schedulePage = 1;
+        var orderedChildEvents = Model.ChildEvents.OrderBy(s => s.StartDateTime).ToList();
+        var totalSchedulePages = (int)Math.Ceiling(orderedChildEvents.Count / (double)schedulePageSize);
+
+        if (int.TryParse(Context.Request.Query["schedulePage"], out var requestedSchedulePage))
+        {
+            schedulePage = requestedSchedulePage;
+        }
+
+        schedulePage = Math.Clamp(schedulePage, 1, totalSchedulePages);
+
+        var pagedChildEvents = orderedChildEvents
+            .Skip((schedulePage - 1) * schedulePageSize)
+            .Take(schedulePageSize)
+            .ToList();
+
+        <div id="available-schedules" class="overflow-x-auto mt-10">
+            <div class="bg-gray-50 px-8 py-5 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">Available Schedules</h2>
+                <span class="bg-blue-100 text-blue-800 text-l font-semibold px-3 py-1 rounded-full">
+                    @Model.ChildEvents.Count
+                </span>
+            </div>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                            <th class="px-6 py-4 font-semibold">Date</th>
+                            <th class="px-6 py-4 font-semibold">Time</th>
+                            <th class="px-8 py-4 font-semibold">Event Name</th>
+                            <th class="px-6 py-4 font-semibold">Layout</th>
+                            <th class="px-8 py-4 font-semibold text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                    @foreach(var child in pagedChildEvents){
+                        <tr class="hover:bg-blue-50/50 transition-colors group bg-white border-b border-gray-200 mt-5 ">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    @child.StartDateTime.ToString("MMM d, yyyy")
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    @child.StartDateTime.ToString("h:mm tt")
+                                </div>
+                            </td>
+                            <td class="px-8 py-4">
+                                <p class="font-medium text-gray-900">@child.Name</p>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                @(child.SubArea?.AreaName ?? "Main Layout")
+                            </td>
+                            <td class="px-8 py-4 text-right">
+                                <a href="@Url.Action("Details", "Events", new { id = child.Id })" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                    View & Reserve
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (totalSchedulePages > 1)
+            {
+                <div class="bg-white px-8 py-5 border-t border-gray-200 flex items-center justify-center gap-2">
+                    @if (schedulePage > 1)
+                    {
+                        <a href="@(Url.Action("Details", "Events", new { id = Model.Id, schedulePage = schedulePage - 1 }) + "#available-schedules")"
+                           class="px-3 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+                            Previous
+                        </a>
+                    }
+
+                    @for (var pageNumber = 1; pageNumber <= totalSchedulePages; pageNumber++)
+                    {
+                        if (pageNumber == schedulePage)
+                        {
+                            <span class="min-w-10 px-3 py-2 text-sm font-semibold rounded-md bg-blue-600 text-white text-center">
+                                @pageNumber
+                            </span>
+                        }
+                        else
+                        {
+                            <a href="@(Url.Action("Details", "Events", new { id = Model.Id, schedulePage = pageNumber }) + "#available-schedules")"
+                               class="min-w-10 px-3 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 text-center hover:bg-gray-50 transition-colors">
+                                @pageNumber
+                            </a>
+                        }
+                    }
+
+                    @if (schedulePage < totalSchedulePages)
+                    {
+                        <a href="@(Url.Action("Details", "Events", new { id = Model.Id, schedulePage = schedulePage + 1 }) + "#available-schedules")"
+                           class="px-3 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+                            Next
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+        }
+
+
 
     <!-- Back Button -->
     <div class="mt-8">
@@ -129,3 +266,13 @@
         </a>
     </div>
 </div>
+
+<script type="module">
+    import { getEventSvg } from "/js/event-svg.js";
+
+    document.querySelectorAll(".event-icon").forEach(el => {
+        const type = el.dataset.type || "";;
+
+        el.innerHTML = getEventSvg(type.toLowerCase());
+    });
+</script>

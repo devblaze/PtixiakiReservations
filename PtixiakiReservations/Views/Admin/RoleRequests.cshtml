@@ -1,0 +1,153 @@
+@model IEnumerable<PtixiakiReservations.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Role Requests";
+}
+
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Pending Role Requests</h1>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role Requested</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @foreach (var user in Model)
+                {
+                    // Pre-calculate the role details for this row to keep the HTML clean
+                    string roleName = "";
+                    string reason = "";
+                    string badgeColor = "";
+                    string formRoleType = "";
+
+                    if (user.VenueManagerRequestStatus == "Pending")
+                    {
+                        roleName = "Venue Manager";
+                        badgeColor = "text-blue-600 bg-blue-100";
+                        formRoleType = "VenueManager";
+                        reason = string.IsNullOrEmpty(user.VenueManagerRequestReason) ? "No reason provided." : user.VenueManagerRequestReason;
+                    }
+                    else if (user.EventManagerRequestStatus == "Pending")
+                    {
+                        roleName = "Event Organizer";
+                        badgeColor = "text-green-600 bg-green-100";
+                        formRoleType = "Event";
+                        reason = string.IsNullOrEmpty(user.EventManagerRequestReason) ? "No reason provided." : user.EventManagerRequestReason;
+                    }
+                    else if (user.SuperOrganizerRequestStatus == "Pending")
+                    {
+                        roleName = "Super Organizer";
+                        badgeColor = "text-purple-600 bg-purple-100";
+                        formRoleType = "SuperOrganizer";
+                        reason = string.IsNullOrEmpty(user.SuperOrganizerRequestReason) ? "No reason provided." : user.SuperOrganizerRequestReason;
+                    }
+
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            @user.FirstName @user.LastName
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full @badgeColor">
+                                @roleName
+                            </span>
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button type="button" 
+                                    onclick="showReasonModal('@roleName', this.nextElementSibling.textContent)" 
+                                    class="text-indigo-600 hover:text-indigo-900 text-sm font-medium underline focus:outline-none">
+                                Read Reason
+                            </button>
+                            <div class="hidden">@reason</div>
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex space-x-2">
+                                <form asp-action="ApproveRoleRequest" method="post" class="inline">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <input type="hidden" name="roleType" value="@formRoleType" />
+                                    <button type="submit" class="text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md shadow-sm font-bold text-sm transition-colors">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form asp-action="RejectRoleRequest" method="post" class="inline">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <input type="hidden" name="roleType" value="@formRoleType" />
+                                    <button type="submit" class="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md shadow-sm font-bold text-sm transition-colors">
+                                        Reject
+                                    </button>
+                                </form>
+                            </div>
+
+
+                        </td>
+                    </tr>
+                }
+                
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                            No pending role requests at this time.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="reasonModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center transition-opacity">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden transform transition-all">
+        
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex justify-between items-center">
+            <h4 class="text-lg font-bold text-white" id="modalRoleTitle">Role Request</h4>
+            <button type="button" class="text-white hover:text-gray-200 focus:outline-none" onclick="closeReasonModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <div class="p-6 max-h-96 overflow-y-auto">
+            <h3 class="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Applicant's Reason:</h3>
+            <p id="modalReasonText" class="text-gray-800 text-base whitespace-pre-wrap leading-relaxed bg-gray-50 p-4 rounded-md border border-gray-100"></p>
+        </div>
+        
+        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
+            <button type="button" onclick="closeReasonModal()" class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showReasonModal(roleName, reasonText) {
+
+            document.getElementById('modalRoleTitle').textContent = roleName + ' Request';
+            document.getElementById('modalReasonText').textContent = reasonText;
+            document.getElementById('reasonModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReasonModal() {
+            document.getElementById('reasonModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('reasonModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeReasonModal();
+            }
+        });
+    </script>
+}

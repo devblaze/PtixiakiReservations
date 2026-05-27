@@ -33,37 +33,37 @@ namespace PtixiakiReservations.Controllers
                 EventCount = await _context.Event.CountAsync(),
                 SubAreaCount = await _context.SubArea.CountAsync(),
                 ReservationCount = await _context.Reservation.CountAsync(),
-                PendingVenueManagerRequests = await _context.Users
-                    .Where(u => u.HasRequestedVenueManagerRole && u.VenueManagerRequestStatus == "Pending")
+                PendingRequests = await _context.Users
+                    .Where(u => (u.HasRequestedVenueManagerRole && u.VenueManagerRequestStatus == "Pending") ||
+                        (u.HasRequestedEventManagerRole && u.EventManagerRequestStatus == "Pending")||
+                        (u.HasRequestedSuperOrganizerRole && u.SuperOrganizerRequestStatus == "Pending"))
                     .CountAsync()
             };
 
             return View(model);
         }
 
-        // GET: /Admin/VenueManagerRequests
-        public async Task<IActionResult> VenueManagerRequests()
+        // GET: /Admin/RoleRequests
+        public async Task<IActionResult> RoleRequests()
         {
+            // Fetch users with ANY pending role request
             var pendingRequests = await _context.Users
-                .Where(u => u.HasRequestedVenueManagerRole && u.VenueManagerRequestStatus == "Pending")
-                .OrderBy(u => u.VenueManagerRequestDate)
+                .Where(u => 
+                    (u.HasRequestedVenueManagerRole && u.VenueManagerRequestStatus == "Pending") ||
+                    (u.HasRequestedEventManagerRole && u.EventManagerRequestStatus == "Pending") ||
+                    (u.HasRequestedSuperOrganizerRole && u.SuperOrganizerRequestStatus == "Pending")
+                )
+                
+                .OrderByDescending(u => u.VenueManagerRequestDate ?? u.EventManagerRequestDate ?? u.SuperOrganizerRequestDate)
                 .ToListAsync();
 
-            var recentlyProcessed = await _context.Users
-                .Where(u => u.HasRequestedVenueManagerRole && 
-                           (u.VenueManagerRequestStatus == "Approved" || u.VenueManagerRequestStatus == "Rejected") &&
-                           u.VenueManagerRequestDate > DateTime.UtcNow.AddDays(-7))
-                .OrderByDescending(u => u.VenueManagerRequestDate)
-                .ToListAsync();
-
-            ViewBag.RecentlyProcessed = recentlyProcessed;
             return View(pendingRequests);
-        }
+}
 
-        // POST: /Admin/ApproveVenueManagerRequest
+        // POST: /Admin/ApproveRoleRequest
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveVenueManagerRequest(string userId)
+        public async Task<IActionResult> ApproveRoleRequest(string userId, string roleType)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
@@ -71,25 +71,68 @@ namespace PtixiakiReservations.Controllers
                 return NotFound();
             }
 
-            if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
+            bool wasApproved = false;
+            string newRole = string.Empty;
+
+            switch (roleType)
             {
-                // Update request status
-                user.VenueManagerRequestStatus = "Approved";
-                await _userManager.UpdateAsync(user);
+                case "Venue":
+                    if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
+                    {
+                        user.VenueManagerRequestStatus = "Approved";
+                        newRole = "Venue";
+                        wasApproved = true;
+                    }
+                    break;
 
-                // Add user to VenueManager role
-                await _userManager.AddToRoleAsync(user, "VenueManager");
+                case "Event":
+                    if (user.HasRequestedEventManagerRole && user.EventManagerRequestStatus == "Pending")
+                    {
+                        user.EventManagerRequestStatus = "Approved";
+                        newRole = "Event";
+                        wasApproved = true;
+                    }
+                    break;
 
-                TempData["SuccessMessage"] = $"Request for {user.Email} has been approved.";
+                case "SuperOrganizer":
+                    if (user.HasRequestedSuperOrganizerRole && user.SuperOrganizerRequestStatus == "Pending")
+                    {
+                        user.SuperOrganizerRequestStatus = "Approved";
+                        newRole = "SuperOrganizer";
+                        wasApproved = true;
+                    }
+                    break;
+
+                default:
+                    return BadRequest("Invalid role type submitted.");
             }
 
-            return RedirectToAction(nameof(VenueManagerRequests));
+            if (wasApproved && !string.IsNullOrEmpty(newRole))
+            {
+                var currentRoles = await _userManager.GetRolesAsync(user);
+
+                if (currentRoles.Any())
+                {
+                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                }
+
+                await _userManager.AddToRoleAsync(user, newRole);
+                
+                await _userManager.UpdateAsync(user);
+                
+                TempData["SuccessMessage"] = $"The {roleType} request for {user.FirstName} {user.LastName} has been approved. Previous roles were removed.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Could not approve the request. It may have already been processed or cancelled.";
+            }
+            return RedirectToAction(nameof(RoleRequests));
         }
 
-        // POST: /Admin/RejectVenueManagerRequest
+        // POST: /Admin/RejectRoleRequest
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RejectVenueManagerRequest(string userId)
+        public async Task<IActionResult> RejectRoleRequest(string userId, string roleType)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
@@ -97,16 +140,50 @@ namespace PtixiakiReservations.Controllers
                 return NotFound();
             }
 
-            if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
-            {
-                // Update request status
-                user.VenueManagerRequestStatus = "Rejected";
-                await _userManager.UpdateAsync(user);
+            bool wasRejected = false;
 
-                TempData["SuccessMessage"] = $"Request for {user.Email} has been rejected.";
+            switch (roleType)
+            {
+                case "Venue":
+                    if (user.HasRequestedVenueManagerRole && user.VenueManagerRequestStatus == "Pending")
+                    {
+                        user.VenueManagerRequestStatus = "Rejected";
+                        wasRejected = true;
+                    }
+                    break;
+
+                case "Event":
+                    if (user.HasRequestedEventManagerRole && user.EventManagerRequestStatus == "Pending")
+                    {
+                        user.EventManagerRequestStatus = "Rejected";
+                        wasRejected = true;
+                    }
+                    break;
+
+                case "SuperOrganizer":
+                    if (user.HasRequestedSuperOrganizerRole && user.SuperOrganizerRequestStatus == "Pending")
+                    {
+                        user.SuperOrganizerRequestStatus = "Rejected";
+                        wasRejected = true;
+                    }
+                    break;
+
+                default:
+                    return BadRequest("Invalid role type submitted.");
             }
 
-            return RedirectToAction(nameof(VenueManagerRequests));
+            
+            if (wasRejected)
+            {
+                await _userManager.UpdateAsync(user);
+                TempData["SuccessMessage"] = $"The {roleType} request for {user.FirstName} {user.LastName} has been rejected.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Could not reject the request. It may have already been processed or cancelled.";
+            }
+
+            return RedirectToAction("RoleRequests");
         }
     }
 }

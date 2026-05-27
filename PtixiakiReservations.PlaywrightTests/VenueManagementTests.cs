@@ -48,7 +48,7 @@ namespace PtixiakiReservations.PlaywrightTests
             AssertHelper.IsNotNull(venueNameElement, "Venue name should be displayed");
 
             // Create SubArea for the venue
-            await Page.ClickAsync("a:has-text('Add Sub Area'), button:has-text('Add Sub Area')");
+            await Page.ClickAsync("a:has-text('Add Layout'), button:has-text('Add Layout')");
 
             // Fill SubArea form
             await Page.FillAsync("input[name='AreaName']", "Main Hall");
@@ -214,7 +214,7 @@ namespace PtixiakiReservations.PlaywrightTests
 
             foreach (var areaName in subAreas)
             {
-                await Page.ClickAsync("a:has-text('Add Sub Area'), button:has-text('Add Sub Area')");
+                await Page.ClickAsync("a:has-text('Add Layout'), button:has-text('Add Layout')");
 
                 await Page.FillAsync("input[name='AreaName']", areaName);
                 await Page.FillAsync("input[name='Width']", "50");

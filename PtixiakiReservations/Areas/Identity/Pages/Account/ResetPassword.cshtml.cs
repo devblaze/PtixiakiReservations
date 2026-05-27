@@ -45,20 +45,24 @@ namespace PtixiakiReservations.Areas.Identity.Pages.Account
             public string Code { get; set; }
         }
 
-        public IActionResult OnGet(string code = null)
+       public IActionResult OnGet()
         {
-            if (code == null)
+            // Retrieve the token we generated in the previous step
+            var token = TempData["ResetToken"] as string;
+            var email = TempData["ResetEmail"] as string;
+
+            if (token == null || email == null)
             {
-                return BadRequest("A code must be supplied for password reset.");
+                return RedirectToPage("./ForgotPassword");
             }
-            else
-            {
-                Input = new InputModel
-                {
-                    Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
-                };
-                return Page();
-            }
+
+            Input = new InputModel { 
+                Code = token, 
+                Email = email 
+            };
+            
+            TempData.Keep(); // Keep them for the Post action
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()

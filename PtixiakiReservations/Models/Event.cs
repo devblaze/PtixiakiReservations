@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PtixiakiReservations.Models;
@@ -15,6 +16,10 @@ public class Event
     [ForeignKey("VenueId")] public Venue Venue { get; set; }
     public int? SubAreaId { get; set; }
     [ForeignKey("SubAreaId")] public SubArea SubArea { get; set; }
-    public int? FamilyEventId { get; set; }
-    [ForeignKey("FamilyEventId")] public FamilyEvent FamilyEvent { get; set; }
+    public int? ParentEventId { get; set; }
+    [ForeignKey("ParentEventId")] public Event ParentEvent { get; set; }
+    public string? ImagePath { get; set; }
+    [NotMapped]
+    public string DisplayImagePath => ImagePath ?? ParentEvent?.ImagePath;
+    public ICollection<Event> ChildEvents { get; set; } = new List<Event>();
 }

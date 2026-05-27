@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PtixiakiReservations", "PtixiakiReservations.csproj", "{D711E736-62DA-EA3B-B146-E67A43FF437E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D711E736-62DA-EA3B-B146-E67A43FF437E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D711E736-62DA-EA3B-B146-E67A43FF437E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D711E736-62DA-EA3B-B146-E67A43FF437E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D711E736-62DA-EA3B-B146-E67A43FF437E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {76B3612D-D82A-4F5F-9621-866C9ED4D7C8}
+	EndGlobalSection
+EndGlobal

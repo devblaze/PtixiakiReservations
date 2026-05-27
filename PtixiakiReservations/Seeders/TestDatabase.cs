@@ -37,9 +37,6 @@ public static class TestDataSeeder
         // Seed Cities
         var cities = await SeedCitiesAsync(context);
 
-        // Seed Family Events
-        var familyEvents = await SeedFamilyEventsAsync(context);
-
         // Seed Venues (15-20 venues)
         var venues = await SeedVenuesAsync(context, adminUser.Id, cities);
 
@@ -48,10 +45,10 @@ public static class TestDataSeeder
 
         // Seed Seats for each SubArea
         await SeedSeatsAsync(context, subAreas);
-
-        // Seed Events (100-200 events across all venues)
-        var events = await SeedEventsAsync(context, venues, familyEvents);
-
+        
+        // ADD THIS LINE: Seed Events
+        var events = await SeedEventsAsync(context, venues);
+        
         // Index events in Elasticsearch
         await IndexEventsInElasticsearchAsync(elasticSearchService, events);
 
@@ -113,31 +110,6 @@ public static class TestDataSeeder
         return cities;
     }
 
-    private static async Task<List<FamilyEvent>> SeedFamilyEventsAsync(ApplicationDbContext context)
-    {
-        if (await context.FamilyEvent.AnyAsync())
-            return await context.FamilyEvent.ToListAsync();
-
-        var familyEvents = new List<FamilyEvent>
-        {
-            new FamilyEvent { Name = "Summer Music Festival" },
-            new FamilyEvent { Name = "Tech Conference Series" },
-            new FamilyEvent { Name = "Holiday Theater Series" },
-            new FamilyEvent { Name = "Sports League Season" },
-            new FamilyEvent { Name = "Art Exhibition Tour" },
-            new FamilyEvent { Name = "Comedy Tour" },
-            new FamilyEvent { Name = "Book Reading Series" },
-            new FamilyEvent { Name = "Film Festival" },
-            new FamilyEvent { Name = "Dance Performance Series" },
-            new FamilyEvent { Name = "Food and Wine Festival" }
-        };
-
-        await context.FamilyEvent.AddRangeAsync(familyEvents);
-        await context.SaveChangesAsync();
-
-        Console.WriteLine($"Added {familyEvents.Count} family events.");
-        return familyEvents;
-    }
 
     private static async Task<List<Venue>> SeedVenuesAsync(ApplicationDbContext context, string userId,
         List<City> cities)
@@ -290,8 +262,7 @@ public static class TestDataSeeder
         Console.WriteLine($"Added {seats.Count} seats across {subAreas.Count} sub-areas.");
     }
 
-    private static async Task<List<Event>> SeedEventsAsync(ApplicationDbContext context, List<Venue> venues,
-        List<FamilyEvent> familyEvents)
+    private static async Task<List<Event>> SeedEventsAsync(ApplicationDbContext context, List<Venue> venues)
     {
         // If we already have a lot of events, skip
         if (await context.Event.CountAsync() > 100)
@@ -324,9 +295,6 @@ public static class TestDataSeeder
             var eventDate = GetRandomDateBetween(startDate, endDate);
             var eventType = eventTypes[_random.Next(eventTypes.Count)];
             var venue = venues[_random.Next(venues.Count)];
-            var familyEvent = _random.Next(4) == 0 // 25% chance to be part of a family event
-                ? familyEvents[_random.Next(familyEvents.Count)]
-                : null;
 
             var eventNameBase = eventNames[_random.Next(eventNames.Count)];
             var eventName = $"{eventNameBase} {(i % 10 == 0 ? i / 10 + 1 : "")}".Trim();
@@ -341,7 +309,6 @@ public static class TestDataSeeder
                 EndTime = eventDate.AddHours(durationHours),
                 EventTypeId = eventType.Id,
                 VenueId = venue.Id,
-                FamilyEventId = familyEvent?.Id
             };
 
             events.Add(newEvent);

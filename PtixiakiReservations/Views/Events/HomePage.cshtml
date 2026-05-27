@@ -1,0 +1,690 @@
+@model IEnumerable<PtixiakiReservations.Models.Event>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Welcome";
+    var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var userRoles = currentUser != null ? await UserManager.GetRolesAsync(currentUser) : new List<string>();
+}
+
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Search Panel -->
+    <div class="bg-white rounded-xl shadow-lg mb-10">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 flex flex-row items-center justify-between">
+            <h3 class="text-xl font-bold text-white">Explore Events</h3>
+        </div>
+
+        <div id="panel-body" class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6 w-full justify-between">
+                <div class="flex justify-center w-full flex-col">
+                    <h1 class="text-2xl font-bold text-blue-700 mb-5">Get Started with your next Experiences</h1>
+                    <!-- Search Term with Autocomplete -->
+                    <div class="mb-6">
+                        <label for="search-term" class="block text-sm font-medium text-gray-700 mb-2">Event Name or Venue or Location</label>
+                        
+                        <div class="relative w-full">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            
+                            <input type="text" id="search-term" 
+                                placeholder="Enter event name, venue, or city"
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                autocomplete="off">
+                                
+                            <div id="autocomplete-dropdown" class="absolute left-0 top-full mt-1 z-50 bg-white shadow-xl rounded-md border border-gray-200 hidden max-h-60 overflow-y-auto w-full"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center w-full">
+                        <button id="search-button"
+                                class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Search For Results
+                            </span>
+                        </button>
+                        <p id="search-validation-message" class="text-red-500 text-sm hidden">*Please type to search</p>
+                    </div>
+                </div>
+                <div class="flex items-center w-full">
+                    <!-- Recent Event Carousel -->
+                    <div id="carousel-container" class="hidden sm:block relative w-full max-w-lg mx-auto h-64 overflow-hidden rounded-xl shadow-lg">
+                    </div>
+                </div>
+                    
+            </div>
+        </div>
+    </div>
+
+    @if (!SignInManager.IsSignedIn(User)){
+    <div class="bg-white rounded-xl shadow-lg mb-10 overflow-hidden">
+        <div class="grid grid-cols-1 bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 flex flex-row items-center justify-between p-5">
+            <h3 class="text-2xl font-bold text-white mb-5">Create an Account or Log in</h3>
+            <p class="text-l font-bold text-white mb-5">Make sure to Create or Log in with an account to get access to the features of the app and your personal profile where you can request for higher role privilages.</p>
+            <div class="mb-5">
+                <a class="mr-5 px-6 py-3 bg-white text-blue-600 font-medium rounded-lg shadow-md hover:bg-grey-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors w-25" asp-area="Identity" asp-page="/Account/Login">
+                    Log in
+                </a>
+                <a class="px-6 py-3 bg-white text-blue-600 font-medium rounded-lg shadow-md hover:bg-grey-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors w-25" asp-area="Identity" asp-page="/Account/Register">
+                    Register
+                </a>
+            </div>
+        </div>        
+    </div>
+    }
+
+    <div class="mb-10 overflow-hidden">
+        <div class="flex w-full max-w-6xl justify-between bg-white rounded-xl p-5">
+            <div>
+                <h3 class="text-2xl font-bold text-black mb-5">Recent Events</h3>
+                <p class="text-l text-black">Dont miss out on the most recent events.</p>
+            </div>
+            <div>
+                <a class="text-blue-600 font-bold" href="@Url.Action("EventsForToday", "Events")">View all Events</a>
+            </div>
+        </div>
+        <div class="relative w-full max-w-6xl mx-auto px-12 py-5">
+
+            <div class="overflow-hidden rounded-xl py-4"> <div id="recent-events-track" class="flex transition-transform duration-500 ease-out" style="transform: translateX(0%);">
+                    </div>
+            </div>
+
+            <button id="recent-prev-btn" class="absolute left-0 top-1/2 -translate-y-1/2 bg-white text-gray-800 p-3 rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button id="recent-next-btn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-white text-gray-800 p-3 rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="mb-10 overflow-hidden">
+        <div class="relative w-full max-w-6xl px-15">
+            <h3 class="text-2xl font-bold text-black mb-5">Event Categories</h3>
+            <p class="text-l text-black px-30">Choose one of our many Categories, we must have something you like.</p>
+        </div>
+        <div class="relative w-full max-w-6xl mx-auto px-12 py-5">
+
+            <div class="overflow-hidden rounded-xl">
+                <div id="category-track" class="flex transition-transform duration-500 ease-out" style="transform: translateX(0%);">
+                    </div>
+            </div>
+
+            <button id="prev-btn" class="absolute left-0 top-1/2 -translate-y-1/2 bg-white text-gray-800 p-3 rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button id="next-btn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-white text-gray-800 p-3 rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+    
+    </div>
+
+    <div class="mb-10 overflow-hidden">
+        <div class="flex w-full max-w-6xl justify-between bg-white rounded-xl p-5">
+            <div>
+                <h3 class="text-2xl font-bold text-black mb-5">New</h3>
+                <p class="text-l text-black">View some of our newest Events.</p>
+            </div>
+            <div>
+                <a class="text-blue-600 font-bold" href="@Url.Action("EventsForToday", "Events")">View all Events</a>
+            </div>
+        </div>
+        <div class="relative w-full max-w-6xl mx-auto px-12 py-5">
+
+            <div class="overflow-hidden rounded-xl py-4"> <div id="new-events-track" class="flex transition-transform duration-500 ease-out" style="transform: translateX(0%);">
+                    </div>
+            </div>
+
+            <button id="new-prev-btn" class="absolute left-0 top-1/2 -translate-y-1/2 bg-white text-gray-800 p-3 rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button id="new-next-btn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-white text-gray-800 p-3 rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const track = document.getElementById('category-track');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        const gradients = [
+            'from-purple-500 to-indigo-600',
+            'from-blue-400 to-blue-600',
+            'from-green-400 to-teal-500',
+            'from-yellow-400 to-white-500',
+            'from-pink-400 to-rose-500'
+        ];
+
+        try {
+            const response = await fetch('/Events/GetCategories'); // Update with your actual route
+            const categories = await response.json();
+
+            categories.forEach((category, index) => {
+                const colorClass = gradients[index % gradients.length];
+
+                const cardHtml = `
+                    <div class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
+                        <a href="/Events/EventsForToday?category=${category.id}" class="block bg-gradient-to-br ${colorClass} rounded-2xl p-8 h-48 flex flex-col justify-end text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer">
+                            <h3 class="text-2xl font-bold">${category.name}</h3>
+                        </a>
+                    </div>
+                `;
+                track.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            initializeSlider();
+
+        } catch (error) {
+            console.error("Failed to load categories:", error);
+            track.innerHTML = '<p class="text-red-500 px-3">Failed to load categories.</p>';
+        }
+
+
+        function initializeSlider() {
+            const cards = track.children;
+            if (cards.length === 0) return;
+
+            let currentIndex = 0;
+
+            function updateSlider() {
+                let visibleCards = 1;
+                if (window.innerWidth >= 1024) visibleCards = 3; 
+                else if (window.innerWidth >= 640) visibleCards = 2; 
+
+                const maxIndex = Math.max(0, cards.length - visibleCards);
+                
+                if (currentIndex < 0) currentIndex = 0;
+                if (currentIndex > maxIndex) currentIndex = maxIndex;
+
+                const cardWidth = cards[0].offsetWidth;
+                track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex >= maxIndex || maxIndex === 0;
+            }
+
+            nextBtn.addEventListener('click', () => {
+                currentIndex++;
+                updateSlider();
+            });
+
+            prevBtn.addEventListener('click', () => {
+                currentIndex--;
+                updateSlider();
+            });
+
+            window.addEventListener('resize', updateSlider);
+            updateSlider(); // Set initial state
+        }
+    });
+</script>
+<script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const slides = document.querySelectorAll('.carousel-slide');
+            let currentIndex = 0;
+
+            async function populateCarousel() {
+                try {
+                    const response = await fetch('/Events/getNewestEvents');
+                    const events = await response.json();
+                    const container = document.getElementById('carousel-container');
+
+                    if (events.length === 0) {
+                        container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-gray-500">No events found</div>';
+                        return;
+                    }
+
+                    container.innerHTML = ''; 
+
+                    events.forEach((event, index) => {
+                        const visibilityClass = index === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none';
+
+                        const dateObj = new Date(event.startDateTime);
+                        const formattedDate = dateObj.toLocaleDateString();
+
+                        const slide = document.createElement('a');
+                        slide.href = `/Events/Details/${event.id}`;
+                        slide.className = `carousel-slide absolute inset-0 transition-opacity duration-1000 ease-in-out ${visibilityClass} bg-cover bg-center flex flex-col justify-end p-6 cursor-pointer`;
+                        
+                        if (event.imagePath) {
+                            slide.style.backgroundImage = `url('${event.imagePath}')`;
+                        } else {
+                            slide.classList.add('bg-gray-800'); // Fallback color if no image
+                        }
+                        
+                        slide.innerHTML = `
+                            <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+                            <div class="relative z-10 text-white">
+                                <h3 class="text-3xl font-bold">${event.name}</h3>
+                                <div class="flex gap-4 text-sm mt-2 opacity-90">
+                                    <span>${event.venue?.city?.name || 'Unknown City'}</span>
+                                    <span>${formattedDate}</span>
+                                    <span>${event.eventType?.name || 'Unknown Type'}</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.appendChild(slide);
+                    });
+
+                    startCarouselLogic();
+
+                } catch (err) {
+                    console.error("Carousel fetch error:", err);
+                }
+            }
+
+            function startCarouselLogic() {
+                const slides = document.querySelectorAll('.carousel-slide');
+                if (slides.length <= 1) return; 
+
+                let currentIndex = 0;
+                setInterval(() => {
+                    slides[currentIndex].classList.remove('opacity-100');
+                    slides[currentIndex].classList.add('opacity-0', 'pointer-events-none');
+
+                    currentIndex = (currentIndex + 1) % slides.length;
+
+                    slides[currentIndex].classList.remove('opacity-0', 'pointer-events-none');
+                    slides[currentIndex].classList.add('opacity-100');
+                }, 4000);
+            }
+
+            populateCarousel();
+
+        });
+    </script>
+    <script>
+    $(document).ready(function () {
+        let autocompleteTimeout;
+        let autocompleteResults = [];
+        let currentAutocompleteIndex = -1;
+        let maxAutocompleteResults = 8;
+
+        $('#search-button').click(function() {
+            const searchTerm = $('#search-term').val().trim();
+            
+            if (searchTerm.length > 0) {
+                // Redirect to the main search page passing the search term in the query string
+                window.location.href = '/Events/EventsForToday?searchTerm=' + encodeURIComponent(searchTerm);
+            } else {
+                $('#search-validation-message').removeClass('hidden');
+            }
+        });
+
+        $('#search-term').on('input', function() {
+            $('#search-validation-message').addClass('hidden'); // Hide error on type
+            const query = $(this).val().trim();
+
+            if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
+
+            if (query.length < 1) {
+                $('#autocomplete-dropdown').addClass('hidden').empty();
+                return;
+            }
+
+            autocompleteTimeout = setTimeout(function() {
+                fetchAutocompleteResults(query);
+            }, 300);
+        });
+
+        $('#search-term').on('keydown', function(e) {
+            const dropdown = $('#autocomplete-dropdown');
+            const isVisible = !dropdown.hasClass('hidden');
+
+            // Enter key: If dropdown isn't active or no item selected, perform search
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                if (currentAutocompleteIndex >= 0 && isVisible) {
+                    selectAutocompleteItem(currentAutocompleteIndex);
+                } else {
+                    $('#search-button').click();
+                }
+                return;
+            }
+
+            if (!isVisible) return;
+
+            if (e.keyCode === 40) {
+                e.preventDefault();
+                navigateAutocomplete(1);
+            }
+            // Up arrow
+            else if (e.keyCode === 38) {
+                e.preventDefault();
+                navigateAutocomplete(-1);
+            }
+            // Escape
+            else if (e.keyCode === 27) {
+                dropdown.addClass('hidden');
+                currentAutocompleteIndex = -1;
+            }
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#search-term, #autocomplete-dropdown').length) {
+                $('#autocomplete-dropdown').addClass('hidden');
+            }
+        });
+
+
+        function fetchAutocompleteResults(query) {
+            $.ajax({
+                url: '/Events/GetAutocompleteResults', // Make sure this endpoint exists!
+                data: { query: query },
+                success: function(data) {
+                    displayAutocompleteResults(data, query);
+                },
+                error: function() {
+                    // Fallback mock data if endpoint fails
+                    const mockResults = getMockAutocompleteResults(query);
+                    displayAutocompleteResults(mockResults, query);
+                }
+            });
+        }
+
+        function displayAutocompleteResults(results, query) {
+            const dropdown = $('#autocomplete-dropdown');
+            dropdown.empty();
+
+            if (!results || results.length === 0) {
+                dropdown.addClass('hidden');
+                return;
+            }
+
+            autocompleteResults = results.slice(0, maxAutocompleteResults);
+            currentAutocompleteIndex = -1;
+
+            autocompleteResults.forEach(function(result, index) {
+                const highlightedText = highlightMatch(result.text, query);
+                const item = $('<div class="autocomplete-item flex items-center p-3 hover:bg-gray-100 cursor-pointer transition-colors">')
+                    .html(`
+                        <div class="mr-2 text-gray-400">
+                            ${result.type === 'event' ?
+                                '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>' :
+                                '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>'
+                            }
+                        </div>
+                        <div>
+                            <div class="text-sm">${highlightedText}</div>
+                            <div class="text-xs text-gray-500">${result.subtext || ''}</div>
+                        </div>
+                    `)
+                    .data('index', index)
+                    .on('click', function() {
+                        selectAutocompleteItem(index);
+                    });
+
+                dropdown.append(item);
+            });
+
+            dropdown.removeClass('hidden');
+        }
+
+
+        function navigateAutocomplete(direction) {
+            const items = $('.autocomplete-item');
+            if (items.length === 0) return;
+
+            items.removeClass('bg-gray-100');
+            currentAutocompleteIndex += direction;
+
+            if (currentAutocompleteIndex >= items.length) {
+                currentAutocompleteIndex = 0;
+            } else if (currentAutocompleteIndex < 0) {
+                currentAutocompleteIndex = items.length - 1;
+            }
+
+            items.eq(currentAutocompleteIndex).addClass('bg-gray-100');
+        }
+
+        function selectAutocompleteItem(index) {
+            const result = autocompleteResults[index];
+            if (!result) return;
+
+            $('#search-term').val(result.text);
+            $('#autocomplete-dropdown').addClass('hidden');
+
+            // Immediately trigger the search redirect
+            $('#search-button').click();
+        }
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const regex = new RegExp('(' + query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gi');
+            return text.replace(regex, '<span class="font-bold text-blue-600">$1</span>');
+        }
+
+        function getMockAutocompleteResults(query) {
+            query = query.toLowerCase();
+            const cities = ['Athens', 'Thessaloniki', 'Patras', 'Heraklion'];
+            const events = ['Music Concert Series', 'Comedy Night', 'Art Exhibition'];
+            let results = [];
+
+            cities.filter(city => city.toLowerCase().includes(query)).forEach(city => {
+                results.push({ text: city, type: 'location', subtext: 'City' });
+            });
+            events.filter(event => event.toLowerCase().includes(query)).forEach(event => {
+                results.push({ text: event, type: 'event', subtext: 'Event' });
+            });
+
+            return results;
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const newTrack = document.getElementById('new-events-track');
+        const newPrevBtn = document.getElementById('new-prev-btn');
+        const newNextBtn = document.getElementById('new-next-btn');
+
+        try {
+            // Fetch the newest events using your existing endpoint
+            const response = await fetch('/Events/getNewestEvents'); 
+            const events = await response.json();
+
+            if (events.length === 0) {
+                newTrack.innerHTML = '<p class="text-gray-500 px-3">No new events found.</p>';
+                return;
+            }
+
+            events.forEach((event) => {
+
+                const dateObj = new Date(event.startDateTime);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                const imageSection = event.imagePath 
+                    ? `<img src="${event.imagePath}" alt="${event.name}" class="w-full h-40 object-cover" />`
+                    : `<div class="w-full h-40 bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-gray-400">
+                           <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                       </div>`;
+
+                const cardHtml = `
+                    <div class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
+                        <a href="/Events/Details/${event.id}" class="block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer h-full border border-gray-100">
+                            ${imageSection}
+                            <div class="p-5">
+                                <p class="text-xs font-bold text-blue-600 mb-1 uppercase tracking-wider">${event.eventType?.name || 'Event'}</p>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">${event.name}</h3>
+                                <div class="flex items-center text-sm text-gray-500 mb-1">
+                                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    ${formattedDate}
+                                </div>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    ${event.venue?.city?.name || 'TBA'}
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `;
+                newTrack.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            initializeNewSlider();
+
+        } catch (error) {
+            console.error("Failed to load new events:", error);
+            newTrack.innerHTML = '<p class="text-red-500 px-3">Failed to load newest events.</p>';
+        }
+
+        function initializeNewSlider() {
+            const cards = newTrack.children;
+            if (cards.length === 0) return;
+
+            let currentIndex = 0;
+
+            function updateNewSlider() {
+                let visibleCards = 1;
+                if (window.innerWidth >= 1024) visibleCards = 3; 
+                else if (window.innerWidth >= 640) visibleCards = 2; 
+
+                const maxIndex = Math.max(0, cards.length - visibleCards);
+                
+                if (currentIndex < 0) currentIndex = 0;
+                if (currentIndex > maxIndex) currentIndex = maxIndex;
+
+                const cardWidth = cards[0].offsetWidth;
+                newTrack.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+
+                newPrevBtn.disabled = currentIndex === 0;
+                newNextBtn.disabled = currentIndex >= maxIndex || maxIndex === 0;
+            }
+
+            newNextBtn.addEventListener('click', () => {
+                currentIndex++;
+                updateNewSlider();
+            });
+
+            newPrevBtn.addEventListener('click', () => {
+                currentIndex--;
+                updateNewSlider();
+            });
+
+            window.addEventListener('resize', updateNewSlider);
+            updateNewSlider(); // Set initial state
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const newTrack = document.getElementById('recent-events-track');
+        const newPrevBtn = document.getElementById('recent-prev-btn');
+        const newNextBtn = document.getElementById('recent-next-btn');
+
+        try {
+            // Fetch the newest events using your existing endpoint
+            const response = await fetch('/Events/getRecentEvents'); 
+            const events = await response.json();
+
+            if (events.length === 0) {
+                newTrack.innerHTML = '<p class="text-gray-500 px-3">No new events found.</p>';
+                return;
+            }
+
+            events.forEach((event) => {
+                
+                const dateObj = new Date(event.startDateTime);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                
+
+                const imageSection = event.imagePath 
+                    ? `<img src="${event.imagePath}" alt="${event.name}" class="w-full h-40 object-cover" />`
+                    : `<div class="w-full h-40 bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-gray-400">
+                           <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                       </div>`;
+
+                const cardHtml = `
+                    <div class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
+                        <a href="/Events/Details/${event.id}" class="block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer h-full border border-gray-100">
+                            ${imageSection}
+                            <div class="p-5">
+                                <p class="text-xs font-bold text-blue-600 mb-1 uppercase tracking-wider">${event.eventType?.name || 'Event'}</p>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">${event.name}</h3>
+                                <div class="flex items-center text-sm text-gray-500 mb-1">
+                                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    ${formattedDate}
+                                </div>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    ${event.venue?.city?.name || 'TBA'}
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `;
+                newTrack.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            initializeNewSlider();
+
+        } catch (error) {
+            console.error("Failed to load new events:", error);
+            newTrack.innerHTML = '<p class="text-red-500 px-3">Failed to load newest events.</p>';
+        }
+
+        function initializeNewSlider() {
+            const cards = newTrack.children;
+            if (cards.length === 0) return;
+
+            let currentIndex = 0;
+
+            function updateNewSlider() {
+                let visibleCards = 1;
+                if (window.innerWidth >= 1024) visibleCards = 3; 
+                else if (window.innerWidth >= 640) visibleCards = 2; 
+
+                const maxIndex = Math.max(0, cards.length - visibleCards);
+                
+                if (currentIndex < 0) currentIndex = 0;
+                if (currentIndex > maxIndex) currentIndex = maxIndex;
+
+                const cardWidth = cards[0].offsetWidth;
+                newTrack.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+
+                newPrevBtn.disabled = currentIndex === 0;
+                newNextBtn.disabled = currentIndex >= maxIndex || maxIndex === 0;
+            }
+
+            newNextBtn.addEventListener('click', () => {
+                currentIndex++;
+                updateNewSlider();
+            });
+
+            newPrevBtn.addEventListener('click', () => {
+                currentIndex--;
+                updateNewSlider();
+            });
+
+            window.addEventListener('resize', updateNewSlider);
+            updateNewSlider(); 
+        }
+    });
+</script>

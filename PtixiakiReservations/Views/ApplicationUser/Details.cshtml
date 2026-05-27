@@ -1,34 +1,55 @@
 ﻿@model PtixiakiReservations.Models.ApplicationUser
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "User Details";
 }
 
-<h1>Details</h1>
+<div class="max-w-3xl mx-auto px-4 py-8">
 
-<div>   
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.FirstName) <span></span> @Html.DisplayNameFor(model => model.LastName)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.FirstName) <span></span> @Html.DisplayFor(model => model.LastName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.PhoneNumber)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.PhoneNumber)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Index" asp-controller="Home">Back to List</a>
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6">
+
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+            User Details
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Full Name -->
+            <div>
+                <p class="text-sm text-gray-500">Full Name</p>
+                <p class="text-lg font-medium text-gray-800">
+                    @(Model?.FirstName ?? "-") @(Model?.LastName ?? "")
+                </p>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <p class="text-sm text-gray-500">Email</p>
+                <p class="text-lg font-medium text-gray-800">
+                    @(Model?.Email ?? "-")
+                </p>
+            </div>
+
+            <!-- Phone -->
+            <div>
+                <p class="text-sm text-gray-500">Phone</p>
+                <p class="text-lg font-medium text-gray-800">
+                    @(Model?.PhoneNumber ?? "Not provided")
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-6">
+        <a asp-action="Index" asp-controller="Users"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg 
+                  hover:bg-blue-700 transition shadow-sm">
+
+            ← Back to Manage Users
+        </a>
+    </div>
+
 </div>

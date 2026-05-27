@@ -2,7 +2,7 @@
 @model PtixiakiReservations.Models.SubArea
 
 @{
-    ViewData["Title"] = "Edit Sub Area";
+    ViewData["Title"] = "Edit Layout";
 }
 
 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -12,7 +12,7 @@
             <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-bold text-white">Edit Sub Area</h1>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white">Edit Layout</h1>
                         <p class="mt-2 text-indigo-100 max-w-3xl">
                             Update details and seating arrangement for <span
                                                                            class="font-semibold">@Model.AreaName</span>
@@ -61,7 +61,7 @@
 
                         <!-- Area Name -->
                         <div>
-                            <label asp-for="AreaName" class="block text-sm font-medium text-gray-700 mb-1">Area
+                            <label asp-for="AreaName" class="block text-sm font-medium text-gray-700 mb-1">Layout
                                 Name</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -188,138 +188,78 @@
 
                 <!-- Seat Map Tab Content -->
                 <div id="seats-content" class="tab-content hidden">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Seat Map Controls -->
-                        <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
-                            <div class="flex items-center mb-4">
-                                <div
-                                    class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                                         viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                                    </svg>
-                                </div>
-                                <h2 class="ml-3 text-lg font-medium text-gray-800">Seat Map Controls</h2>
+                    <!-- Seat Map Controls Topbar -->
+                    <div class="bg-gray-50 rounded-t-lg border border-b-0 border-gray-200 px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex items-center gap-3 mb-2 md:mb-0">
+                            <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                </svg>
                             </div>
-
-                            <div class="space-y-4">
-                                <!-- Rows and Columns -->
-                                <div>
-                                    <label for="Row" class="block text-sm font-medium text-gray-700 mb-1">Number of
-                                        Rows</label>
-                                    <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M19 9l-7 7-7-7"/>
-                                            </svg>
-                                        </div>
-                                        <input type="number" id="Row" value="0" min="0" max="20"
-                                               class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="Col" class="block text-sm font-medium text-gray-700 mb-1">Number of
-                                        Columns</label>
-                                    <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
-                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M9 5l7 7-7 7"/>
-                                            </svg>
-                                        </div>
-                                        <input type="number" id="Col" value="0" min="0" max="20"
-                                               class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="pt-4 space-y-3">
-                                    <button type="button" id="create"
-                                            class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                             viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M12 4v16m8-8H4"/>
-                                        </svg>
-                                        Generate Seats
-                                    </button>
-
-                                    <button type="button" id="save"
-                                            class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                             viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                                        </svg>
-                                        Save Seat Map
-                                    </button>
-
-                                    <button type="button" id="deleteSeat"
-                                            class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                             viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                        Delete Selected Seats
-                                    </button>
-                                </div>
-
-                                <!-- Help Text -->
-                                <div class="mt-4 bg-blue-50 p-3 rounded-md border border-blue-100">
-                                    <h4 class="text-sm font-medium text-blue-800 flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
-                                             viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Tips
-                                    </h4>
-                                    <ul class="text-xs text-blue-700 mt-1 space-y-1 pl-5 list-disc">
-                                        <li>Drag seats to position them</li>
-                                        <li>Click to select seats for deletion</li>
-                                        <li>Use Shift+Click for multiple selection</li>
-                                        <li>Remember to save your changes</li>
-                                    </ul>
-                                </div>
+                            <h2 class="text-lg font-medium text-gray-800">Seat Map Controls</h2>
+                        </div>
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <div class="flex flex-col">
+                                <label for="Row" class="block text-xs font-medium text-gray-700 mb-1">Rows</label>
+                                <input type="number" id="Row" value="0" min="0" max="20" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
+                            </div>
+                            <div class="flex flex-col">
+                                <label for="Col" class="block text-xs font-medium text-gray-700 mb-1">Columns</label>
+                                <input type="number" id="Col" value="0" min="0" max="20" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"/>
+                            </div>
+                            <button type="button" id="create" class="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Generate Seats
+                            </button>
+                            <button type="button" id="save" class="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                                </svg>
+                                Save Seat Map
+                            </button>
+                            <button type="button" id="deleteSeat" class="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Delete Selected Seats
+                            </button>
+                        </div>
+                        <div class="hidden md:block border-l border-gray-200 h-10 mx-4"></div>
+                        <div class="flex-1">
+                            <div class="bg-blue-50 p-3 rounded-md border border-blue-100">
+                                <h4 class="text-sm font-medium text-blue-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Tips
+                                </h4>
+                                <ul class="text-xs text-blue-700 mt-1 space-y-1 pl-5 list-disc">
+                                    <li>Drag seats to position them</li>
+                                    <li>Click to select seats for deletion</li>
+                                    <li>Use Shift+Click for multiple selection</li>
+                                    <li>Remember to save your changes</li>
+                                </ul>
                             </div>
                         </div>
-
-                        <!-- Canvas Container -->
-                        <div class="lg:col-span-2 flex flex-col items-center">
-                            <!-- Canvas Header -->
-                            <div class="w-full bg-gray-50 p-3 rounded-t-lg border border-gray-200 text-center">
-                                <h3 class="text-sm font-medium text-gray-700">Drag seats to reposition | Select seats to
-                                    delete</h3>
-                            </div>
-
-                            <!-- Canvas -->
-                            <div
-                                class="bg-white border border-gray-200 border-t-0 rounded-b-lg p-4 shadow-md w-full flex justify-center">
-                                <canvas id="c" width="600" height="500"
-                                        class="border border-gray-300 rounded bg-gray-50 shadow-inner"></canvas>
-                            </div>
-
-                            <!-- Progress Message -->
-                            <div id="seatMapStatus" class="mt-3 text-sm text-gray-600 hidden">
-                                <span class="inline-flex items-center">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500"
-                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <span id="seatMapStatusText">Loading seat map...</span>
-                                </span>
-                            </div>
+                    </div>
+                    <!-- Canvas Container -->
+                    <div class="bg-white border border-gray-200 rounded-b-lg p-4 shadow-md w-full flex flex-col items-center">
+                        <div class="w-full bg-gray-50 p-3 rounded-t-lg border border-gray-200 text-center">
+                            <h3 class="text-sm font-medium text-gray-700">Drag seats to reposition | Select seats to delete</h3>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <canvas id="c" width="600" height="500" class="border border-gray-300 rounded bg-gray-50 shadow-inner"></canvas>
+                        </div>
+                        <div id="seatMapStatus" class="mt-3 text-sm text-gray-600 hidden">
+                            <span class="inline-flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span id="seatMapStatusText">Loading seat map...</span>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -405,72 +345,61 @@
 
             // Create the UI elements for seat management
             seatsContent.innerHTML = `
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Seat Map Controls -->
+                <div class="flex flex-col gap-6">
+                    <!-- Seat Map Controls (Topbar) -->
                     <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
-                        <div class="flex items-center mb-4">
-                            <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                                </svg>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center mb-4">
+                                <div class="h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                    </svg>
+                                </div>
+                                <h2 class="ml-3 text-lg font-medium text-gray-800">Seat Map Controls</h2>
                             </div>
-                            <h2 class="ml-3 text-lg font-medium text-gray-800">Seat Map Controls</h2>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <!-- Action Buttons -->
-                            <div class="pt-4 space-y-3">
-                                <button type="button" id="add-seat" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" id="add-seat" class="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
                                     Add New Seat
                                 </button>
-                                
-                                <button type="button" id="save-seats" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                <button type="button" id="save-seats" class="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                                     </svg>
                                     Save Seat Map
                                 </button>
-                                
-                                <button type="button" id="remove-seats" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <button type="button" id="remove-seats" class="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
                                     Delete Selected Seats
                                 </button>
                             </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3 items-start">
+                            <!-- Action Buttons -->
                             
-                            <!-- Help Text -->
-                            <div class="mt-4 bg-blue-50 p-3 rounded-md border border-blue-100">
-                                <h4 class="text-sm font-medium text-blue-800 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    Tips
-                                </h4>
-                                <ul class="text-xs text-blue-700 mt-1 space-y-1 pl-5 list-disc">
-                                    <li>Drag seats to position them</li>
-                                    <li>Click to select seats for deletion</li>
-                                    <li>Remember to save your changes</li>
-                                </ul>
+
+                            <!-- Help Text + Status (side by side, flex-grow to fill remaining space) -->
+                            <div class="flex flex-1 gap-3 min-w-0">
+                                <!-- Status Message -->
+                                <div id="seat-status" class="p-3 bg-gray-100 rounded-md text-gray-700 text-sm flex-1 flex items-center">
+                                    Ready to manage seats. Add or modify seats and save when done.
+                                </div>
                             </div>
-                            
-                            <!-- Status Message -->
-                            <div id="seat-status" class="mt-4 p-3 bg-gray-100 rounded-md text-gray-700">
-                                Ready to manage seats. Add or modify seats and save when done.
-                            </div>
+
                         </div>
                     </div>
-                    
+
                     <!-- Canvas Container -->
-                    <div class="lg:col-span-2">
-                        <div class="bg-white rounded-lg border border-gray-200 p-4">
-                            <div class="bg-gray-100 border border-gray-300 rounded-lg p-4 relative" style="min-height: 400px">
-                                <div id="seat-map" class="relative w-full h-96 overflow-auto">
-                                    <!-- Seats will be populated here -->
-                                </div>
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="bg-gray-100 border border-gray-300 rounded-lg p-4 relative" style="min-height: 400px">
+                            <div id="seat-map" class="relative w-full h-96 overflow-auto">
+                                <!-- Seats will be populated here -->
                             </div>
                         </div>
                     </div>
@@ -498,20 +427,79 @@
             loadSeats(subAreaId);
 
             // Event handlers for buttons
-            addSeatBtn.addEventListener('click', function() {
-                console.log("Adding new seat");
-                const seatNumber = currentSeats.length + 1;
-                const newSeat = {
-                    id: `temp-${Date.now()}`, // Temporary ID until saved
-                    name: `Seat ${seatNumber}`,
-                    x: 50,
-                    y: 50,
-                    available: true
-                };
+            // --- Add Mode State ---
+            let addMode = false;
+            let dragStart = null;
+            let dragEnd = null;
+            let addModeHandler = null;
+            let dragHandler = null;
+            let upHandler = null;
+            let outlineDiv = null;
+            let hintSeatsDiv = null;
 
-                currentSeats.push(newSeat);
+            function exitAddMode() {
+                addMode = false;
+                addSeatBtn.classList.remove('bg-yellow-400', 'text-black', 'ring-2', 'ring-yellow-400');
+                addSeatBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Add New Seat`;
+                updateStatus('Exited add seat mode.', 'info');
+                seatMap.style.cursor = '';
+                seatMap.removeEventListener('mousedown', addModeHandler);
+                document.removeEventListener('mousemove', dragHandler);
+                document.removeEventListener('mouseup', upHandler);
+                document.removeEventListener('keydown', escHandler);
+                if (outlineDiv && outlineDiv.parentNode) outlineDiv.parentNode.removeChild(outlineDiv);
+                outlineDiv = null;
+                if (hintSeatsDiv && hintSeatsDiv.parentNode) hintSeatsDiv.parentNode.removeChild(hintSeatsDiv);
+                hintSeatsDiv = null;
+            }
+
+            function escHandler(e) {
+                if (e.key === 'Escape') exitAddMode();
+            }
+
+            addSeatBtn.addEventListener('click', function() {
+                // Prompt for both values in one dialog, defaulting to 1 if blank/invalid
+                let input = prompt('How many seats and rows? (format: seats,rows)\nExample: 5,2 for 5 seats in 2 rows. \n\nLeave blank for 1 seat in 1 row.');
+                if (input === null) {
+                    // User cancelled
+                    return;
+                }
+                let numSeats = 1, numRows = 1;
+                if (input && input.trim() !== '') {
+                    let parts = input.split(',');
+                    if (parts.length > 0 && !isNaN(parts[0]) && parseInt(parts[0]) > 0) {
+                        numSeats = parseInt(parts[0]);
+                    }
+                    if (parts.length > 1 && !isNaN(parts[1]) && parseInt(parts[1]) > 0) {
+                        numRows = parseInt(parts[1]);
+                    }
+                }
+
+                // Find the last row's Y position (or start at 0 if none)
+                let lastRowY = 0;
+                if (currentSeats.length > 0) {
+                    lastRowY = Math.max(...currentSeats.map(s => s.y));
+                    lastRowY += 70; // 60px seat + 10px spacing
+                }
+
+                // Add seats in rows
+                for (let row = 0; row < numRows; row++) {
+                    let y = lastRowY + row * 70;
+                    for (let col = 0; col < numSeats; col++) {
+                        let x = col * 70;
+                        const seatNumber = currentSeats.length + 1;
+                        const newSeat = {
+                            id: `temp-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+                            name: `Seat ${seatNumber}`,
+                            x: x,
+                            y: y,
+                            available: true
+                        };
+                        currentSeats.push(newSeat);
+                    }
+                }
                 renderSeats();
-                updateStatus(`Added new seat: ${newSeat.name}. Drag to position it.`);
+                updateStatus(`Added ${numSeats * numRows} seat(s) in ${numRows} row(s).`, 'success');
             });
 
             removeSeatBtn.addEventListener('click', function() {
@@ -698,7 +686,7 @@
             // Add each seat
             currentSeats.forEach(seat => {
                 const seatElement = document.createElement('div');
-                seatElement.className = 'absolute text-white rounded-md flex items-center justify-center cursor-move shadow-md';
+                seatElement.className = 'absolute text-white rounded-md flex flex-col items-center justify-center cursor-move shadow-md';
                 seatElement.classList.add(selectedSeats.has(seat.name) ? 'bg-red-500' : 'bg-blue-500');
                 seatElement.classList.add(selectedSeats.has(seat.name) ? 'hover:bg-red-600' : 'hover:bg-blue-600');
 
@@ -706,12 +694,46 @@
                 seatElement.style.height = '60px';
                 seatElement.style.left = `${seat.x}px`;
                 seatElement.style.top = `${seat.y}px`;
-                seatElement.textContent = seat.name;
                 seatElement.dataset.id = seat.id;
                 seatElement.dataset.name = seat.name;
 
+                // Seat name display
+                const seatNameDiv = document.createElement('div');
+                seatNameDiv.textContent = seat.name;
+                seatNameDiv.className = 'w-full text-center truncate';
+                seatElement.appendChild(seatNameDiv);
+
+                // Edit button
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'mt-0.5 px-2 border-white rounded text-lg hover:text-yellow-400 focus:outline-none';
+                editBtn.textContent = '✎';
+                editBtn.title = 'Edit seat name';
+                seatElement.appendChild(editBtn);
+
+                // Edit seat name handler
+                editBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Show prompt for new name
+                    const newName = prompt('Edit seat name:', seat.name);
+                    if (newName && newName.trim() && newName !== seat.name) {
+                        // Check for duplicate names
+                        if (currentSeats.some(s => s.name === newName)) {
+                            updateStatus('Seat name must be unique.', 'error');
+                            return;
+                        }
+                        seat.name = newName;
+                        seatNameDiv.textContent = newName;
+                        seatElement.dataset.name = newName;
+                        updateStatus(`Seat name updated to: ${newName}`, 'success');
+                    }
+                });
+
                 // Handle seat selection
                 seatElement.addEventListener('click', function(e) {
+                    // Only select if not clicking edit button
+                    if (e.target === editBtn) return;
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -734,6 +756,8 @@
                 let originalX, originalY;
 
                 seatElement.addEventListener('mousedown', function(e) {
+                    // Don't drag if clicking edit button
+                    if (e.target === editBtn) return;
                     e.preventDefault();
 
                     // Prepare for potential drag
